@@ -1,6 +1,7 @@
 ## Own
 *.dSYM
 build/
+.clang_complete
 
 # Created by https://www.gitignore.io/api/c++,emacs
 

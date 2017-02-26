@@ -16,16 +16,20 @@ llvm::cl::OptionCategory ClangExpandCategory("minus-tool options");
 
 llvm::cl::extrahelp ClangExpandCategoryHelp(R"()");
 
-llvm::cl::opt<bool>
-    RewriteOption("rewrite",
-                  llvm::cl::init(false),
-                  llvm::cl::desc("If set, emits rewritten source code"),
-                  llvm::cl::cat(ClangExpandCategory));
+llvm::cl::opt<unsigned>
+    LineOption("line",
+               llvm::cl::desc("The line number of the function to expand"),
+               llvm::cl::cat(ClangExpandCategory));
 
-llvm::cl::opt<std::string> RewriteSuffixOption(
-    "rewrite-suffix",
-    llvm::cl::desc("If -rewrite is set, changes will be rewritten to a file "
-                   "with the same name, but this suffix"),
+llvm::cl::opt<unsigned>
+    RowOption("column",
+              llvm::cl::desc("The column number of the function to expand"),
+              llvm::cl::cat(ClangExpandCategory));
+
+llvm::cl::opt<std::string> LocationOption(
+    "location",
+    llvm::cl::desc("A string in 'line:column' format, specifying "
+                   "the -line and -column arguments."),
     llvm::cl::cat(ClangExpandCategory));
 
 llvm::cl::extrahelp
@@ -40,7 +44,6 @@ struct ToolFactory : public clang::tooling::FrontendActionFactory {
   }
 };
 
-
 auto main(int argc, const char* argv[]) -> int {
   using namespace clang::tooling;
 
@@ -48,5 +51,5 @@ auto main(int argc, const char* argv[]) -> int {
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
 
-  return Tool.run(new ToolFactory());
+  // return Tool.run(new ToolFactory());
 }

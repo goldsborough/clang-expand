@@ -1,0 +1,5 @@
+---
+Checks: '*'
+WarningsAsErrors: ''
+HeaderFilterRegex: 'include/clang-expand/.*'
+...

@@ -39,6 +39,8 @@ find_package(clang REQUIRED)
 
 include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 include_directories(SYSTEM ${CLANG_INCLUDE_DIRS})
+include_directories(SYSTEM /Users/goldsborough/Documents/Projects/llvm/projects/libcxx/include)
+include_directories(SYSTEM /Users/goldsborough/Documents/Projects/llvm/tools/clang/lib/Headers)
 
 # Also contains clang libraries
 link_directories(${LLVM_LIBRARY_DIRS})
@@ -90,3 +92,22 @@ target_compile_options(clang-expand PUBLIC
   ${EXTRA_FLAGS}
   ${WARNINGS}
   ${LLVM_CXXFLAGS})
+
+###########################################################
+## TOOLS <3
+###########################################################
+
+
+# IWYU
+option(CLANG_EXPAND_IWYU OFF)
+
+if(${CLANG_EXPAND_IWYU})
+  find_program(iwyu_path NAMES include-what-you-use iwyu)
+  if(iwyu_path)
+    message(STATUS "Found include-what-you-use, integrating with target")
+    set_property(TARGET clang-expand
+                 PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+  else()
+    message(WARNING "Could not find include-what-you-use, skipping")
+  endif()
+endif()
