@@ -16,40 +16,44 @@ llvm::cl::OptionCategory ClangExpandCategory("minus-tool options");
 
 llvm::cl::extrahelp ClangExpandCategoryHelp(R"()");
 
+llvm::cl::opt<std::string>
+    FileOption("file",
+               llvm::cl::Required,
+               llvm::cl::desc("The source file of the function to expand"),
+               llvm::cl::cat(ClangExpandCategory));
+
 llvm::cl::opt<unsigned>
     LineOption("line",
+               llvm::cl::Required,
                llvm::cl::desc("The line number of the function to expand"),
                llvm::cl::cat(ClangExpandCategory));
 
 llvm::cl::opt<unsigned>
     RowOption("column",
+              llvm::cl::Required,
               llvm::cl::desc("The column number of the function to expand"),
               llvm::cl::cat(ClangExpandCategory));
-
-llvm::cl::opt<std::string> LocationOption(
-    "location",
-    llvm::cl::desc("A string in 'line:column' format, specifying "
-                   "the -line and -column arguments."),
-    llvm::cl::cat(ClangExpandCategory));
 
 llvm::cl::extrahelp
     CommonHelp(clang::tooling::CommonOptionsParser::HelpMessage);
 }  // namespace
 
+namespace ClangExpand {
 /// A custom \c FrontendActionFactory so that we can pass the options
 /// to the constructor of the tool.
 struct ToolFactory : public clang::tooling::FrontendActionFactory {
   clang::FrontendAction* create() override {
-    return new ClangExpand::Action();
+    return new ClangExpand::Action(FileOption, LineOption, RowOption);
   }
 };
+}
 
 auto main(int argc, const char* argv[]) -> int {
-  using namespace clang::tooling;
+  using namespace clang::tooling;  // NOLINT(build/namespaces)
 
   CommonOptionsParser OptionsParser(argc, argv, ClangExpandCategory);
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
 
-  // return Tool.run(new ToolFactory());
+  return Tool.run(new ClangExpand::ToolFactory());
 }
