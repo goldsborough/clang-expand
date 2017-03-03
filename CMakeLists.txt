@@ -5,6 +5,8 @@
 cmake_minimum_required(VERSION 3.7)
 project(clang-expand)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 ###########################################################
 ## DEPENDENCIES
 ###########################################################
@@ -80,9 +82,6 @@ set(CLANG_INCLUDE_DIRS
     ${CLANG_ROOT}/include
     ${LLVM_BUILD}/tools/clang/include)
 
-set(CLANG_CXX "${LLVM_BIN}/clang++")
-set(CMAKE_CXX_COMPILER ${CLANG_CXX})
-
 option(SYSTEM_LIBCXX OFF)
 if (EXISTS "${LLVM_ROOT}/projects/libcxx" AND NOT SYSTEM_LIBCXX)
   message(STATUS "Using libcxx headers from ${LLVM_ROOT}/projects/libcxx")
@@ -108,10 +107,10 @@ set(WARNINGS
   -Wdeprecated
   -Wunreachable-code)
 
-# Want our own standard
 list(REMOVE_ITEM LLVM_CXX_FLAGS "-std=c++11" "-std=c++14" "-std=c++1z")
+list(REMOVE_ITEM LLVM_CXX_FLAGS "-DNDEBUG")
 
-set(EXTRA_FLAGS -g -Os -O2 -flto -std=c++1z)
+set(EXTRA_FLAGS -g -Os -O2 -std=c++1z)
 set(ALL_FLAGS ${WARNINGS} ${LLVM_CXX_FLAGS} ${EXTRA_FLAGS})
 
 add_compile_options(${ALL_FLAGS})

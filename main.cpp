@@ -1,5 +1,6 @@
 // Library includes
-#include "clang-expand/action.hpp"
+#include "clang-expand/symbol-search/tool-factory.hpp"
+#include "clang-expand/common/function-properties.hpp"
 
 // Clang includes
 #include "clang/Tooling/CommonOptionsParser.h"
@@ -9,6 +10,7 @@
 #include "llvm/Support/CommandLine.h"
 
 // Standard includes
+#include <functional>
 #include <string>
 
 namespace {
@@ -29,7 +31,7 @@ llvm::cl::opt<unsigned>
                llvm::cl::cat(ClangExpandCategory));
 
 llvm::cl::opt<unsigned>
-    RowOption("column",
+    ColumnOption("column",
               llvm::cl::Required,
               llvm::cl::desc("The column number of the function to expand"),
               llvm::cl::cat(ClangExpandCategory));
@@ -38,16 +40,6 @@ llvm::cl::extrahelp
     CommonHelp(clang::tooling::CommonOptionsParser::HelpMessage);
 }  // namespace
 
-namespace ClangExpand {
-/// A custom \c FrontendActionFactory so that we can pass the options
-/// to the constructor of the tool.
-struct ToolFactory : public clang::tooling::FrontendActionFactory {
-  clang::FrontendAction* create() override {
-    return new ClangExpand::Action(FileOption, LineOption, RowOption);
-  }
-};
-}
-
 auto main(int argc, const char* argv[]) -> int {
   using namespace clang::tooling;  // NOLINT(build/namespaces)
 
@@ -55,5 +47,13 @@ auto main(int argc, const char* argv[]) -> int {
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
 
-  return Tool.run(new ClangExpand::ToolFactory());
+  ClangExpand::FunctionProperties properties;
+
+  // clang-format off
+  return Tool.run(new ClangExpand::SymbolSearch::ToolFactory(
+    FileOption, LineOption, ColumnOption,
+    [&properties](const auto& result) {
+        properties = result;
+    }));
+  // clang-format on
 }

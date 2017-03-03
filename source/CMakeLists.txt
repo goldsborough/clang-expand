@@ -3,7 +3,11 @@
 ########################################
 
 set(CLANG_EXPAND_SOURCES
-  action.cpp
+  symbol-search/action.cpp
+  symbol-search/consumer.cpp
+  symbol-search/match-handler.cpp
+  symbol-search/preprocessor-hooks.cpp
+  symbol-search/tool-factory.cpp
 )
 
 ########################################
