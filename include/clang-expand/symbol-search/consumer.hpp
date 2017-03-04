@@ -3,6 +3,7 @@
 
 // Library includes
 #include "clang-expand/symbol-search/match-handler.hpp"
+#include "clang-expand/common/state.hpp"
 
 // Clang includes
 #include "clang/AST/ASTConsumer.h"
@@ -19,17 +20,13 @@ class FunctionDecl;
 class Token;
 }
 
-namespace ClangExpand {
-struct FunctionProperties;
-}
-
 namespace ClangExpand::SymbolSearch {
 
 class Consumer : public clang::ASTConsumer {
  public:
   using LazyMacroGetter = std::function<const clang::MacroInfo*()>;
   using ResultCallback =
-      std::function<void(const ClangExpand::FunctionProperties&)>;
+      std::function<void(const ClangExpand::State&)>;
 
   Consumer(const clang::SourceLocation& invocationLocation,
            const std::string& invocationSpelling,

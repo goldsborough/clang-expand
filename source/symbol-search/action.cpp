@@ -52,7 +52,6 @@ bool Action::BeginInvocation(clang::CompilerInstance& compiler) {
 
 bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
                                    llvm::StringRef filename) {
-  assert(filename == _filename);
   if (!super::BeginSourceFileAction(compiler, filename)) return false;
 
   auto& sourceManager = compiler.getSourceManager();

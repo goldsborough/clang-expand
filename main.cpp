@@ -1,6 +1,6 @@
 // Library includes
 #include "clang-expand/symbol-search/tool-factory.hpp"
-#include "clang-expand/common/function-properties.hpp"
+#include "clang-expand/common/state.hpp"
 
 // Clang includes
 #include "clang/Tooling/CommonOptionsParser.h"
@@ -47,13 +47,13 @@ auto main(int argc, const char* argv[]) -> int {
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
 
-  ClangExpand::FunctionProperties properties;
+  ClangExpand::State state;
 
   // clang-format off
   return Tool.run(new ClangExpand::SymbolSearch::ToolFactory(
     FileOption, LineOption, ColumnOption,
-    [&properties](const auto& result) {
-        properties = result;
+    [&state](const auto& result) {
+        state = result;
     }));
   // clang-format on
 }

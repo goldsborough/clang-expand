@@ -18,7 +18,7 @@ auto createAstMatcher(const std::string& spelling) {
   // clang-format off
   return callExpr(hasDescendant(declRefExpr(
            hasDeclaration(functionDecl(hasName(spelling)).bind("fn")))
-             .bind("ref")));
+             .bind("call")));
   // clang-format on
 }
 }  // namespace

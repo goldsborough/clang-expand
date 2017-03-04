@@ -1,6 +1,9 @@
 #ifndef CLANG_EXPAND_SYMBOL_SEARCH_TOOL_FACTORY_HPP
 #define CLANG_EXPAND_SYMBOL_SEARCH_TOOL_FACTORY_HPP
 
+// Project includes
+#include "clang-expand/common/state.hpp"
+
 // Clang includes
 #include "clang/Tooling/Tooling.h"
 
@@ -14,10 +17,6 @@ namespace clang {
 class FrontendAction;
 }
 
-namespace ClangExpand {
-struct FunctionProperties;
-}
-
 namespace ClangExpand::SymbolSearch {
 
 /// A custom \c FrontendActionFactory so that we can pass the options
@@ -25,7 +24,7 @@ namespace ClangExpand::SymbolSearch {
 class ToolFactory : public clang::tooling::FrontendActionFactory {
  public:
   using ResultCallback =
-      std::function<void(const ClangExpand::FunctionProperties&)>;
+      std::function<void(const ClangExpand::State&)>;
 
   explicit ToolFactory(llvm::StringRef filename,
                        unsigned line,
