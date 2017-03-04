@@ -15,6 +15,10 @@
 namespace ClangExpand {
 
 struct Context {
+  Context(clang::Decl::Kind kind_, const llvm::StringRef& name_)
+  : kind(kind_), name(name_) {
+  }
+
   clang::Decl::Kind kind;
   std::string name;
 };

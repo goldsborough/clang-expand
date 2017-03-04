@@ -33,15 +33,21 @@ auto collectDeclarationState(const clang::FunctionDecl& function,
 
   const auto& policy = astContext.getPrintingPolicy();
 
+  // Collect parameter types (their string representations)
   for (const auto* parameter : function.parameters()) {
-    auto type = parameter->getOriginalType().getAsString(policy);
-    declaration.parameterTypes.emplace_back(type);
+    const auto type = parameter->getOriginalType().getCanonicalType();
+    declaration.parameterTypes.emplace_back(type.getAsString(policy));
   }
 
-  auto* context = function.getPrimaryContext()->getParent();
+  // Collect contexts (their kind, e.g. namespace or class, and name)
+  const auto* context = function.getPrimaryContext()->getParent();
   for (; context; context = context->getParent()) {
-    llvm::outs() << context->getDeclKindName() << '\n';
-    // declaration.context.push_back(context->get);
+    const auto kind = context->getDeclKind();
+    if (auto* ns = llvm::dyn_cast<clang::NamespaceDecl>(context)) {
+      declaration.contexts.emplace_back(kind, ns->getName());
+    } else if (auto* record = llvm::dyn_cast<clang::RecordDecl>(context)) {
+      declaration.contexts.emplace_back(kind, record->getName());
+    }
   }
 
   return declaration;
