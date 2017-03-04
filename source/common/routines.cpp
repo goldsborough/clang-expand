@@ -22,9 +22,11 @@ bool locationsAreEqual(const clang::SourceLocation& first,
 llvm::StringRef getSourceText(const clang::SourceRange& range,
                               const clang::SourceManager& sourceManager,
                               const clang::LangOptions& languageOptions) {
-  const auto charRange =
-      clang::Lexer::getAsCharRange(range, sourceManager, languageOptions);
-
+  const clang::SourceRange adjustedRange(range.getBegin(),
+                                         range.getEnd().getLocWithOffset(+1));
+  const auto charRange = clang::Lexer::getAsCharRange(adjustedRange,
+                                                      sourceManager,
+                                                      languageOptions);
   bool error;
   auto text = clang::Lexer::getSourceText(charRange,
                                           sourceManager,

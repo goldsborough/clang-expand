@@ -117,6 +117,8 @@ collectDefinitionState(const clang::FunctionDecl& function,
 
   const auto text = rewriter.getRewrittenText(body->getSourceRange());
 
+  llvm::outs() << text << '\n';
+
   return {std::move(location), text};
 }
 
