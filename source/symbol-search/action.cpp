@@ -40,7 +40,7 @@ Action::Action(const llvm::StringRef& filename,
                unsigned column,
                const StateCallback& stateCallback)
 : _stateCallback(stateCallback)
-, _macro(nullptr)
+, _alreadyFoundMacro(false)
 , _filename(filename)
 , _line(line)
 , _column(column) {
@@ -88,8 +88,9 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
   // clang-format off
   auto hooks = std::make_unique<PreprocessorHooks>(
     compiler, _callLocation,
-    [this] (const auto& macroInfo) {
-      _macro = &macroInfo;
+    [this] (auto&& definition) {
+      _alreadyFoundMacro = true;
+      _stateCallback(std::move(definition));
     });
   // clang-format on
 
@@ -107,7 +108,7 @@ Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef) {
   // evaluation.
   return std::make_unique<Consumer>(_callLocation,
                                     _spelling,
-                                    [this] { return _macro; },
+                                    [this] { return _alreadyFoundMacro; },
                                     _stateCallback);
 }
 

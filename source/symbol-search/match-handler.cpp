@@ -119,16 +119,12 @@ class UsageFinder : public clang::RecursiveASTVisitor<UsageFinder> {
   clang::Rewriter& _rewriter;
 };
 
-auto collectDefinitionState(const clang::FunctionDecl& function,
-                            clang::ASTContext& context,
-                            const ArgumentMap& argumentMap) {
-  ClangExpand::DefinitionState definition;
-
-  const auto location = context.getFullLoc(function.getLocation());
-
-  definition.filename = context.getSourceManager().getFilename(location);
-  definition.line = location.getSpellingLineNumber();
-  definition.column = location.getSpellingColumnNumber();
+ClangExpand::DefinitionState
+collectDefinitionState(const clang::FunctionDecl& function,
+                       clang::ASTContext& context,
+                       const ArgumentMap& argumentMap) {
+  const auto& sourceManager = context.getSourceManager();
+  Structures::EasyLocation location(function.getLocation(), sourceManager);
 
   assert(function.hasBody());
   auto* body = function.getBody();
@@ -136,9 +132,9 @@ auto collectDefinitionState(const clang::FunctionDecl& function,
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
   UsageFinder(argumentMap, rewriter).TraverseStmt(body);
 
-  definition.source = rewriter.getRewrittenText(body->getSourceRange());
+  auto text = rewriter.getRewrittenText(body->getSourceRange());
 
-  return definition;
+  return {std::move(location), std::move(text)};
 }
 
 }  // namespace

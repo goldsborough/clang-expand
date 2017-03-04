@@ -1,6 +1,9 @@
 #ifndef CLANG_EXPAND_SYMBOL_SEARCH_STATE_HPP
 #define CLANG_EXPAND_SYMBOL_SEARCH_STATE_HPP
 
+// Project includes
+#include "clang-expand/common/structures.hpp"
+
 // Clang includes
 #include "clang/AST/DeclBase.h"
 
@@ -40,9 +43,7 @@ struct DeclarationState {
 };
 
 struct DefinitionState {
-  llvm::StringRef filename;
-  unsigned line;
-  unsigned column;
+  Structures::EasyLocation location;
   std::string source;
 };
 

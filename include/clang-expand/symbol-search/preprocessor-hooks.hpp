@@ -25,12 +25,16 @@ class FileEntry;
 class CompilerInstance;
 }
 
+namespace ClangExpand {
+struct DefinitionState;
+}
+
 namespace ClangExpand::SymbolSearch {
 
 
 struct PreprocessorHooks : public clang::PPCallbacks {
  public:
-  using MatchCallback = std::function<void(const clang::MacroInfo&)>;
+  using MatchCallback = std::function<void(DefinitionState&&)>;
 
   PreprocessorHooks(clang::CompilerInstance& compiler,
                     const clang::SourceLocation& location,

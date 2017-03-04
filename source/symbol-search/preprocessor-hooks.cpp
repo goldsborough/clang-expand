@@ -1,6 +1,7 @@
 // Project includes
 #include "clang-expand/symbol-search/preprocessor-hooks.hpp"
 #include "clang-expand/common/structures.hpp"
+#include "clang-expand/common/state.hpp"
 
 // Clang includes
 #include "clang/Basic/IdentifierTable.h"
@@ -57,6 +58,25 @@ auto mapCallArguments(const clang::SourceManager& sourceManager,
 
   return map;
 }
+
+llvm::StringRef getMacroDefinition(const clang::MacroInfo& info,
+                                   const clang::SourceManager& sourceManager,
+                                   const clang::LangOptions& languageOptions) {
+  const clang::SourceRange range(info.getDefinitionLoc(),
+                                 info.getDefinitionEndLoc());
+  const auto charRange =
+      clang::Lexer::getAsCharRange(range, sourceManager, languageOptions);
+
+  bool error;
+  auto text = clang::Lexer::getSourceText(charRange,
+                                          sourceManager,
+                                          languageOptions,
+                                          &error);
+  assert(!error && "Error getting macro definition");
+
+  return text;
+}
+
 }  // namespace
 
 PreprocessorHooks::PreprocessorHooks(clang::CompilerInstance& compiler,
@@ -78,6 +98,15 @@ void PreprocessorHooks::MacroExpands(const clang::Token&,
   if (_callLocation != canonical) return;
 
   const auto* info = macro.getMacroInfo();
+  if (info->isObjectLike()) {
+    auto definition =
+        getMacroDefinition(*info, _sourceManager, _languageOptions);
+    Structures::EasyLocation location(info->getDefinitionLoc(), _sourceManager);
+    _callback(DefinitionState{std::move(location), std::move(definition)});
+    return;
+  }
+
+
   const auto mapping = mapCallArguments(_sourceManager,
                                         _languageOptions,
                                         _preprocessor,

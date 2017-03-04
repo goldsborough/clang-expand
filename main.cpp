@@ -52,8 +52,8 @@ auto main(int argc, const char* argv[]) -> int {
   // clang-format off
   return Tool.run(new ClangExpand::SymbolSearch::ToolFactory(
     FileOption, LineOption, ColumnOption,
-    [&state](const auto& result) {
-        state = result;
+    [&state] (auto&& result) {
+        state = std::move(result);
     }));
   // clang-format on
 }

@@ -7,9 +7,7 @@
 // Clang includes
 #include "clang/Frontend/FrontendAction.h"
 #include "clang/Lex/Token.h"
-
-// LLVM includes
-#include "llvm/ADT/StringRef.h"
+#include "clang/Basic/SourceLocation.h"
 
 // Standard includes
 #include <functional>
@@ -20,7 +18,6 @@ namespace clang {
 class CompilerInstance;
 class FileID;
 class SourceManager;
-class MacroInfo;
 }
 
 namespace llvm {
@@ -56,7 +53,7 @@ class Action : public clang::ASTFrontendAction {
   StateCallback _stateCallback;
   clang::SourceLocation _callLocation;
   std::string _spelling;
-  const clang::MacroInfo* _macro;
+  bool _alreadyFoundMacro;
   std::string _filename;
   unsigned _line;
   unsigned _column;

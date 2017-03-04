@@ -27,16 +27,16 @@ auto createAstMatcher(const std::string& spelling) {
 
 Consumer::Consumer(const clang::SourceLocation& invocationLocation,
                    const std::string& invocationSpelling,
-                   const LazyMacroGetter& macroGetter,
+                   const LazyBoolean& alreadyFoundMacro,
                    const StateCallback& stateCallback)
 : _callSpelling(invocationSpelling)
-, _macroGetter(macroGetter)
+, _alreadyFoundMacro(alreadyFoundMacro)
 , _matchHandler(invocationLocation, stateCallback) {
 }
 
 void Consumer::HandleTranslationUnit(clang::ASTContext& context) {
   // Safe to call at this point.
-  if (_macroGetter() != nullptr) return;
+  if (_alreadyFoundMacro()) return;
 
   const auto matcher = createAstMatcher(_callSpelling);
   clang::ast_matchers::MatchFinder matchFinder;

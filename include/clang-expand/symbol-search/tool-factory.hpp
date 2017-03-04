@@ -23,8 +23,7 @@ namespace ClangExpand::SymbolSearch {
 /// to the constructor of the tool.
 class ToolFactory : public clang::tooling::FrontendActionFactory {
  public:
-  using ResultCallback =
-      std::function<void(const ClangExpand::State&)>;
+  using ResultCallback = std::function<void(ClangExpand::State&&)>;
 
   explicit ToolFactory(llvm::StringRef filename,
                        unsigned line,

@@ -23,4 +23,11 @@ bool CanonicalLocation::operator!=(const CanonicalLocation& other) const
     noexcept {
   return !(*this == other);
 }
+
+EasyLocation::EasyLocation(const clang::SourceLocation& location,
+                           const clang::SourceManager& sourceManager)
+: filename(sourceManager.getFilename(location))
+, line(sourceManager.getSpellingLineNumber(location))
+, column(sourceManager.getSpellingColumnNumber(location)) {
+}
 }  // namespace ClangExpand::Structures
