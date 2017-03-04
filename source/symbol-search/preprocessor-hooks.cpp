@@ -1,5 +1,6 @@
 // Project includes
 #include "clang-expand/symbol-search/preprocessor-hooks.hpp"
+#include "clang-expand/common/structures.hpp"
 
 // Clang includes
 #include "clang/Basic/IdentifierTable.h"
@@ -56,13 +57,6 @@ auto mapCallArguments(const clang::SourceManager& sourceManager,
 
   return map;
 }
-
-const clang::FileEntry*
-fileEntryOfLocation(const clang::SourceLocation& location,
-                    const clang::SourceManager& sourceManager) {
-  const auto id = sourceManager.getFileID(location);
-  return sourceManager.getFileEntryForID(id);
-}
 }  // namespace
 
 PreprocessorHooks::PreprocessorHooks(clang::CompilerInstance& compiler,
@@ -80,6 +74,9 @@ void PreprocessorHooks::MacroExpands(const clang::Token&,
                                      const clang::MacroDefinition& macro,
                                      clang::SourceRange range,
                                      const clang::MacroArgs* arguments) {
+  Structures::CanonicalLocation canonical(range.getBegin(), _sourceManager);
+  if (_callLocation != canonical) return;
+
   const auto* info = macro.getMacroInfo();
   const auto mapping = mapCallArguments(_sourceManager,
                                         _languageOptions,

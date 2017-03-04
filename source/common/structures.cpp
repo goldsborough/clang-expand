@@ -14,11 +14,13 @@ CanonicalLocation::CanonicalLocation(
   offset = decomposed.second;
 }
 
-bool CanonicalLocation::operator==(const CanonicalLocation& other) noexcept {
+bool CanonicalLocation::operator==(const CanonicalLocation& other) const
+    noexcept {
   return this->file == other.file && this->offset == other.offset;
 }
 
-bool CanonicalLocation::operator!=(const CanonicalLocation& other) noexcept {
+bool CanonicalLocation::operator!=(const CanonicalLocation& other) const
+    noexcept {
   return !(*this == other);
 }
 }  // namespace ClangExpand::Structures

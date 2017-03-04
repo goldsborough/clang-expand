@@ -12,8 +12,8 @@ struct CanonicalLocation {
   CanonicalLocation(const clang::SourceLocation& location,
                     const clang::SourceManager& sourceManager);
 
-  bool operator==(const CanonicalLocation& other) noexcept;
-  bool operator!=(const CanonicalLocation& other) noexcept;
+  bool operator==(const CanonicalLocation& other) const noexcept;
+  bool operator!=(const CanonicalLocation& other) const noexcept;
 
   const clang::FileEntry* file;
   unsigned offset;
