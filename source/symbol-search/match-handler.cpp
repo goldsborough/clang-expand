@@ -27,23 +27,30 @@ bool locationsAreEqual(const clang::SourceLocation& first,
          fileEntryAndOffset(second, sourceManager);
 }
 
-auto collectState(const clang::FunctionDecl& function) {
-  ClangExpand::DeclarationState state(function.getName());
+auto collectDeclarationState(const clang::FunctionDecl& function,
+                             const clang::ASTContext& astContext) {
+  ClangExpand::DeclarationState declaration(function.getName());
 
-  state.numberOfArguments = function.getNumParams();
+  const auto& policy = astContext.getPrintingPolicy();
 
-  auto* context = function.getPrimaryContext()->getParent();
-  for ( ; context; context = context->getParent()) {
-    // state.context.push_back(context->get);
+  for (const auto* parameter : function.parameters()) {
+    auto type = parameter->getOriginalType().getAsString(policy);
+    declaration.parameterTypes.emplace_back(type);
   }
 
+  auto* context = function.getPrimaryContext()->getParent();
+  for (; context; context = context->getParent()) {
+    llvm::outs() << context->getDeclKindName() << '\n';
+    // declaration.context.push_back(context->get);
+  }
 
-  // const auto* c  = function.getEnclosingNamespaceContext();
+  return declaration;
+}
 
-  llvm::outs() << function.getPrimaryContext()->getParent()->getDeclKindName()
-               << '\n';
+auto collectDefinitionState(const clang::FunctionDecl& function) {
+  ClangExpand::DefinitionState definition;
 
-  return state;
+  return definition;
 }
 
 }  // namespace
@@ -66,7 +73,12 @@ void MatchHandler::run(const MatchResult& result) {
   const auto* function = result.Nodes.getNodeAs<clang::FunctionDecl>("fn");
   assert(function != nullptr);
 
-  _resultCallback(collectState(*function));
+  if (function->hasBody()) {
+    // _resultCallback(collectDefinitionState(*function));
+    _resultCallback(collectDeclarationState(*function, *result.Context));
+  } else {
+    _resultCallback(collectDeclarationState(*function, *result.Context));
+  }
 }
 
 }  // namespace ClangExpand::SymbolSearch

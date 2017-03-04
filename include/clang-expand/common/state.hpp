@@ -24,9 +24,8 @@ struct DeclarationState {
   }
 
   std::string name;
-  unsigned numberOfArguments;
   llvm::SmallVector<Context, 8> contexts;
-  llvm::SmallVector<std::string, 8> argumentNames;
+  llvm::SmallVector<std::string, 8> parameterTypes;
 };
 
 struct DefinitionState {
