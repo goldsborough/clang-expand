@@ -1,9 +1,12 @@
 #ifndef CLANG_EXPAND_SYMBOL_SEARCH_PREPROCESSOR_HOOKS_HPP
 #define CLANG_EXPAND_SYMBOL_SEARCH_PREPROCESSOR_HOOKS_HPP
 
+// Project includes
+#include "clang-expand/common/structures.hpp"
+
 // Clang includes
-#include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/LangOptions.h"
+#include "clang/Basic/SourceLocation.h"
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Lex/Preprocessor.h"
 
@@ -42,8 +45,7 @@ struct PreprocessorHooks : public clang::PPCallbacks {
   const clang::SourceManager& _sourceManager;
   const clang::LangOptions& _languageOptions;
   clang::Preprocessor& _preprocessor;
-  const clang::FileEntry* const _callFile;
-  const unsigned  _callOffset;
+  const Structures::CanonicalLocation _callLocation;
   const MatchCallback _callback;
 };
 

@@ -1,5 +1,6 @@
 // Library includes
 #include "clang-expand/symbol-search/match-handler.hpp"
+#include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/state.hpp"
 
 // Clang includes
@@ -20,20 +21,6 @@
 
 namespace ClangExpand::SymbolSearch {
 namespace {
-auto fileEntryAndOffset(const clang::SourceLocation& location,
-                        const clang::SourceManager& sourceManager) {
-  const auto decomposed = sourceManager.getDecomposedLoc(location);
-  const auto* fileEntry = sourceManager.getFileEntryForID(decomposed.first);
-  return std::make_pair(fileEntry, decomposed.second);
-}
-
-bool locationsAreEqual(const clang::SourceLocation& first,
-                       const clang::SourceLocation& second,
-                       const clang::SourceManager& sourceManager) {
-  return fileEntryAndOffset(first, sourceManager) ==
-         fileEntryAndOffset(second, sourceManager);
-}
-
 auto collectDeclarationState(const clang::FunctionDecl& function,
                              const clang::ASTContext& astContext) {
   ClangExpand::DeclarationState declaration(function.getName());
@@ -167,9 +154,9 @@ void MatchHandler::run(const MatchResult& result) {
 
   const auto& sourceManager = *result.SourceManager;
   const auto callLocation = ref->getLocation();
-  if (!locationsAreEqual(callLocation, _targetLocation, sourceManager)) {
-    return;
-  }
+  const auto foundRightCall =
+      Routines::locationsAreEqual(callLocation, _targetLocation, sourceManager);
+  if (!foundRightCall) return;
 
   const auto* function = result.Nodes.getNodeAs<clang::FunctionDecl>("fn");
   assert(function != nullptr);

@@ -71,8 +71,7 @@ PreprocessorHooks::PreprocessorHooks(clang::CompilerInstance& compiler,
 : _sourceManager(compiler.getSourceManager())
 , _languageOptions(compiler.getLangOpts())
 , _preprocessor(compiler.getPreprocessor())
-, _callFile(fileEntryOfLocation(location, _sourceManager))
-, _callOffset(_sourceManager.getFileOffset(location))
+, _callLocation(location, _sourceManager)
 , _callback(callback) {
   assert(callback != nullptr);
 }
@@ -81,20 +80,12 @@ void PreprocessorHooks::MacroExpands(const clang::Token&,
                                      const clang::MacroDefinition& macro,
                                      clang::SourceRange range,
                                      const clang::MacroArgs* arguments) {
-  const auto decomposedLocation =
-      _sourceManager.getDecomposedLoc(range.getBegin());
-  const auto fileEntry =
-      _sourceManager.getFileEntryForID(decomposedLocation.first);
-
-  if (fileEntry != _callFile) return;
-  if (decomposedLocation.second != _callOffset) return;
-
   const auto* info = macro.getMacroInfo();
   const auto mapping = mapCallArguments(_sourceManager,
-                                  _languageOptions,
-                                  _preprocessor,
-                                  *info,
-                                  *arguments);
+                                        _languageOptions,
+                                        _preprocessor,
+                                        *info,
+                                        *arguments);
 
   clang::tok::TokenKind lastKind = clang::tok::unknown;
   for (const auto& token : info->tokens()) {

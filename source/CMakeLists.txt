@@ -8,6 +8,8 @@ set(CLANG_EXPAND_SOURCES
   symbol-search/match-handler.cpp
   symbol-search/preprocessor-hooks.cpp
   symbol-search/tool-factory.cpp
+  common/routines.cpp
+  common/structures.cpp
 )
 
 ########################################
