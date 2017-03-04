@@ -24,8 +24,8 @@ void error(const char* message) {
   std::exit(EXIT_FAILURE);
 }
 
-void verifyToken(bool error_occurred, const clang::Token& token) {
-  if (error_occurred) {
+void verifyToken(bool errorOccurred, const clang::Token& token) {
+  if (errorOccurred) {
     error("Error lexing token at given location");
   }
 
@@ -38,8 +38,8 @@ void verifyToken(bool error_occurred, const clang::Token& token) {
 Action::Action(const llvm::StringRef& filename,
                unsigned line,
                unsigned column,
-               const ResultCallback& resultCallback)
-: _resultCallback(resultCallback)
+               const StateCallback& stateCallback)
+: _stateCallback(stateCallback)
 , _macro(nullptr)
 , _filename(filename)
 , _line(line)
@@ -73,13 +73,13 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
   }
 
   clang::Token token;
-  bool error_occurred = clang::Lexer::getRawToken(startLocation,
+  bool errorOccurred = clang::Lexer::getRawToken(startLocation,
                                                   token,
                                                   sourceManager,
                                                   languageOptions,
                                                   /*IgnoreWhiteSpace=*/true);
 
-  verifyToken(error_occurred, token);
+  verifyToken(errorOccurred, token);
 
   // Good to go.
   _callLocation = startLocation;
@@ -108,7 +108,7 @@ Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef) {
   return std::make_unique<Consumer>(_callLocation,
                                     _spelling,
                                     [this] { return _macro; },
-                                    _resultCallback);
+                                    _stateCallback);
 }
 
 clang::FileID Action::_getFileID(clang::SourceManager& sourceManager) const {

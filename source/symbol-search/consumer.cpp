@@ -16,9 +16,11 @@ namespace {
 auto createAstMatcher(const std::string& spelling) {
   using namespace clang::ast_matchers;  // NOLINT(build/namespaces)
   // clang-format off
-  return callExpr(hasDescendant(declRefExpr(
-           hasDeclaration(functionDecl(hasName(spelling)).bind("fn")))
-             .bind("call")));
+  return callExpr(hasDescendant(
+           declRefExpr(
+             hasDeclaration(functionDecl(hasName(spelling)).bind("fn")))
+           .bind("ref")))
+         .bind("call");
   // clang-format on
 }
 }  // namespace
@@ -26,10 +28,10 @@ auto createAstMatcher(const std::string& spelling) {
 Consumer::Consumer(const clang::SourceLocation& invocationLocation,
                    const std::string& invocationSpelling,
                    const LazyMacroGetter& macroGetter,
-                   const ResultCallback& resultCallback)
+                   const StateCallback& stateCallback)
 : _callSpelling(invocationSpelling)
 , _macroGetter(macroGetter)
-, _matchHandler(invocationLocation, resultCallback) {
+, _matchHandler(invocationLocation, stateCallback) {
 }
 
 void Consumer::HandleTranslationUnit(clang::ASTContext& context) {

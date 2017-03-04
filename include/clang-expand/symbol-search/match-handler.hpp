@@ -20,17 +20,15 @@ namespace ClangExpand::SymbolSearch {
 class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
  public:
   using MatchResult = clang::ast_matchers::MatchFinder::MatchResult;
-  using ResultCallback =
-      std::function<void(const ClangExpand::State&)>;
 
   explicit MatchHandler(const clang::SourceLocation& targetLocation,
-                        const ResultCallback& resultCallback);
+                        const StateCallback& stateCallback);
 
   void run(const MatchResult& result) override;
 
  private:
   const clang::SourceLocation _targetLocation;
-  const ResultCallback _resultCallback;
+  const StateCallback _stateCallback;
 };
 
 }  // namespace ClangExpand::SymbolSearch

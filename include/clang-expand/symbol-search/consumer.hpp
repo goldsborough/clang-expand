@@ -25,13 +25,11 @@ namespace ClangExpand::SymbolSearch {
 class Consumer : public clang::ASTConsumer {
  public:
   using LazyMacroGetter = std::function<const clang::MacroInfo*()>;
-  using ResultCallback =
-      std::function<void(const ClangExpand::State&)>;
 
   Consumer(const clang::SourceLocation& invocationLocation,
            const std::string& invocationSpelling,
            const LazyMacroGetter& macroGetter,
-           const ResultCallback& resultCallback);
+           const StateCallback& stateCallback);
 
   void HandleTranslationUnit(clang::ASTContext& Context) override;
 

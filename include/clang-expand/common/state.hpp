@@ -6,9 +6,11 @@
 
 // LLVM includes
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 
 // Standard includes
+#include <functional>
 #include <string>
 #include <variant>
 
@@ -23,23 +25,29 @@ struct Context {
   std::string name;
 };
 
+using ContextVector = llvm::SmallVector<Context, 8>;
+using TypeVector = llvm::SmallVector<std::string, 8>;
+using ArgumentMap = llvm::StringMap<llvm::StringRef>;
+
 struct DeclarationState {
   explicit DeclarationState(const llvm::StringRef& name_) : name(name_.str()) {
   }
 
   std::string name;
-  llvm::SmallVector<Context, 8> contexts;
-  llvm::SmallVector<std::string, 8> parameterTypes;
+  ContextVector contexts;
+  TypeVector parameterTypes;
+  ArgumentMap argumentMap;
 };
 
 struct DefinitionState {
-  std::string filename;
+  llvm::StringRef filename;
   unsigned line;
   unsigned column;
   std::string source;
 };
 
 using State = std::variant<std::monostate, DeclarationState, DefinitionState>;
+using StateCallback = std::function<void(State&&)>;
 
 }  // namespace ClangExpand
 

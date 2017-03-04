@@ -35,13 +35,11 @@ class Action : public clang::ASTFrontendAction {
  public:
   using super = clang::ASTFrontendAction;
   using ASTConsumerPointer = std::unique_ptr<clang::ASTConsumer>;
-  using ResultCallback =
-      std::function<void(const ClangExpand::State&)>;
 
   Action(const llvm::StringRef& filename,
          unsigned line,
          unsigned column,
-         const ResultCallback& resultCallback);
+         const StateCallback& stateCallback);
 
   bool BeginInvocation(clang::CompilerInstance& compiler) override;
 
@@ -55,7 +53,7 @@ class Action : public clang::ASTFrontendAction {
  private:
   clang::FileID _getFileID(clang::SourceManager& sourceManager) const;
 
-  ResultCallback _resultCallback;
+  StateCallback _stateCallback;
   clang::SourceLocation _callLocation;
   std::string _spelling;
   const clang::MacroInfo* _macro;
