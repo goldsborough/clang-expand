@@ -22,6 +22,9 @@
 
 // System includes
 #include <cassert>
+#include <iterator>
+#include <string>
+#include <vector>
 
 namespace ClangExpand::SymbolSearch {
 namespace {
@@ -60,18 +63,37 @@ auto mapCallArguments(const clang::SourceManager& sourceManager,
   return map;
 }
 
+std::string getMacroDefinition(const clang::MacroInfo& info,
+                               const clang::SourceManager& sourceManager,
+                               const clang::LangOptions& languageOptions) {
+  std::vector<llvm::SmallString<16>> spellings;
+  unsigned totalLength = 0;
+
+  for (const auto& token : info.tokens()) {
+    auto spelling =
+        clang::Lexer::getSpelling(token, sourceManager, languageOptions);
+    totalLength += spelling.length();
+    spellings.emplace_back(std::move(spelling));
+  }
+
+  // std::accumulate won't let us move (unless passing a lambda)
+  // None of these += operations should reallocate!
+  std::string concatenation(totalLength, '\0');
+  for (auto& spelling : spellings) {
+    concatenation += std::move(spelling);
+  }
+
+  return concatenation;
+}
+
 DefinitionState
 collectDefinitionState(const clang::MacroInfo& info,
                        const clang::SourceManager& sourceManager,
                        const clang::LangOptions& languageOptions) {
-  const clang::SourceRange range(info.getDefinitionLoc(),
-                                 info.getDefinitionEndLoc());
-  auto definition =
-      Routines::getSourceText(range, sourceManager, languageOptions);
-
-  llvm::outs() << definition << '\n';
+  const auto definition =
+      getMacroDefinition(info, sourceManager, languageOptions);
   Structures::EasyLocation location(info.getDefinitionLoc(), sourceManager);
-  return {std::move(location), std::move(definition)};
+  return {std::move(location), definition};
 }
 
 }  // namespace
