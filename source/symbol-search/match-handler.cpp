@@ -47,30 +47,12 @@ auto collectDeclarationState(const clang::FunctionDecl& function,
   return declaration;
 }
 
-const char*
-getBufferPointerAtLocation(const clang::SourceLocation& location,
-                           const clang::SourceManager& sourceManager) {
-  bool error;
-  const char* data = sourceManager.getCharacterData(location, &error);
-  assert(!error && "Error loading character data");
-  assert(data != nullptr);
-
-  return data;
-}
-
-auto getBufferForRange(const clang::SourceRange& range,
-                       const clang::SourceManager& sourceManager) {
-  const auto* start =
-      getBufferPointerAtLocation(range.getBegin(), sourceManager);
-  const auto* end = getBufferPointerAtLocation(range.getEnd(), sourceManager);
-  return llvm::StringRef(start, end - start + 1);
-}
-
 ArgumentMap mapCallParameters(const clang::CallExpr& call,
                               const clang::FunctionDecl& function,
                               const clang::ASTContext& context) {
   ArgumentMap expressions;
   const auto& sourceManager = context.getSourceManager();
+  const auto& languageOptions = context.getLangOpts();
 
   auto parameter = function.param_begin();
   for (const auto* argument : call.arguments()) {
@@ -79,7 +61,8 @@ ArgumentMap mapCallParameters(const clang::CallExpr& call,
 
     const auto originalName = (*parameter)->getName();
     const auto range = argument->getSourceRange();
-    const auto callName = getBufferForRange(range, sourceManager);
+    const auto callName =
+        Routines::getSourceText(range, sourceManager, languageOptions);
     expressions.insert({originalName, callName});
 
     ++parameter;
@@ -132,9 +115,9 @@ collectDefinitionState(const clang::FunctionDecl& function,
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
   UsageFinder(argumentMap, rewriter).TraverseStmt(body);
 
-  auto text = rewriter.getRewrittenText(body->getSourceRange());
+  const auto text = rewriter.getRewrittenText(body->getSourceRange());
 
-  return {std::move(location), std::move(text)};
+  return {std::move(location), text};
 }
 
 }  // namespace

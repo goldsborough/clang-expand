@@ -1,7 +1,8 @@
 // Project includes
 #include "clang-expand/symbol-search/preprocessor-hooks.hpp"
-#include "clang-expand/common/structures.hpp"
+#include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/state.hpp"
+#include "clang-expand/common/structures.hpp"
 
 // Clang includes
 #include "clang/Basic/IdentifierTable.h"
@@ -59,22 +60,18 @@ auto mapCallArguments(const clang::SourceManager& sourceManager,
   return map;
 }
 
-llvm::StringRef getMacroDefinition(const clang::MacroInfo& info,
-                                   const clang::SourceManager& sourceManager,
-                                   const clang::LangOptions& languageOptions) {
+DefinitionState
+collectDefinitionState(const clang::MacroInfo& info,
+                       const clang::SourceManager& sourceManager,
+                       const clang::LangOptions& languageOptions) {
   const clang::SourceRange range(info.getDefinitionLoc(),
                                  info.getDefinitionEndLoc());
-  const auto charRange =
-      clang::Lexer::getAsCharRange(range, sourceManager, languageOptions);
+  auto definition =
+      Routines::getSourceText(range, sourceManager, languageOptions);
 
-  bool error;
-  auto text = clang::Lexer::getSourceText(charRange,
-                                          sourceManager,
-                                          languageOptions,
-                                          &error);
-  assert(!error && "Error getting macro definition");
-
-  return text;
+  llvm::outs() << definition << '\n';
+  Structures::EasyLocation location(info.getDefinitionLoc(), sourceManager);
+  return {std::move(location), std::move(definition)};
 }
 
 }  // namespace
@@ -99,13 +96,9 @@ void PreprocessorHooks::MacroExpands(const clang::Token&,
 
   const auto* info = macro.getMacroInfo();
   if (info->isObjectLike()) {
-    auto definition =
-        getMacroDefinition(*info, _sourceManager, _languageOptions);
-    Structures::EasyLocation location(info->getDefinitionLoc(), _sourceManager);
-    _callback(DefinitionState{std::move(location), std::move(definition)});
+    _callback(collectDefinitionState(*info, _sourceManager, _languageOptions));
     return;
   }
-
 
   const auto mapping = mapCallArguments(_sourceManager,
                                         _languageOptions,
