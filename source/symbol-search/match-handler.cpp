@@ -149,7 +149,7 @@ auto collectDefinitionState(const clang::FunctionDecl& function,
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
   UsageFinder(argumentMap, rewriter).TraverseStmt(body);
 
-  llvm::outs() << rewriter.getRewrittenText(body->getSourceRange()) << '\n';
+  definition.source = rewriter.getRewrittenText(body->getSourceRange());
 
   return definition;
 }

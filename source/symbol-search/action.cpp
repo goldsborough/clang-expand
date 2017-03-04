@@ -87,7 +87,7 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
 
   // clang-format off
   auto hooks = std::make_unique<PreprocessorHooks>(
-    compiler.getSourceManager(), _callLocation,
+    compiler, _callLocation,
     [this] (const auto& macroInfo) {
       _macro = &macroInfo;
     });
