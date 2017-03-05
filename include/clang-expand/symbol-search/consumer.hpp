@@ -7,7 +7,6 @@
 
 // Clang includes
 #include "clang/AST/ASTConsumer.h"
-#include "clang/Basic/SourceLocation.h"
 
 // Standard includes
 #include <functional>
@@ -15,9 +14,7 @@
 
 namespace clang {
 class ASTContext;
-class MacroInfo;
-class FunctionDecl;
-class Token;
+class SourceLocation;
 }
 
 namespace ClangExpand::SymbolSearch {

@@ -3,13 +3,13 @@
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Lex/MacroInfo.h"
+#include <clang/Basic/SourceLocation.h>
+#include <clang/Basic/SourceManager.h>
+#include <clang/Lex/Lexer.h>
+#include <clang/Lex/MacroInfo.h>
 
 // LLVM includes
-#include "llvm/ADT/StringRef.h"
+#include <llvm/ADT/StringRef.h>
 
 namespace ClangExpand::Routines {
 bool locationsAreEqual(const clang::SourceLocation& first,

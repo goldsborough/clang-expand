@@ -5,12 +5,12 @@
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
-#include "clang/AST/DeclBase.h"
+#include <clang/AST/DeclBase.h>
 
 // LLVM includes
-#include "llvm/ADT/SmallVector.h"
-#include "llvm/ADT/StringMap.h"
-#include "llvm/ADT/StringRef.h"
+#include <llvm/ADT/SmallVector.h>
+#include <llvm/ADT/StringMap.h>
+#include <llvm/ADT/StringRef.h>
 
 // Standard includes
 #include <functional>

@@ -45,7 +45,7 @@ class Action : public clang::ASTFrontendAction {
                                        llvm::StringRef filename) override;
 
  private:
-  const std::string& _declarationFile;
+  const std::string _declarationFile;
   const DeclarationState& _declaration;
   StateCallback _stateCallback;
 };

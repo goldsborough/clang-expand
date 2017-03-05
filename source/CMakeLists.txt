@@ -14,6 +14,7 @@ set(CLANG_EXPAND_SOURCES
   definition-search/match-handler.cpp
   common/routines.cpp
   common/structures.cpp
+  common/parameter-rewriter.cpp
   search.cpp
 )
 

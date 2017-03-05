@@ -5,7 +5,7 @@
 #include "clang-expand/common/state.hpp"
 
 // Clang includes
-#include "clang/AST/RecursiveASTVisitor.h"
+#include <clang/AST/RecursiveASTVisitor.h>
 
 namespace clang {
 class Rewriter;

@@ -5,7 +5,7 @@
 #include "clang-expand/symbol-search/tool-factory.hpp"
 
 // Clang includes
-#include "clang/Tooling/Tooling.h"
+#include <clang/Tooling/Tooling.h>
 
 // Standard includes
 #include <cstdlib>
@@ -33,14 +33,17 @@ int Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
     return EXIT_SUCCESS;
   }
 
-
   if (auto error = _definitionSearch(compilationDatabase, sources); error) {
     return error;
   }
 
-  llvm::outs() << std::get<ClangExpand::DefinitionState>(*_state).code << '\n';
+  if (auto* definition = std::get_if<ClangExpand::DefinitionState>(&*_state)) {
+    llvm::outs() << definition->code << '\n';
+    return EXIT_SUCCESS;
+  }
 
-  return EXIT_SUCCESS;
+  return EXIT_FAILURE;
+  // return optional<definition state> instead of error code and print in main
 }
 
 int Search::_symbolSearch(CompilationDatabase& compilationDatabase) {

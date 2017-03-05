@@ -2,13 +2,15 @@
 #include "clang-expand/search.hpp"
 
 // Clang includes
-#include "clang/Tooling/CommonOptionsParser.h"
+#include <clang/Tooling/CommonOptionsParser.h>
 
 // LLVM includes
-#include "llvm/Support/CommandLine.h"
+#include <llvm/Support/CommandLine.h>
+#include <llvm/ADT/StringRef.h>
 
 // Standard includes
 #include <string>
+#include <vector>
 
 namespace {
 llvm::cl::OptionCategory clangExpandCategory("minus-tool options");

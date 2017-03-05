@@ -2,8 +2,8 @@
 #include "clang-expand/common/parameter-rewriter.hpp"
 
 // Clang includes
-#include "clang/AST/Decl.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+#include <clang/AST/Decl.h>
+#include <clang/Rewrite/Core/Rewriter.h>
 
 namespace ClangExpand {
 
