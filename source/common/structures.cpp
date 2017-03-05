@@ -2,8 +2,8 @@
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Basic/SourceManager.h"
+#include <clang/Basic/SourceLocation.h>
+#include <clang/Basic/SourceManager.h>
 
 namespace ClangExpand::Structures {
 CanonicalLocation::CanonicalLocation(

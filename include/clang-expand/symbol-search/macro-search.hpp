@@ -5,14 +5,14 @@
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
-#include "clang/Basic/LangOptions.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Lex/PPCallbacks.h"
-#include "clang/Lex/Preprocessor.h"
+#include <clang/Basic/LangOptions.h>
+#include <clang/Basic/SourceLocation.h>
+#include <clang/Lex/PPCallbacks.h>
+#include <clang/Lex/Preprocessor.h>
 
 // LLVM includes
-#include "llvm/ADT/SmallString.h"
-#include "llvm/ADT/StringMap.h"
+#include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/StringMap.h>
 
 // Standard includes
 #include <functional>

@@ -5,7 +5,7 @@
 #include "clang-expand/definition-search/match-handler.hpp"
 
 // Clang includes
-#include "clang/AST/ASTConsumer.h"
+#include <clang/AST/ASTConsumer.h>
 
 namespace clang {
 class ASTContext;

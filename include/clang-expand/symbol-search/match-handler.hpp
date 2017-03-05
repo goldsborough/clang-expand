@@ -5,8 +5,8 @@
 #include "clang-expand/common/state.hpp"
 
 // Clang includes
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/Basic/SourceLocation.h"
+#include <clang/ASTMatchers/ASTMatchFinder.h>
+#include <clang/Basic/SourceLocation.h>
 
 // Standard includes
 #include <functional>

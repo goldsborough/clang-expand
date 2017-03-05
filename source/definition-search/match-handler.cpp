@@ -43,6 +43,10 @@ void MatchHandler::run(const MatchResult& result) {
       if (record->getName() != expectedContext->name) return;
     }
   }
+
+  llvm::outs() << "Found correct definition at ";
+  function->getLocation().dump(*result.SourceManager);
+  llvm::outs() << '\n';
 }
 
 }  // namespace ClangExpand::DefinitionSearch

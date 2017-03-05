@@ -6,7 +6,7 @@
 #include "clang-expand/common/state.hpp"
 
 // Clang includes
-#include "clang/AST/ASTConsumer.h"
+#include <clang/AST/ASTConsumer.h>
 
 // Standard includes
 #include <functional>

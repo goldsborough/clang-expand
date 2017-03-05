@@ -5,7 +5,7 @@
 #include "clang-expand/common/state.hpp"
 
 // Clang includes
-#include "clang/Tooling/Tooling.h"
+#include <clang/Tooling/Tooling.h>
 
 // Standard includes
 #include <string>

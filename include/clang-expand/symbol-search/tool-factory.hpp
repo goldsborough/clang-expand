@@ -6,10 +6,10 @@
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
-#include "clang/Tooling/Tooling.h"
+#include <clang/Tooling/Tooling.h>
 
 // LLVM includes
-#include "llvm/ADT/StringRef.h"
+#include <llvm/ADT/StringRef.h>
 
 // Standard includes
 #include <functional>

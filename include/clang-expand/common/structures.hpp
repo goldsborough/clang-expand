@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_COMMON_STRUCTURES_HPP
 
 // LLVM includes
-#include "llvm/ADT/StringRef.h"
+#include <llvm/ADT/StringRef.h>
 
 namespace clang {
 class FileEntry;

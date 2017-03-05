@@ -5,9 +5,9 @@
 #include "clang-expand/common/state.hpp"
 
 // Clang includes
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Lex/Token.h"
+#include <clang/Basic/SourceLocation.h>
+#include <clang/Frontend/FrontendAction.h>
+#include <clang/Lex/Token.h>
 
 // Standard includes
 #include <functional>
@@ -37,10 +37,6 @@ class Action : public clang::ASTFrontendAction {
          const DeclarationState& declaration,
          const StateCallback& stateCallback);
 
-  bool BeginSourceFileAction(clang::CompilerInstance& compiler,
-                             llvm::StringRef filename) override;
-
-  /// Creates the Consumer instance, forwarding the command line options.
   ASTConsumerPointer CreateASTConsumer(clang::CompilerInstance& compiler,
                                        llvm::StringRef filename) override;
 

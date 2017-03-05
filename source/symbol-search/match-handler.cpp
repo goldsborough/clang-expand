@@ -5,14 +5,14 @@
 #include "clang-expand/common/parameter-rewriter.hpp"
 
 // Clang includes
-#include "clang/AST/Decl.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+#include <clang/AST/Decl.h>
+#include <clang/Rewrite/Core/Rewriter.h>
 
 // LLVM includes
-#include "llvm/ADT/SmallVector.h"
-#include "llvm/ADT/StringMap.h"
-#include "llvm/ADT/StringRef.h"
-#include "llvm/Support/raw_ostream.h"
+#include <llvm/ADT/SmallVector.h>
+#include <llvm/ADT/StringMap.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Support/raw_ostream.h>
 
 // Standard includes
 #include <cassert>
@@ -118,10 +118,6 @@ void MatchHandler::run(const MatchResult& result) {
     declaration.parameterMap = std::move(parameterMap);
     _stateCallback(std::move(declaration));
   }
-
-  llvm::outs() << "Found correct definition at ";
-  function->getLocation().dump(*result.SourceManager);
-  llvm::outs() << '\n';
 }
 
 }  // namespace ClangExpand::SymbolSearch

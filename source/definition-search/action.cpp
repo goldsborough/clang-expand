@@ -3,12 +3,12 @@
 #include "clang-expand/definition-search/consumer.hpp"
 
 // LLVM includes
-#include <llvm/Support/FileSystem.h>
 #include <llvm/ADT/SmallString.h>
+#include <llvm/Support/FileSystem.h>
 
 // Standard includes
-#include <string>
 #include <cassert>
+#include <string>
 #include <system_error>
 
 namespace ClangExpand::DefinitionSearch {
@@ -29,16 +29,9 @@ Action::Action(const std::string& declarationFile,
 , _stateCallback(stateCallback) {
 }
 
-bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
-                                   llvm::StringRef filename) {
-  if (!super::BeginSourceFileAction(compiler, filename)) return false;
-  llvm::outs() << filename << " = " << _declarationFile <<'\n';
-  if (filename == _declarationFile) return false;
-  return true;
-}
-
 Action::ASTConsumerPointer
-Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef) {
+Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef filename) {
+  if (filename == _declarationFile) return nullptr;
   return std::make_unique<Consumer>(_declaration, _stateCallback);
 }
 

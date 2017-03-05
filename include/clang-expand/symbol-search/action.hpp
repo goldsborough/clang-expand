@@ -6,9 +6,9 @@
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Lex/Token.h"
+#include <clang/Basic/SourceLocation.h>
+#include <clang/Frontend/FrontendAction.h>
+#include <clang/Lex/Token.h>
 
 // Standard includes
 #include <functional>

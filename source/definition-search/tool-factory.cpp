@@ -3,7 +3,7 @@
 #include "clang-expand/definition-search/action.hpp"
 
 // Clang includes
-#include "clang/Frontend/FrontendAction.h"
+#include <clang/Frontend/FrontendAction.h>
 
 // Standard includes
 #include <string>

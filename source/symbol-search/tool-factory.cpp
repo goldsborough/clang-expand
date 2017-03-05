@@ -3,7 +3,7 @@
 #include "clang-expand/symbol-search/action.hpp"
 
 // Clang includes
-#include "clang/Frontend/FrontendAction.h"
+#include <clang/Frontend/FrontendAction.h>
 
 namespace ClangExpand::SymbolSearch {
 ToolFactory::ToolFactory(const Structures::EasyLocation& targetLocation,
