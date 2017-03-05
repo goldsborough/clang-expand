@@ -55,8 +55,11 @@ void rewriteStringifiedMacroArgument(clang::Rewriter& rewriter,
 
 void rewriteSimpleMacroArgument(clang::Rewriter& rewriter,
                                 const clang::Token& token,
-                                const llvm::StringRef& mappedParameter) {
-  const clang::SourceRange range(token.getLocation(), token.getEndLoc());
+                                const llvm::StringRef& mappedParameter,
+                                unsigned hashCount) {
+  const auto offset = -static_cast<int>(hashCount);
+  const clang::SourceRange range(token.getLocation(),
+                                 token.getEndLoc().getLocWithOffset(offset));
   rewriter.ReplaceText(range, mappedParameter);
 }
 }  // namespace
@@ -110,7 +113,7 @@ std::string PreprocessorHooks::_rewriteMacro(const clang::MacroInfo& info,
         if (hashCount == 1) {
           rewriteStringifiedMacroArgument(rewriter, token, mapped);
         } else {
-          rewriteSimpleMacroArgument(rewriter, token, mapped);
+          rewriteSimpleMacroArgument(rewriter, token, mapped, hashCount);
         }
       }
     }
