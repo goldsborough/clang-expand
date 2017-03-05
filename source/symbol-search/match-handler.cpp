@@ -2,10 +2,10 @@
 #include "clang-expand/symbol-search/match-handler.hpp"
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/state.hpp"
+#include "clang-expand/common/parameter-rewriter.hpp"
 
 // Clang includes
 #include "clang/AST/Decl.h"
-#include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 
 // LLVM includes
@@ -16,7 +16,6 @@
 
 // Standard includes
 #include <cassert>
-#include <functional>
 #include <string>
 
 namespace ClangExpand::SymbolSearch {
@@ -47,10 +46,10 @@ auto collectDeclarationState(const clang::FunctionDecl& function,
   return declaration;
 }
 
-ArgumentMap mapCallParameters(const clang::CallExpr& call,
+ParameterMap mapCallParameters(const clang::CallExpr& call,
                               const clang::FunctionDecl& function,
                               const clang::ASTContext& context) {
-  ArgumentMap expressions;
+  ParameterMap expressions;
   const auto& sourceManager = context.getSourceManager();
   const auto& languageOptions = context.getLangOpts();
 
@@ -71,41 +70,10 @@ ArgumentMap mapCallParameters(const clang::CallExpr& call,
   return expressions;
 }
 
-class UsageFinder : public clang::RecursiveASTVisitor<UsageFinder> {
- public:
-  explicit UsageFinder(const ArgumentMap& argumentMap,
-                       clang::Rewriter& rewriter)
-  : _argumentMap(argumentMap), _rewriter(rewriter) {
-  }
-
-  bool VisitStmt(clang::Stmt* statement) {
-    const auto* use = llvm::dyn_cast<clang::DeclRefExpr>(statement);
-    if (!use) return true;
-
-    const auto* decl = llvm::dyn_cast<clang::ParmVarDecl>(use->getDecl());
-    if (!decl) return true;
-
-    const auto name = decl->getName();
-
-    auto iterator = _argumentMap.find(name);
-    if (iterator != _argumentMap.end()) {
-      const auto& argument = iterator->getValue();
-      bool error = _rewriter.ReplaceText(use->getSourceRange(), argument);
-      assert(!error && "Error replacing text in definition");
-    }
-
-    return true;
-  }
-
- private:
-  const ArgumentMap& _argumentMap;
-  clang::Rewriter& _rewriter;
-};
-
 ClangExpand::DefinitionState
 collectDefinitionState(const clang::FunctionDecl& function,
                        clang::ASTContext& context,
-                       const ArgumentMap& argumentMap) {
+                       const ParameterMap& parameterMap) {
   const auto& sourceManager = context.getSourceManager();
   Structures::EasyLocation location(function.getLocation(), sourceManager);
 
@@ -113,7 +81,7 @@ collectDefinitionState(const clang::FunctionDecl& function,
   auto* body = function.getBody();
 
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
-  UsageFinder(argumentMap, rewriter).TraverseStmt(body);
+  UsageFinder(parameterMap, rewriter).TraverseStmt(body);
 
   const auto text = rewriter.getRewrittenText(body->getSourceRange());
   return {std::move(location), text};
@@ -141,15 +109,19 @@ void MatchHandler::run(const MatchResult& result) {
 
   auto& context = *result.Context;
   const auto* call = result.Nodes.getNodeAs<clang::CallExpr>("call");
-  auto argumentMap = mapCallParameters(*call, *function, context);
+  auto parameterMap = mapCallParameters(*call, *function, context);
 
   if (function->hasBody()) {
-    _stateCallback(collectDefinitionState(*function, context, argumentMap));
+    _stateCallback(collectDefinitionState(*function, context, parameterMap));
   } else {
     auto declaration = collectDeclarationState(*function, context);
-    declaration.argumentMap = std::move(argumentMap);
+    declaration.parameterMap = std::move(parameterMap);
     _stateCallback(std::move(declaration));
   }
+
+  llvm::outs() << "Found correct definition at ";
+  function->getLocation().dump(*result.SourceManager);
+  llvm::outs() << '\n';
 }
 
 }  // namespace ClangExpand::SymbolSearch

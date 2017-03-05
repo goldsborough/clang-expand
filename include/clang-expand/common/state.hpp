@@ -1,5 +1,5 @@
-#ifndef CLANG_EXPAND_SYMBOL_SEARCH_STATE_HPP
-#define CLANG_EXPAND_SYMBOL_SEARCH_STATE_HPP
+#ifndef CLANG_EXPAND_COMMON_STATE_HPP
+#define CLANG_EXPAND_COMMON_STATE_HPP
 
 // Project includes
 #include "clang-expand/common/structures.hpp"
@@ -30,7 +30,7 @@ struct Context {
 
 using ContextVector = llvm::SmallVector<Context, 8>;
 using TypeVector = llvm::SmallVector<std::string, 8>;
-using ArgumentMap = llvm::StringMap<llvm::StringRef>;
+using ParameterMap = llvm::StringMap<llvm::StringRef>;
 
 struct DeclarationState {
   explicit DeclarationState(const llvm::StringRef& name_) : name(name_.str()) {
@@ -39,7 +39,7 @@ struct DeclarationState {
   std::string name;
   ContextVector contexts;
   TypeVector parameterTypes;
-  ArgumentMap argumentMap;
+  ParameterMap parameterMap;
 };
 
 struct DefinitionState {
@@ -52,4 +52,4 @@ using StateCallback = std::function<void(State&&)>;
 
 }  // namespace ClangExpand
 
-#endif  // CLANG_EXPAND_SYMBOL_SEARCH_STATE_HPP
+#endif  // CLANG_EXPAND_COMMON_STATE_HPP
