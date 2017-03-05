@@ -3,6 +3,7 @@
 
 // Project includes
 #include "clang-expand/common/state.hpp"
+#include "clang-expand/common/structures.hpp"
 
 // Clang includes
 #include "clang/Tooling/Tooling.h"
@@ -23,20 +24,16 @@ namespace ClangExpand::SymbolSearch {
 /// to the constructor of the tool.
 class ToolFactory : public clang::tooling::FrontendActionFactory {
  public:
-  using ResultCallback = std::function<void(ClangExpand::State&&)>;
-
   explicit ToolFactory(llvm::StringRef filename,
                        unsigned line,
                        unsigned column,
-                       const ResultCallback& callback);
+                       const ClangExpand::StateCallback& callback);
 
   clang::FrontendAction* create() override;
 
  private:
-  llvm::StringRef _filename;
-  unsigned _line;
-  unsigned _column;
-  ResultCallback _callback;
+  Structures::EasyLocation _targetLocation;
+  ClangExpand::StateCallback _callback;
 };
 }  // namespace ClangExpand::SymbolSearch
 

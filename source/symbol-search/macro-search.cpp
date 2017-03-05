@@ -37,8 +37,6 @@ collectDefinitionState(const clang::MacroInfo& info,
   const auto end = std::prev(info.tokens_end())->getEndLoc();
   const auto definition = rewriter.getRewrittenText({start, end});
 
-  llvm::outs() << definition << '\n';
-
   Structures::EasyLocation location(info.getDefinitionLoc(), sourceManager);
 
   return {std::move(location), definition};
@@ -90,8 +88,6 @@ void MacroSearch::MacroExpands(const clang::Token&,
 
   const auto mapping = _createParameterMapping(*info, *arguments);
   const auto text = _rewriteMacro(*info, mapping);
-
-  llvm::outs() << text << '\n';
 
   Structures::EasyLocation location(info->getDefinitionLoc(), _sourceManager);
   _callback({std::move(location), std::move(text)});

@@ -44,7 +44,7 @@ struct DeclarationState {
 
 struct DefinitionState {
   Structures::EasyLocation location;
-  std::string source;
+  std::string code;
 };
 
 using State = std::variant<std::monostate, DeclarationState, DefinitionState>;

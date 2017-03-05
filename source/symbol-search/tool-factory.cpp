@@ -9,12 +9,12 @@ namespace ClangExpand::SymbolSearch {
 ToolFactory::ToolFactory(llvm::StringRef filename,
                          unsigned line,
                          unsigned column,
-                         const ResultCallback& callback)
-: _filename(filename), _line(line), _column(column), _callback(callback) {
+                         const ClangExpand::StateCallback& callback)
+: _targetLocation(filename, line, column), _callback(callback) {
 }
 
 clang::FrontendAction* ToolFactory::create() {
-  return new SymbolSearch::Action(_filename, _line, _column, _callback);
+  return new SymbolSearch::Action(_targetLocation, _callback);
 }
 
 }  // namespace ClangExpand::SymbolSearch

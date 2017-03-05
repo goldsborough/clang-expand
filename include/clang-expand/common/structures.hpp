@@ -26,6 +26,8 @@ struct EasyLocation {
   EasyLocation(const clang::SourceLocation& location,
                const clang::SourceManager& sourceManager);
 
+  EasyLocation(const llvm::StringRef& filename, unsigned line, unsigned column);
+
   llvm::StringRef filename;
   unsigned line;
   unsigned column;

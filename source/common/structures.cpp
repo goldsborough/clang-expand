@@ -30,4 +30,10 @@ EasyLocation::EasyLocation(const clang::SourceLocation& location,
 , line(sourceManager.getSpellingLineNumber(location))
 , column(sourceManager.getSpellingColumnNumber(location)) {
 }
+
+EasyLocation::EasyLocation(const llvm::StringRef& filename_,
+                           unsigned line_,
+                           unsigned column_)
+: filename(filename_), line(line_), column(column_) {
+}
 }  // namespace ClangExpand::Structures
