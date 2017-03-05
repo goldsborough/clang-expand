@@ -14,88 +14,51 @@
 #include "clang/Lex/MacroInfo.h"
 #include "clang/Lex/Token.h"
 #include "clang/Lex/TokenLexer.h"
+#include "clang/Rewrite/Core/Rewriter.h"
 
 // LLVM includes
 #include "llvm/ADT/SmallString.h"
-#include "llvm/ADT/StringMap.h"
-#include "llvm/Support/raw_ostream.h"
 
 // System includes
 #include <cassert>
 #include <iterator>
 #include <string>
-#include <vector>
 
 namespace ClangExpand::SymbolSearch {
 namespace {
-auto mapCallArguments(const clang::SourceManager& sourceManager,
-                      const clang::LangOptions& languageOptions,
-                      clang::Preprocessor& preprocessor,
-                      const clang::MacroInfo& info,
-                      const clang::MacroArgs& arguments) {
-  llvm::StringMap<llvm::SmallString<32>> map;
-  if (info.getNumArgs() == 0) return map;
-
-  unsigned number = 0;
-  for (const auto* parameter : info.args()) {
-    const auto* firstToken = arguments.getUnexpArgument(number);
-    auto numberOfTokens = arguments.getArgLength(firstToken);
-    clang::TokenLexer lexer(firstToken,
-                            numberOfTokens,
-                            /*DisableExpansion=*/true,
-                            false,
-                            preprocessor);
-
-    llvm::SmallString<32> wholeArgument;
-    while (numberOfTokens-- > 0) {
-      clang::Token token;
-      [[maybe_unused]] bool ok = lexer.Lex(token);
-      assert(ok && "Error lexing token in macro invocation");
-
-      wholeArgument +=
-          clang::Lexer::getSpelling(token, sourceManager, languageOptions);
-    }
-
-    map[parameter->getName()] = std::move(wholeArgument);
-    number += 1;
-  }
-
-  return map;
-}
-
-std::string getMacroDefinition(const clang::MacroInfo& info,
-                               const clang::SourceManager& sourceManager,
-                               const clang::LangOptions& languageOptions) {
-  std::vector<llvm::SmallString<16>> spellings;
-  unsigned totalLength = 0;
-
-  for (const auto& token : info.tokens()) {
-    auto spelling =
-        clang::Lexer::getSpelling(token, sourceManager, languageOptions);
-    totalLength += spelling.length();
-    spellings.emplace_back(std::move(spelling));
-  }
-
-  // std::accumulate won't let us move (unless passing a lambda)
-  // None of these += operations should reallocate!
-  std::string concatenation(totalLength, '\0');
-  for (auto& spelling : spellings) {
-    concatenation += std::move(spelling);
-  }
-
-  return concatenation;
-}
-
 DefinitionState
 collectDefinitionState(const clang::MacroInfo& info,
-                       const clang::SourceManager& sourceManager,
+                       clang::SourceManager& sourceManager,
                        const clang::LangOptions& languageOptions) {
-  const auto definition =
-      getMacroDefinition(info, sourceManager, languageOptions);
+  // Using the rewriter (without actually rewriting) is honestly the only way I
+  // found to get at the raw source text in a macro-safe way.
+  clang::Rewriter rewriter(sourceManager, languageOptions);
+  const auto start = info.tokens_begin()->getLocation();
+  const auto end = std::prev(info.tokens_end())->getEndLoc();
+  const auto definition = rewriter.getRewrittenText({start, end});
+
+  llvm::outs() << definition << '\n';
+
   Structures::EasyLocation location(info.getDefinitionLoc(), sourceManager);
+
   return {std::move(location), definition};
 }
 
+void rewriteStringifiedMacroArgument(clang::Rewriter& rewriter,
+                                     const clang::Token& token,
+                                     const llvm::StringRef& mappedParameter) {
+  const clang::SourceRange range(token.getLocation().getLocWithOffset(-1),
+                                 token.getEndLoc());
+  auto replacement = (llvm::Twine("\"") + mappedParameter + "\"").str();
+  rewriter.ReplaceText(range, std::move(replacement));
+}
+
+void rewriteSimpleMacroArgument(clang::Rewriter& rewriter,
+                                const clang::Token& token,
+                                const llvm::StringRef& mappedParameter) {
+  const clang::SourceRange range(token.getLocation(), token.getEndLoc());
+  rewriter.ReplaceText(range, mappedParameter);
+}
 }  // namespace
 
 PreprocessorHooks::PreprocessorHooks(clang::CompilerInstance& compiler,
@@ -122,26 +85,82 @@ void PreprocessorHooks::MacroExpands(const clang::Token&,
     return;
   }
 
-  const auto mapping = mapCallArguments(_sourceManager,
-                                        _languageOptions,
-                                        _preprocessor,
-                                        *info,
-                                        *arguments);
+  const auto mapping = _createParameterMapping(*info, *arguments);
+  const auto text = _rewriteMacro(*info, mapping);
 
-  clang::tok::TokenKind lastKind = clang::tok::unknown;
-  for (const auto& token : info->tokens()) {
+  llvm::outs() << text << '\n';
+
+  Structures::EasyLocation location(info->getDefinitionLoc(), _sourceManager);
+  _callback({std::move(location), std::move(text)});
+}
+
+std::string PreprocessorHooks::_rewriteMacro(const clang::MacroInfo& info,
+                                             const ParameterMapping& mapping) {
+  clang::Rewriter rewriter(_sourceManager, _languageOptions);
+
+  unsigned hashCount = 0;
+  for (const auto& token : info.tokens()) {
     if (token.getKind() == clang::tok::identifier) {
-      const auto identifier =
-          clang::Lexer::getSpelling(token, _sourceManager, _languageOptions);
-      llvm::outs() << identifier << " -> ";
-      if (lastKind == clang::tok::hash) {
-        llvm::outs() << '"' << mapping.lookup(identifier) << '"' << '\n';
-      } else {
-        llvm::outs() << mapping.lookup(identifier) << '\n';
+      const auto identifier = _getSpelling(token);
+
+      auto iterator = mapping.find(identifier);
+      if (iterator != mapping.end()) {
+        const auto mapped = iterator->getValue().str();
+
+        if (hashCount == 1) {
+          rewriteStringifiedMacroArgument(rewriter, token, mapped);
+        } else {
+          rewriteSimpleMacroArgument(rewriter, token, mapped);
+        }
       }
     }
-    lastKind = token.getKind();
+
+    if (token.getKind() == clang::tok::hash) {
+      hashCount += 1;
+    } else {
+      hashCount = 0;
+    }
   }
+
+  const auto start = info.tokens_begin()->getLocation();
+  const auto end = std::prev(info.tokens_end())->getEndLoc();
+  return rewriter.getRewrittenText({start, end});
+}
+
+PreprocessorHooks::ParameterMapping
+PreprocessorHooks::_createParameterMapping(const clang::MacroInfo& info,
+                                           const clang::MacroArgs& arguments) {
+  ParameterMapping mapping;
+  if (info.getNumArgs() == 0) return mapping;
+
+  unsigned number = 0;
+  for (const auto* parameter : info.args()) {
+    const auto* firstToken = arguments.getUnexpArgument(number);
+    auto numberOfTokens = arguments.getArgLength(firstToken);
+    clang::TokenLexer lexer(firstToken,
+                            numberOfTokens,
+                            /*DisableExpansion=*/true,
+                            false,
+                            _preprocessor);
+
+    llvm::SmallString<32> wholeArgument;
+    while (numberOfTokens-- > 0) {
+      clang::Token token;
+      [[maybe_unused]] bool ok = lexer.Lex(token);
+      assert(ok && "Error lexing token in macro invocation");
+
+      wholeArgument += _getSpelling(token);
+    }
+
+    mapping[parameter->getName()] = std::move(wholeArgument);
+    number += 1;
+  }
+
+  return mapping;
+}
+
+std::string PreprocessorHooks::_getSpelling(const clang::Token& token) const {
+  return clang::Lexer::getSpelling(token, _sourceManager, _languageOptions);
 }
 
 }  // namespace ClangExpand::SymbolSearch

@@ -10,24 +10,29 @@
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Lex/Preprocessor.h"
 
+// LLVM includes
+#include "llvm/ADT/SmallString.h"
+#include "llvm/ADT/StringMap.h"
+
 // Standard includes
 #include <functional>
-#include <utility>
+#include <string>
 
 namespace clang {
-class Token;
-class MacroDefinition;
-class SourceRange;
-class MacroArgs;
-class MacroInfo;
-class SourceManager;
-class FileEntry;
 class CompilerInstance;
-}
+class FileEntry;
+class MacroArgs;
+class MacroDefinition;
+class MacroInfo;
+class Preprocessor;
+class SourceManager;
+class SourceRange;
+class Token;
+}  // namespace clang
 
 namespace ClangExpand {
 struct DefinitionState;
-}
+}  // namespace ClangExpand
 
 namespace ClangExpand::SymbolSearch {
 
@@ -46,7 +51,17 @@ struct PreprocessorHooks : public clang::PPCallbacks {
                     const clang::MacroArgs* macroArgs) override;
 
  private:
-  const clang::SourceManager& _sourceManager;
+  using ParameterMapping = llvm::StringMap<llvm::SmallString<32>>;
+
+  std::string
+  _rewriteMacro(const clang::MacroInfo& info, const ParameterMapping& mapping);
+
+  ParameterMapping _createParameterMapping(const clang::MacroInfo& info,
+                                           const clang::MacroArgs& arguments);
+
+  std::string _getSpelling(const clang::Token& token) const;
+
+  clang::SourceManager& _sourceManager;
   const clang::LangOptions& _languageOptions;
   clang::Preprocessor& _preprocessor;
   const Structures::CanonicalLocation _callLocation;
