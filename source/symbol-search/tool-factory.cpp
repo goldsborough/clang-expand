@@ -6,11 +6,9 @@
 #include "clang/Frontend/FrontendAction.h"
 
 namespace ClangExpand::SymbolSearch {
-ToolFactory::ToolFactory(llvm::StringRef filename,
-                         unsigned line,
-                         unsigned column,
+ToolFactory::ToolFactory(const Structures::EasyLocation& targetLocation,
                          const ClangExpand::StateCallback& callback)
-: _targetLocation(filename, line, column), _callback(callback) {
+: _targetLocation(targetLocation), _callback(callback) {
 }
 
 clang::FrontendAction* ToolFactory::create() {
