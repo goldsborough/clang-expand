@@ -1,7 +1,7 @@
 // Project includes
 #include "clang-expand/symbol-search/action.hpp"
 #include "clang-expand/symbol-search/consumer.hpp"
-#include "clang-expand/symbol-search/preprocessor-hooks.hpp"
+#include "clang-expand/symbol-search/macro-search.hpp"
 
 // Clang includes
 #include "clang/Basic/SourceManager.h"
@@ -86,7 +86,7 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
   _spelling = clang::Lexer::getSpelling(token, sourceManager, languageOptions);
 
   // clang-format off
-  auto hooks = std::make_unique<PreprocessorHooks>(
+  auto hooks = std::make_unique<MacroSearch>(
     compiler, _callLocation,
     [this] (auto&& definition) {
       _alreadyFoundMacro = true;

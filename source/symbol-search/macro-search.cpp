@@ -1,5 +1,5 @@
 // Project includes
-#include "clang-expand/symbol-search/preprocessor-hooks.hpp"
+#include "clang-expand/symbol-search/macro-search.hpp"
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/state.hpp"
 #include "clang-expand/common/structures.hpp"
@@ -64,7 +64,7 @@ void rewriteSimpleMacroArgument(clang::Rewriter& rewriter,
 }
 }  // namespace
 
-PreprocessorHooks::PreprocessorHooks(clang::CompilerInstance& compiler,
+MacroSearch::MacroSearch(clang::CompilerInstance& compiler,
                                      const clang::SourceLocation& location,
                                      const MatchCallback& callback)
 : _sourceManager(compiler.getSourceManager())
@@ -75,7 +75,7 @@ PreprocessorHooks::PreprocessorHooks(clang::CompilerInstance& compiler,
   assert(callback != nullptr);
 }
 
-void PreprocessorHooks::MacroExpands(const clang::Token&,
+void MacroSearch::MacroExpands(const clang::Token&,
                                      const clang::MacroDefinition& macro,
                                      clang::SourceRange range,
                                      const clang::MacroArgs* arguments) {
@@ -97,7 +97,7 @@ void PreprocessorHooks::MacroExpands(const clang::Token&,
   _callback({std::move(location), std::move(text)});
 }
 
-std::string PreprocessorHooks::_rewriteMacro(const clang::MacroInfo& info,
+std::string MacroSearch::_rewriteMacro(const clang::MacroInfo& info,
                                              const ParameterMapping& mapping) {
   clang::Rewriter rewriter(_sourceManager, _languageOptions);
 
@@ -130,8 +130,8 @@ std::string PreprocessorHooks::_rewriteMacro(const clang::MacroInfo& info,
   return rewriter.getRewrittenText({start, end});
 }
 
-PreprocessorHooks::ParameterMapping
-PreprocessorHooks::_createParameterMapping(const clang::MacroInfo& info,
+MacroSearch::ParameterMapping
+MacroSearch::_createParameterMapping(const clang::MacroInfo& info,
                                            const clang::MacroArgs& arguments) {
   ParameterMapping mapping;
   if (info.getNumArgs() == 0) return mapping;
@@ -162,7 +162,7 @@ PreprocessorHooks::_createParameterMapping(const clang::MacroInfo& info,
   return mapping;
 }
 
-std::string PreprocessorHooks::_getSpelling(const clang::Token& token) const {
+std::string MacroSearch::_getSpelling(const clang::Token& token) const {
   return clang::Lexer::getSpelling(token, _sourceManager, _languageOptions);
 }
 

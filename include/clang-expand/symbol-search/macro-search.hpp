@@ -37,11 +37,11 @@ struct DefinitionState;
 namespace ClangExpand::SymbolSearch {
 
 
-struct PreprocessorHooks : public clang::PPCallbacks {
+struct MacroSearch : public clang::PPCallbacks {
  public:
   using MatchCallback = std::function<void(DefinitionState&&)>;
 
-  PreprocessorHooks(clang::CompilerInstance& compiler,
+  MacroSearch(clang::CompilerInstance& compiler,
                     const clang::SourceLocation& location,
                     const MatchCallback& callback);
 
