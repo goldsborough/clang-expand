@@ -56,7 +56,10 @@ DefinitionState collectDefinitionState(const clang::FunctionDecl& function,
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
   ParameterRewriter(parameterMap, rewriter).TraverseStmt(body);
 
-  const auto text = rewriter.getRewrittenText(body->getSourceRange());
+  const auto startNoBraces = body->getLocStart().getLocWithOffset(+1);
+  const auto endNoBraces = body->getLocEnd().getLocWithOffset(-1);
+  const auto text = rewriter.getRewrittenText({startNoBraces, endNoBraces});
+
   return {std::move(location), text};
 }
 }  // namespace ClangExpand::Routines
