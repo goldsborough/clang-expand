@@ -6,7 +6,7 @@
 #include <clang/Frontend/FrontendAction.h>
 
 namespace ClangExpand::SymbolSearch {
-ToolFactory::ToolFactory(const Structures::EasyLocation& targetLocation,
+ToolFactory::ToolFactory(const EasyLocation& targetLocation,
                          const ClangExpand::StateCallback& callback)
 : _targetLocation(targetLocation), _callback(callback) {
 }

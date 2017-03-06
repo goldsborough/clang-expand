@@ -53,3 +53,8 @@ auto main(int argc, const char* argv[]) -> int {
   return ClangExpand::Search(fileOption, lineOption, columnOption)
       .run(db, sources);
 }
+
+
+// Output json consisting of validity heuristic (depending on return value)
+// range to replace (initializer + function call)
+// text to replace with (return value declaration + body)

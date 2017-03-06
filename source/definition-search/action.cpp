@@ -23,7 +23,7 @@ std::string makeAbsolute(const std::string& filename) {
 }  // namespace
 
 Action::Action(const std::string& declarationFile,
-               const DeclarationState& declaration,
+               const DeclarationData& declaration,
                const StateCallback& stateCallback)
 : _declarationFile(makeAbsolute(declarationFile))
 , _declaration(declaration)

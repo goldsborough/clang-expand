@@ -29,7 +29,7 @@ class Action : public clang::ASTFrontendAction {
   using ASTConsumerPointer = std::unique_ptr<clang::ASTConsumer>;
 
   Action(const std::string& declarationFile,
-         const DeclarationState& declaration,
+         const DeclarationData& declaration,
          const StateCallback& stateCallback);
 
   ASTConsumerPointer CreateASTConsumer(clang::CompilerInstance& compiler,
@@ -37,7 +37,7 @@ class Action : public clang::ASTFrontendAction {
 
  private:
   const std::string _declarationFile;
-  const DeclarationState& _declaration;
+  const DeclarationData& _declaration;
   StateCallback _stateCallback;
 };
 

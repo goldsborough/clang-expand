@@ -33,8 +33,8 @@ class LangOptions;
 
 namespace ClangExpand::SymbolSearch {
 namespace {
-DefinitionState
-collectDefinitionState(const clang::MacroInfo& info,
+DefinitionData
+collectDefinitionData(const clang::MacroInfo& info,
                        clang::SourceManager& sourceManager,
                        const clang::LangOptions& languageOptions) {
   // Using the rewriter (without actually rewriting) is honestly the only way I
@@ -44,7 +44,7 @@ collectDefinitionState(const clang::MacroInfo& info,
   const auto end = std::prev(info.tokens_end())->getEndLoc();
   const auto definition = rewriter.getRewrittenText({start, end});
 
-  Structures::EasyLocation location(info.getDefinitionLoc(), sourceManager);
+  EasyLocation location(info.getDefinitionLoc(), sourceManager);
 
   return {std::move(location), definition};
 }
@@ -84,19 +84,19 @@ void MacroSearch::MacroExpands(const clang::Token&,
                                const clang::MacroDefinition& macro,
                                clang::SourceRange range,
                                const clang::MacroArgs* arguments) {
-  Structures::CanonicalLocation canonical(range.getBegin(), _sourceManager);
+  CanonicalLocation canonical(range.getBegin(), _sourceManager);
   if (_callLocation != canonical) return;
 
   const auto* info = macro.getMacroInfo();
   if (info->isObjectLike()) {
-    _callback(collectDefinitionState(*info, _sourceManager, _languageOptions));
+    _callback(collectDefinitionData(*info, _sourceManager, _languageOptions));
     return;
   }
 
   const auto mapping = _createParameterMapping(*info, *arguments);
   const auto text = _rewriteMacro(*info, mapping);
 
-  Structures::EasyLocation location(info->getDefinitionLoc(), _sourceManager);
+  EasyLocation location(info->getDefinitionLoc(), _sourceManager);
   _callback({std::move(location), std::move(text)});
 }
 

@@ -28,7 +28,7 @@ int Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
     return error;
   }
 
-  if (auto* definition = std::get_if<ClangExpand::DefinitionState>(&*_state)) {
+  if (auto* definition = std::get_if<ClangExpand::DefinitionData>(&*_state)) {
     llvm::outs() << definition->code << '\n';
     return EXIT_SUCCESS;
   }
@@ -37,7 +37,7 @@ int Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
     return error;
   }
 
-  if (auto* definition = std::get_if<ClangExpand::DefinitionState>(&*_state)) {
+  if (auto* definition = std::get_if<ClangExpand::DefinitionData>(&*_state)) {
     llvm::outs() << definition->code << '\n';
     return EXIT_SUCCESS;
   }
@@ -64,7 +64,7 @@ int Search::_definitionSearch(CompilationDatabase& compilationDatabase,
 
   // clang-format off
   return DefinitionSearch.run(new ClangExpand::DefinitionSearch::ToolFactory(
-      _location.filename, std::get<ClangExpand::DeclarationState>(*_state),
+      _location.filename, std::get<ClangExpand::DeclarationData>(*_state),
       [this](auto&& result) {
         _state = std::move(result);
     }));

@@ -20,13 +20,13 @@ namespace ClangExpand::SymbolSearch {
 /// to the constructor of the tool.
 class ToolFactory : public clang::tooling::FrontendActionFactory {
  public:
-  explicit ToolFactory(const Structures::EasyLocation& _targetLocation,
+  explicit ToolFactory(const EasyLocation& _targetLocation,
                        const ClangExpand::StateCallback& callback);
 
   clang::FrontendAction* create() override;
 
  private:
-  const Structures::EasyLocation& _targetLocation;
+  const EasyLocation& _targetLocation;
   ClangExpand::StateCallback _callback;
 };
 }  // namespace ClangExpand::SymbolSearch

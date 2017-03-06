@@ -10,7 +10,7 @@ class SourceLocation;
 class SourceManager;
 }
 
-namespace ClangExpand::Structures {
+namespace ClangExpand {
 struct CanonicalLocation {
   CanonicalLocation(const clang::SourceLocation& location,
                     const clang::SourceManager& sourceManager);
@@ -22,6 +22,16 @@ struct CanonicalLocation {
   unsigned offset;
 };
 
+struct Offset {
+  unsigned line;
+  unsigned column;
+};
+
+struct Range {
+  Offset begin;
+  Offset end;
+};
+
 struct EasyLocation {
   EasyLocation(const clang::SourceLocation& location,
                const clang::SourceManager& sourceManager);
@@ -29,10 +39,9 @@ struct EasyLocation {
   EasyLocation(const llvm::StringRef& filename, unsigned line, unsigned column);
 
   llvm::StringRef filename;
-  unsigned line;
-  unsigned column;
+  Offset offset;
 };
-}  // namespace ClangExpand::Structures
+}  // namespace ClangExpand
 
 
 #endif  // CLANG_EXPAND_COMMON_STRUCTURES_HPP

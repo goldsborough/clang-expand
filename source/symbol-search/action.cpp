@@ -35,7 +35,7 @@ void verifyToken(bool errorOccurred, const clang::Token& token) {
 }
 }  // namespace
 
-Action::Action(const Structures::EasyLocation& targetLocation,
+Action::Action(const EasyLocation& targetLocation,
                const StateCallback& stateCallback)
 : _stateCallback(stateCallback)
 , _alreadyFoundMacro(false)
@@ -54,9 +54,9 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
   const auto& languageOptions = compiler.getLangOpts();
 
   const auto fileID = _getFileID(sourceManager);
-  const auto location = sourceManager.translateLineCol(fileID,
-                                                       _targetLocation.line,
-                                                       _targetLocation.column);
+  const auto line = _targetLocation.offset.line;
+  const auto column = _targetLocation.offset.column;
+  const auto location = sourceManager.translateLineCol(fileID, line, column);
 
   if (location.isInvalid()) {
     error("Location is not valid");

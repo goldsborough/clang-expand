@@ -26,7 +26,7 @@ llvm::StringRef getSourceText(const clang::SourceRange& range,
                               const clang::SourceManager& sourceManager,
                               const clang::LangOptions& languageOptions);
 
-DefinitionState collectDefinitionState(const clang::FunctionDecl& function,
+DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                        clang::ASTContext& context,
                                        const ParameterMap& parameterMap);
 

@@ -40,8 +40,13 @@ using ExpectedContextVector = llvm::SmallVector<ExpectedContext, 8>;
 using TypeVector = llvm::SmallVector<std::string, 8>;
 using ParameterMap = llvm::StringMap<std::string>;
 
-struct DeclarationState {
-  explicit DeclarationState(const llvm::StringRef& name_) : name(name_.str()) {
+struct CallData {
+  std::string declaration;
+  Range extent;
+};
+
+struct DeclarationData {
+  explicit DeclarationData(const llvm::StringRef& name_) : name(name_.str()) {
   }
 
   std::string name;
@@ -50,12 +55,12 @@ struct DeclarationState {
   ParameterMap parameterMap;
 };
 
-struct DefinitionState {
-  Structures::EasyLocation location;
+struct DefinitionData {
+  EasyLocation location;
   std::string code;
 };
 
-using State = std::variant<std::monostate, DeclarationState, DefinitionState>;
+using State = std::variant<std::monostate, DeclarationData, DefinitionData>;
 using StateCallback = std::function<void(State&&)>;
 
 }  // namespace ClangExpand

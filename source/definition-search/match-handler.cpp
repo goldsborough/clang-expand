@@ -32,7 +32,7 @@ bool contextMatches(const Context& context,
 }
 }  // namespace
 
-MatchHandler::MatchHandler(const DeclarationState& declaration,
+MatchHandler::MatchHandler(const DeclarationData& declaration,
                            const StateCallback& stateCallback)
 : _declaration(declaration), _stateCallback(stateCallback) {
 }
@@ -50,7 +50,7 @@ void MatchHandler::run(const MatchResult& result) {
   function->getLocation().dump(*result.SourceManager);
   llvm::outs() << '\n';
 
-  auto state = Routines::collectDefinitionState(*function,
+  auto state = Routines::collectDefinitionData(*function,
                                                 *result.Context,
                                                 _declaration.parameterMap);
   _stateCallback(std::move(state));

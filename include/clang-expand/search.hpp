@@ -31,7 +31,7 @@ class Search {
   int _definitionSearch(CompilationDatabase& compilationDatabase,
                         const SourceVector& sources);
 
-  Structures::EasyLocation _location;
+  EasyLocation _location;
   std::optional<ClangExpand::State> _state;
 };
 }  // namespace ClangExpand

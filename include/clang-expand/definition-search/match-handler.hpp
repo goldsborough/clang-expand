@@ -17,7 +17,7 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
  public:
   using MatchResult = clang::ast_matchers::MatchFinder::MatchResult;
 
-  MatchHandler(const DeclarationState& declaration,
+  MatchHandler(const DeclarationData& declaration,
                const StateCallback& stateCallback);
 
   void run(const MatchResult& result) override;
@@ -28,7 +28,7 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
 
   bool _matchContexts(const clang::FunctionDecl& function) const noexcept;
 
-  const DeclarationState& _declaration;
+  const DeclarationData& _declaration;
   const StateCallback _stateCallback;
 };
 

@@ -16,13 +16,13 @@ namespace ClangExpand::DefinitionSearch {
 class ToolFactory : public clang::tooling::FrontendActionFactory {
  public:
   explicit ToolFactory(const std::string& declarationFile,
-                       const DeclarationState& declaration,
+                       const DeclarationData& declaration,
                        const StateCallback& callback);
 
   clang::FrontendAction* create() override;
 
  private:
-  const DeclarationState& _declaration;
+  const DeclarationData& _declaration;
   StateCallback _callback;
   const std::string& _declarationFile;
 };

@@ -34,7 +34,7 @@ class Action : public clang::ASTFrontendAction {
   using super = clang::ASTFrontendAction;
   using ASTConsumerPointer = std::unique_ptr<clang::ASTConsumer>;
 
-  Action(const Structures::EasyLocation& targetLocation,
+  Action(const EasyLocation& targetLocation,
          const StateCallback& stateCallback);
 
   bool BeginInvocation(clang::CompilerInstance& compiler) override;
@@ -53,7 +53,7 @@ class Action : public clang::ASTFrontendAction {
   StateCallback _stateCallback;
   clang::SourceLocation _callLocation;
   bool _alreadyFoundMacro;
-  Structures::EasyLocation _targetLocation;
+  EasyLocation _targetLocation;
 };
 
 }  // namespace ClangExpand::SymbolSearch

@@ -24,9 +24,9 @@
 
 namespace ClangExpand::SymbolSearch {
 namespace {
-auto collectDeclarationState(const clang::FunctionDecl& function,
+auto collectDeclarationData(const clang::FunctionDecl& function,
                              const clang::ASTContext& astContext) {
-  ClangExpand::DeclarationState declaration(function.getName());
+  ClangExpand::DeclarationData declaration(function.getName());
 
   const auto& policy = astContext.getPrintingPolicy();
 
@@ -99,10 +99,10 @@ void MatchHandler::run(const MatchResult& result) {
 
   if (function->hasBody()) {
     auto definition =
-        Routines::collectDefinitionState(*function, context, parameterMap);
+        Routines::collectDefinitionData(*function, context, parameterMap);
     _stateCallback(std::move(definition));
   } else {
-    auto declaration = collectDeclarationState(*function, context);
+    auto declaration = collectDeclarationData(*function, context);
     declaration.parameterMap = std::move(parameterMap);
     _stateCallback(std::move(declaration));
   }

@@ -9,13 +9,13 @@
 
 namespace ClangExpand::DefinitionSearch {
 namespace {
-auto createAstMatcher(const DeclarationState& declaration) {
+auto createAstMatcher(const DeclarationData& declaration) {
   using namespace clang::ast_matchers;  // NOLINT(build/namespaces)
   return functionDecl(isDefinition(), hasName(declaration.name)).bind("fn");
 }
 }  // namespace
 
-Consumer::Consumer(const DeclarationState& declaration,
+Consumer::Consumer(const DeclarationData& declaration,
                    const StateCallback& stateCallback)
 : _declaration(declaration), _matchHandler(declaration, stateCallback) {
 }

@@ -16,13 +16,13 @@ namespace ClangExpand::DefinitionSearch {
 
 class Consumer : public clang::ASTConsumer {
  public:
-  Consumer(const DeclarationState& declaration,
+  Consumer(const DeclarationData& declaration,
            const StateCallback& stateCallback);
 
   void HandleTranslationUnit(clang::ASTContext& context) override;
 
  private:
-  const DeclarationState& _declaration;
+  const DeclarationData& _declaration;
   MatchHandler _matchHandler;
 };
 

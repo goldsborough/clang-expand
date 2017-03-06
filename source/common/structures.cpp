@@ -10,7 +10,7 @@
 // Standard includes
 #include <utility>
 
-namespace ClangExpand::Structures {
+namespace ClangExpand {
 CanonicalLocation::CanonicalLocation(
     const clang::SourceLocation& location,
     const clang::SourceManager& sourceManager) {
@@ -31,14 +31,14 @@ bool CanonicalLocation::operator!=(const CanonicalLocation& other) const
 
 EasyLocation::EasyLocation(const clang::SourceLocation& location,
                            const clang::SourceManager& sourceManager)
-: filename(sourceManager.getFilename(location))
-, line(sourceManager.getSpellingLineNumber(location))
-, column(sourceManager.getSpellingColumnNumber(location)) {
+: EasyLocation(sourceManager.getFilename(location),
+               sourceManager.getSpellingLineNumber(location),
+               sourceManager.getSpellingColumnNumber(location)) {
 }
 
 EasyLocation::EasyLocation(const llvm::StringRef& filename_,
-                           unsigned line_,
-                           unsigned column_)
-: filename(filename_), line(line_), column(column_) {
+                           unsigned line,
+                           unsigned column)
+: filename(filename_), offset{line, column} {
 }
-}  // namespace ClangExpand::Structures
+}  // namespace ClangExpand

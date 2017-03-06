@@ -22,8 +22,8 @@ namespace ClangExpand::Routines {
 bool locationsAreEqual(const clang::SourceLocation& first,
                        const clang::SourceLocation& second,
                        const clang::SourceManager& sourceManager) {
-  return Structures::CanonicalLocation(first, sourceManager) ==
-         Structures::CanonicalLocation(second, sourceManager);
+  return CanonicalLocation(first, sourceManager) ==
+         CanonicalLocation(second, sourceManager);
 }
 
 llvm::StringRef getSourceText(const clang::SourceRange& range,
@@ -44,11 +44,11 @@ llvm::StringRef getSourceText(const clang::SourceRange& range,
   return text;
 }
 
-DefinitionState collectDefinitionState(const clang::FunctionDecl& function,
+DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                        clang::ASTContext& context,
                                        const ParameterMap& parameterMap) {
   const auto& sourceManager = context.getSourceManager();
-  Structures::EasyLocation location(function.getLocation(), sourceManager);
+  EasyLocation location(function.getLocation(), sourceManager);
 
   assert(function.hasBody());
   auto* body = function.getBody();
