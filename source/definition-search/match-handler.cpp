@@ -26,7 +26,7 @@ namespace ClangExpand::DefinitionSearch {
 namespace {
 template <typename Context>
 bool contextMatches(const Context& context,
-                    const ExpectedContext& expectedContext) {
+                    const ContextData& expectedContext) {
   if (context.getDeclKind() != expectedContext.kind) return false;
   if (context.getName() != expectedContext.name) return false;
   return true;

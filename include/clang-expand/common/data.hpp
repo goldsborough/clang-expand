@@ -28,8 +28,8 @@ class StringRef;
 
 namespace ClangExpand {
 
-struct ExpectedContext {
-  ExpectedContext(clang::Decl::Kind kind_, const llvm::StringRef& name_)
+struct ContextData {
+  ContextData(clang::Decl::Kind kind_, const llvm::StringRef& name_)
   : kind(kind_), name(name_.str()) {
   }
 
@@ -37,7 +37,7 @@ struct ExpectedContext {
   std::string name;
 };
 
-using ExpectedContextVector = llvm::SmallVector<ExpectedContext, 8>;
+using ContextDataVector = llvm::SmallVector<ContextData, 8>;
 using TypeVector = llvm::SmallVector<std::string, 8>;
 using ParameterMap = llvm::StringMap<std::string>;
 
@@ -51,7 +51,7 @@ struct DeclarationData {
   }
 
   std::string name;
-  ExpectedContextVector contexts;
+  ContextDataVector contexts;
   TypeVector parameterTypes;
   ParameterMap parameterMap;
 };
