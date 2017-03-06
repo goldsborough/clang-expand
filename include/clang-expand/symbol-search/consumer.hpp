@@ -28,7 +28,7 @@ class Consumer : public clang::ASTConsumer {
            const LazyBoolean& alreadyFoundMacro,
            const StateCallback& stateCallback);
 
-  void HandleTranslationUnit(clang::ASTContext& Context) override;
+  void HandleTranslationUnit(clang::ASTContext& context) override;
 
  private:
   const std::string _callSpelling;

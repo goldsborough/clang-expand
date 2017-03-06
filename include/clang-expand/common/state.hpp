@@ -19,8 +19,8 @@
 
 namespace ClangExpand {
 
-struct Context {
-  Context(clang::Decl::Kind kind_, const llvm::StringRef& name_)
+struct ExpectedContext {
+  ExpectedContext(clang::Decl::Kind kind_, const llvm::StringRef& name_)
   : kind(kind_), name(name_) {
   }
 
@@ -28,7 +28,7 @@ struct Context {
   std::string name;
 };
 
-using ContextVector = llvm::SmallVector<Context, 8>;
+using ExpectedContextVector = llvm::SmallVector<ExpectedContext, 8>;
 using TypeVector = llvm::SmallVector<std::string, 8>;
 using ParameterMap = llvm::StringMap<llvm::StringRef>;
 
@@ -37,7 +37,7 @@ struct DeclarationState {
   }
 
   std::string name;
-  ContextVector contexts;
+  ExpectedContextVector contexts;
   TypeVector parameterTypes;
   ParameterMap parameterMap;
 };

@@ -25,7 +25,7 @@ class Consumer : public clang::ASTConsumer {
   Consumer(const DeclarationState& declaration,
            const StateCallback& stateCallback);
 
-  void HandleTranslationUnit(clang::ASTContext& Context) override;
+  void HandleTranslationUnit(clang::ASTContext& context) override;
 
  private:
   const DeclarationState& _declaration;

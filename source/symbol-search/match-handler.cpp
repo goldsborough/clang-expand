@@ -1,11 +1,12 @@
 // Library includes
 #include "clang-expand/symbol-search/match-handler.hpp"
+#include "clang-expand/common/parameter-rewriter.hpp"
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/state.hpp"
-#include "clang-expand/common/parameter-rewriter.hpp"
 
 // Clang includes
 #include <clang/AST/Decl.h>
+#include <clang/Basic/SourceLocation.h>
 #include <clang/Rewrite/Core/Rewriter.h>
 
 // LLVM includes
@@ -37,8 +38,10 @@ auto collectDeclarationState(const clang::FunctionDecl& function,
   for (; context; context = context->getParent()) {
     const auto kind = context->getDeclKind();
     if (auto* ns = llvm::dyn_cast<clang::NamespaceDecl>(context)) {
+      llvm::outs() << "Picked up " << ns->getName() << '\n';
       declaration.contexts.emplace_back(kind, ns->getName());
     } else if (auto* record = llvm::dyn_cast<clang::RecordDecl>(context)) {
+      llvm::outs() << "Picked up " << record->getName() << '\n';
       declaration.contexts.emplace_back(kind, record->getName());
     }
   }
@@ -47,8 +50,8 @@ auto collectDeclarationState(const clang::FunctionDecl& function,
 }
 
 ParameterMap mapCallParameters(const clang::CallExpr& call,
-                              const clang::FunctionDecl& function,
-                              const clang::ASTContext& context) {
+                               const clang::FunctionDecl& function,
+                               const clang::ASTContext& context) {
   ParameterMap expressions;
   const auto& sourceManager = context.getSourceManager();
   const auto& languageOptions = context.getLangOpts();

@@ -6,14 +6,9 @@
 
 // Clang includes
 #include <clang/ASTMatchers/ASTMatchFinder.h>
-#include <clang/Basic/SourceLocation.h>
-
-// Standard includes
-#include <functional>
 
 namespace clang {
-class ASTContext;
-class FunctionDecl;
+class SourceLocation;
 }
 
 namespace ClangExpand::SymbolSearch {
@@ -27,7 +22,7 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
   void run(const MatchResult& result) override;
 
  private:
-  const clang::SourceLocation _targetLocation;
+  const clang::SourceLocation& _targetLocation;
   const StateCallback _stateCallback;
 };
 

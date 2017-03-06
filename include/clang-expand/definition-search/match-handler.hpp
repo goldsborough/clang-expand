@@ -27,6 +27,11 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
   void run(const MatchResult& result) override;
 
  private:
+  bool _matchParameters(const clang::ASTContext& context,
+                        const clang::FunctionDecl& function) const noexcept;
+
+  bool _matchContexts(const clang::FunctionDecl& function) const noexcept;
+
   const DeclarationState& _declaration;
   const StateCallback _stateCallback;
 };

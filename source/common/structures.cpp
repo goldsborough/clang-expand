@@ -5,6 +5,9 @@
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Basic/SourceManager.h>
 
+// Standard includes
+#include <utility>
+
 namespace ClangExpand::Structures {
 CanonicalLocation::CanonicalLocation(
     const clang::SourceLocation& location,
