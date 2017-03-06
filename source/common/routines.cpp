@@ -2,7 +2,7 @@
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/parameter-rewriter.hpp"
 #include "clang-expand/common/structures.hpp"
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/data.hpp"
 
 // Clang includes
 #include <clang/AST/ASTContext.h>

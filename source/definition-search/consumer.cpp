@@ -1,6 +1,6 @@
 // Library includes
 #include "clang-expand/definition-search/consumer.hpp"
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/data.hpp"
 #include "clang-expand/common/query.hpp"
 
 // Clang includes

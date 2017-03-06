@@ -1,7 +1,7 @@
 // Library includes
 #include "clang-expand/definition-search/match-handler.hpp"
 #include "clang-expand/common/routines.hpp"
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/data.hpp"
 #include "clang-expand/common/query.hpp"
 
 // Clang includes

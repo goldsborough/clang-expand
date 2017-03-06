@@ -1,7 +1,7 @@
 // Library includes
 #include "clang-expand/search.hpp"
 #include "clang-expand/common/query.hpp"
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/data.hpp"
 #include "clang-expand/definition-search/tool-factory.hpp"
 #include "clang-expand/symbol-search/tool-factory.hpp"
 

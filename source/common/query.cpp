@@ -1,6 +1,6 @@
 // Project includes
 #include "clang-expand/common/query.hpp"
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/data.hpp"
 
 // Standard includes
 #include <optional>

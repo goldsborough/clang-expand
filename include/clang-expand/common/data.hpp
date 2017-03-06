@@ -1,5 +1,5 @@
-#ifndef CLANG_EXPAND_COMMON_STATE_HPP
-#define CLANG_EXPAND_COMMON_STATE_HPP
+#ifndef CLANG_EXPAND_COMMON_DATA_HPP
+#define CLANG_EXPAND_COMMON_DATA_HPP
 
 // Project includes
 #include "clang-expand/common/structures.hpp"
@@ -62,4 +62,4 @@ struct DefinitionData {
 };
 }  // namespace ClangExpand
 
-#endif  // CLANG_EXPAND_COMMON_STATE_HPP
+#endif  // CLANG_EXPAND_COMMON_DATA_HPP

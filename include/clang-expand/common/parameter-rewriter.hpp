@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_COMMON_PARAMETER_REWRITER_HPP
 
 // Project includes
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/data.hpp"
 
 // Clang includes
 #include <clang/AST/RecursiveASTVisitor.h>

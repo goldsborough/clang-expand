@@ -1,7 +1,7 @@
 // Project includes
 #include "clang-expand/symbol-search/macro-search.hpp"
 #include "clang-expand/common/query.hpp"
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/data.hpp"
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
