@@ -13,9 +13,8 @@
 #include <llvm/ADT/StringRef.h>
 
 // Standard includes
-#include <functional>
+#include <optional>
 #include <string>
-#include <variant>
 
 namespace clang {
 class ASTContext;
@@ -41,8 +40,20 @@ using ContextDataVector = llvm::SmallVector<ContextData, 8>;
 using TypeVector = llvm::SmallVector<std::string, 8>;
 using ParameterMap = llvm::StringMap<std::string>;
 
+struct VariableData {
+  std::string type;
+  std::string name;
+};
+
 struct CallData {
-  std::string declaration;
+  CallData(const std::string& type, const std::string& name, Range extent_)
+  : variable({type, name}), extent(extent_) {
+  }
+
+  explicit CallData(Range extent_) : extent(extent_) {
+  }
+
+  std::optional<VariableData> variable;
   Range extent;
 };
 

@@ -29,11 +29,28 @@ bool CanonicalLocation::operator!=(const CanonicalLocation& other) const
   return !(*this == other);
 }
 
+Offset::Offset(const clang::SourceLocation& location,
+               const clang::SourceManager& sourceManager)
+: line(sourceManager.getSpellingLineNumber(location))
+, column(sourceManager.getSpellingColumnNumber(location)) {
+}
+
+Offset::Offset(unsigned line_, unsigned column_)
+: line(line_), column(column_) {
+}
+
+Range::Range(const clang::SourceRange& range,
+             const clang::SourceManager& sourceManager)
+: begin(range.getBegin(), sourceManager), end(range.getEnd(), sourceManager) {
+}
+
+Range::Range(Offset begin_, Offset end_) : begin(begin_), end(end_) {
+}
+
 EasyLocation::EasyLocation(const clang::SourceLocation& location,
                            const clang::SourceManager& sourceManager)
-: EasyLocation(sourceManager.getFilename(location),
-               sourceManager.getSpellingLineNumber(location),
-               sourceManager.getSpellingColumnNumber(location)) {
+: filename(sourceManager.getFilename(location))
+, offset(location, sourceManager) {
 }
 
 EasyLocation::EasyLocation(const llvm::StringRef& filename_,

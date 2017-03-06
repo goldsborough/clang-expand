@@ -1,11 +1,12 @@
 // Library includes
 #include "clang-expand/symbol-search/match-handler.hpp"
+#include "clang-expand/common/data.hpp"
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
-#include "clang-expand/common/data.hpp"
 
 // Clang includes
 #include <clang/AST/ASTContext.h>
+#include <clang/AST/ASTTypeTraits.h>
 #include <clang/AST/Decl.h>
 #include <clang/AST/DeclBase.h>
 #include <clang/AST/Expr.h>
@@ -74,6 +75,56 @@ ParameterMap mapCallParameters(const clang::CallExpr& call,
 
   return expressions;
 }
+
+CallData handleCallForAssignment(const clang::VarDecl& variable,
+                                 const clang::ASTContext& context) {
+  const auto& policy = context.getPrintingPolicy();
+  const auto type = variable.getType().getCanonicalType().getAsString(policy);
+  const auto name = variable.getName();
+  Range range(variable.getSourceRange(), context.getSourceManager());
+
+  return {type, name, range};
+}
+
+std::optional<CallData> collectCallData(const clang::Expr& expression,
+                                        clang::ASTContext& context,
+                                        unsigned depth = 3) {
+  // Not checking the base case is generally bad for the first call, but we
+  // don't actually want this to be called with depth = 0 the first time.
+  assert(depth > 0 && "Reached invalid depth while walking up call expression");
+
+  for (const auto parent : context.getParents(expression)) {
+    const auto kind = parent.getNodeKind();
+    llvm::outs() << kind.asStringRef() << '\n';
+    if (const auto* node = parent.get<clang::ReturnStmt>()) {
+      llvm::outs() << "Return\n";
+      return CallData({node->getSourceRange(), context.getSourceManager()});
+    } else if (const auto* node = parent.get<clang::CallExpr>()) {
+      llvm::outs() << "Call\n";
+      return {};
+    } else if (const auto* node = parent.get<clang::VarDecl>()) {
+      llvm::outs() << "Ass\n";
+      return handleCallForAssignment(*node, context);
+    }
+    llvm::outs() << "Matched none!" << '\n';
+  }
+
+  // You could call this a BFS that favors the first parents, or simply a
+  // mixture of BFS and DFS, since we first walk all parents, but then recurse
+  // into the first parent (so it's neither DFS not BFS, but something that
+  // should work fine for us).
+  if (depth > 1) {
+    for (const auto parent : context.getParents(expression)) {
+      if (const auto* node = parent.get<clang::Expr>()) {
+        if (auto result = collectCallData(*node, context, depth - 1); result) {
+          return result;
+        }
+      }
+    }
+  }
+
+  return {};
+}
 }  // namespace
 
 MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
@@ -98,6 +149,8 @@ void MatchHandler::run(const MatchResult& result) {
   const auto* call = result.Nodes.getNodeAs<clang::CallExpr>("call");
   auto parameterMap = mapCallParameters(*call, *function, context);
 
+  auto callData = collectCallData(*call, context);
+
   if (function->hasBody()) {
     auto definition =
         Routines::collectDefinitionData(*function, context, parameterMap);
@@ -105,7 +158,7 @@ void MatchHandler::run(const MatchResult& result) {
   } else {
     auto declaration = collectDeclarationData(*function, context);
     declaration.parameterMap = std::move(parameterMap);
-    _stateCallback(std::move(declaration));
+    _stateCallback(Query(std::move(declaration), std::move(callData)));
   }
 }
 

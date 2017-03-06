@@ -15,18 +15,24 @@ Query::Query(DeclarationData&& declaration) : _state(declaration) {
 Query::Query(DefinitionData&& definition) : _state(definition) {
 }
 
-Query::Query(DeclarationData&& declaration, CallData&& call)
+Query::Query(DeclarationData&& declaration, OptionalCall&& call)
 : _state(declaration), _call(call) {
 }
 
 bool Query::isDefinition() const noexcept {
   return std::holds_alternative<DefinitionData>(_state);
 }
+
 bool Query::isDeclaration() const noexcept {
   return std::holds_alternative<DeclarationData>(_state);
 }
+
 bool Query::hasCall() const noexcept {
   return _call.has_value();
+}
+
+bool Query::isEmpty() const noexcept {
+  return _state.index() == 0;
 }
 
 const DeclarationData& Query::declaration() const noexcept {

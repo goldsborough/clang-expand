@@ -8,6 +8,7 @@ namespace clang {
 class FileEntry;
 class SourceLocation;
 class SourceManager;
+class SourceRange;
 }
 
 namespace ClangExpand {
@@ -23,11 +24,21 @@ struct CanonicalLocation {
 };
 
 struct Offset {
+  Offset(const clang::SourceLocation& location,
+         const clang::SourceManager& sourceManager);
+
+  Offset(unsigned line_, unsigned column_);
+
   unsigned line;
   unsigned column;
 };
 
 struct Range {
+  Range(const clang::SourceRange& range,
+        const clang::SourceManager& sourceManager);
+
+  Range(Offset begin_, Offset end_);
+
   Offset begin;
   Offset end;
 };

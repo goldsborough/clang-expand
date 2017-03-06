@@ -29,6 +29,11 @@ int Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
     return error;
   }
 
+  if (_state->isEmpty()) {
+    llvm::outs() << "Found nothing at all" << '\n';
+    return EXIT_FAILURE;
+  }
+
   if (_state->isDefinition()) {
     llvm::outs() << _state->definition().code << '\n';
     return EXIT_SUCCESS;
