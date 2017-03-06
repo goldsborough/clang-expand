@@ -9,14 +9,14 @@
 namespace ClangExpand {
 Query::Query() = default;
 
-Query::Query(DeclarationData&& declaration) : _state(declaration) {
+Query::Query(DeclarationData&& declaration) : _state(std::move(declaration)) {
 }
 
-Query::Query(DefinitionData&& definition) : _state(definition) {
+Query::Query(DefinitionData&& definition) : _state(std::move(definition)) {
 }
 
 Query::Query(DeclarationData&& declaration, OptionalCall&& call)
-: _state(declaration), _call(call) {
+: _state(std::move(declaration)), _call(std::move(call)) {
 }
 
 bool Query::isDefinition() const noexcept {

@@ -27,8 +27,10 @@
 namespace ClangExpand::SymbolSearch {
 namespace {
 auto collectDeclarationData(const clang::FunctionDecl& function,
-                            const clang::ASTContext& astContext) {
+                            const clang::ASTContext& astContext,
+                            ParameterMap&& parameterMap) {
   ClangExpand::DeclarationData declaration(function.getName());
+  declaration.parameterMap = std::move(parameterMap);
 
   const auto& policy = astContext.getPrintingPolicy();
 
@@ -150,14 +152,15 @@ void MatchHandler::run(const MatchResult& result) {
   auto parameterMap = mapCallParameters(*call, *function, context);
 
   auto callData = collectCallData(*call, context);
+  llvm::outs() << "found call data: " << callData.has_value() << '\n';
 
   if (function->hasBody()) {
     auto definition =
         Routines::collectDefinitionData(*function, context, parameterMap);
     _stateCallback(std::move(definition));
   } else {
-    auto declaration = collectDeclarationData(*function, context);
-    declaration.parameterMap = std::move(parameterMap);
+    auto declaration =
+        collectDeclarationData(*function, context, std::move(parameterMap));
     _stateCallback(Query(std::move(declaration), std::move(callData)));
   }
 }

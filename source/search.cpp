@@ -1,7 +1,7 @@
 // Library includes
 #include "clang-expand/search.hpp"
-#include "clang-expand/common/query.hpp"
 #include "clang-expand/common/data.hpp"
+#include "clang-expand/common/query.hpp"
 #include "clang-expand/definition-search/tool-factory.hpp"
 #include "clang-expand/symbol-search/tool-factory.hpp"
 
@@ -32,6 +32,20 @@ int Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
   if (_state->isEmpty()) {
     llvm::outs() << "Found nothing at all" << '\n';
     return EXIT_FAILURE;
+  }
+
+  if (_state->hasCall()) {
+    const auto& call = _state->call();
+    llvm::outs() << "Found call information: At " << call.extent.begin.line
+                 << ':' << call.extent.begin.column << " - "
+                 << call.extent.end.line << ':' << call.extent.end.column;
+
+    if (call.variable) {
+      llvm::outs() << ": type = " << call.variable->type
+                   << ", name = " << call.variable->name;
+    }
+
+    llvm::outs() << '\n';
   }
 
   if (_state->isDefinition()) {
