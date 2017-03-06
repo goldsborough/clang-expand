@@ -24,7 +24,7 @@ std::string makeAbsolute(const std::string& filename) {
 
 Action::Action(const std::string& declarationFile,
                const DeclarationData& declaration,
-               const StateCallback& stateCallback)
+               const QueryCallback& stateCallback)
 : _declarationFile(makeAbsolute(declarationFile))
 , _declaration(declaration)
 , _stateCallback(stateCallback) {

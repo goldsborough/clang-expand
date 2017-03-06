@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_DEFINITION_SEARCH_TOOL_FACTORY_HPP
 
 // Project includes
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/query.hpp"
 
 // Clang includes
 #include <clang/Frontend/FrontendAction.h>
@@ -17,13 +17,13 @@ class ToolFactory : public clang::tooling::FrontendActionFactory {
  public:
   explicit ToolFactory(const std::string& declarationFile,
                        const DeclarationData& declaration,
-                       const StateCallback& callback);
+                       const QueryCallback& callback);
 
   clang::FrontendAction* create() override;
 
  private:
   const DeclarationData& _declaration;
-  StateCallback _callback;
+  QueryCallback _callback;
   const std::string& _declarationFile;
 };
 }  // namespace ClangExpand::DefinitionSearch

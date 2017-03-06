@@ -23,7 +23,7 @@ auto createAstMatcher(const std::string& spelling) {
 Consumer::Consumer(const clang::SourceLocation& invocationLocation,
                    const std::string& invocationSpelling,
                    const LazyBoolean& alreadyFoundMacro,
-                   const StateCallback& stateCallback)
+                   const QueryCallback& stateCallback)
 : _callSpelling(invocationSpelling)
 , _alreadyFoundMacro(alreadyFoundMacro)
 , _matchHandler(invocationLocation, stateCallback) {

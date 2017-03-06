@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_DEFINITION_SEARCH_MATCH_HANDLER_HPP
 
 // Project includes
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/query.hpp"
 
 // Clang includes
 #include <clang/ASTMatchers/ASTMatchFinder.h>
@@ -18,7 +18,7 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
   using MatchResult = clang::ast_matchers::MatchFinder::MatchResult;
 
   MatchHandler(const DeclarationData& declaration,
-               const StateCallback& stateCallback);
+               const QueryCallback& stateCallback);
 
   void run(const MatchResult& result) override;
 
@@ -29,7 +29,7 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
   bool _matchContexts(const clang::FunctionDecl& function) const noexcept;
 
   const DeclarationData& _declaration;
-  const StateCallback _stateCallback;
+  const QueryCallback _stateCallback;
 };
 
 }  // namespace ClangExpand::DefinitionSearch

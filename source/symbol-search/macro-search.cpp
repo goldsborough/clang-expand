@@ -1,5 +1,6 @@
 // Project includes
 #include "clang-expand/symbol-search/macro-search.hpp"
+#include "clang-expand/common/query.hpp"
 #include "clang-expand/common/state.hpp"
 #include "clang-expand/common/structures.hpp"
 
@@ -35,8 +36,8 @@ namespace ClangExpand::SymbolSearch {
 namespace {
 DefinitionData
 collectDefinitionData(const clang::MacroInfo& info,
-                       clang::SourceManager& sourceManager,
-                       const clang::LangOptions& languageOptions) {
+                      clang::SourceManager& sourceManager,
+                      const clang::LangOptions& languageOptions) {
   // Using the rewriter (without actually rewriting) is honestly the only way I
   // found to get at the raw source text in a macro-safe way.
   clang::Rewriter rewriter(sourceManager, languageOptions);

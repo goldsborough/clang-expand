@@ -7,7 +7,7 @@
 
 namespace ClangExpand::SymbolSearch {
 ToolFactory::ToolFactory(const EasyLocation& targetLocation,
-                         const ClangExpand::StateCallback& callback)
+                         const ClangExpand::QueryCallback& callback)
 : _targetLocation(targetLocation), _callback(callback) {
 }
 

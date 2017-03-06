@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_SEARCH_HPP
 
 // Project includes
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/query.hpp"
 
 // Standard includes
 #include <optional>
@@ -32,7 +32,7 @@ class Search {
                         const SourceVector& sources);
 
   EasyLocation _location;
-  std::optional<ClangExpand::State> _state;
+  std::optional<ClangExpand::Query> _state;
 };
 }  // namespace ClangExpand
 

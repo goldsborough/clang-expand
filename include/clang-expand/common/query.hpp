@@ -12,12 +12,10 @@
 namespace ClangExpand {
 class Query {
  public:
-  using Callback = std::function<void(Query&&)>;
-
   Query();
 
-  explicit Query(DeclarationData&& declaration);
-  explicit Query(DefinitionData&& definition);
+  Query(DeclarationData&& declaration);  // NOLINT(runtime/explicit)
+  Query(DefinitionData&& definition);    // NOLINT(runtime/explicit)
   Query(DeclarationData&& declaration, CallData&& call);
 
   bool isDefinition() const noexcept;
@@ -36,6 +34,8 @@ class Query {
   PartialState _state;
   OptionalCall _call;
 };
+
+using QueryCallback = std::function<void(Query&&)>;
 
 }  // namespace ClangExpand
 

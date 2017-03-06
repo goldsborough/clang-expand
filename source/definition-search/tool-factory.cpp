@@ -8,7 +8,7 @@
 namespace ClangExpand::DefinitionSearch {
 ToolFactory::ToolFactory(const std::string& declarationFile,
                          const DeclarationData& declaration,
-                         const ClangExpand::StateCallback& callback)
+                         const ClangExpand::QueryCallback& callback)
 : _declaration(declaration)
 , _callback(callback)
 , _declarationFile(declarationFile) {

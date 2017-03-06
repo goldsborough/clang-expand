@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_DEFINITION_SEARCH_ACTION_HPP
 
 // Project includes
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/query.hpp"
 
 // Clang includes
 #include <clang/Frontend/FrontendAction.h>
@@ -30,7 +30,7 @@ class Action : public clang::ASTFrontendAction {
 
   Action(const std::string& declarationFile,
          const DeclarationData& declaration,
-         const StateCallback& stateCallback);
+         const QueryCallback& stateCallback);
 
   ASTConsumerPointer CreateASTConsumer(clang::CompilerInstance& compiler,
                                        llvm::StringRef filename) override;
@@ -38,7 +38,7 @@ class Action : public clang::ASTFrontendAction {
  private:
   const std::string _declarationFile;
   const DeclarationData& _declaration;
-  StateCallback _stateCallback;
+  QueryCallback _stateCallback;
 };
 
 }  // namespace ClangExpand::DefinitionSearch

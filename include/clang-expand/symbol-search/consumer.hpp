@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_SYMBOL_SEARCH_CONSUMER_HPP
 
 // Library includes
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/query.hpp"
 #include "clang-expand/symbol-search/match-handler.hpp"
 
 // Clang includes
@@ -27,7 +27,7 @@ class Consumer : public clang::ASTConsumer {
   Consumer(const clang::SourceLocation& invocationLocation,
            const std::string& invocationSpelling,
            const LazyBoolean& alreadyFoundMacro,
-           const StateCallback& stateCallback);
+           const QueryCallback& stateCallback);
 
   void HandleTranslationUnit(clang::ASTContext& context) override;
 

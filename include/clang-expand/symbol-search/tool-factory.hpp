@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_SYMBOL_SEARCH_TOOL_FACTORY_HPP
 
 // Project includes
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/query.hpp"
 
 // Clang includes
 #include <clang/Frontend/FrontendAction.h>
@@ -21,13 +21,13 @@ namespace ClangExpand::SymbolSearch {
 class ToolFactory : public clang::tooling::FrontendActionFactory {
  public:
   explicit ToolFactory(const EasyLocation& _targetLocation,
-                       const ClangExpand::StateCallback& callback);
+                       const ClangExpand::QueryCallback& callback);
 
   clang::FrontendAction* create() override;
 
  private:
   const EasyLocation& _targetLocation;
-  ClangExpand::StateCallback _callback;
+  QueryCallback _callback;
 };
 }  // namespace ClangExpand::SymbolSearch
 

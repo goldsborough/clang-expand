@@ -2,6 +2,7 @@
 #include "clang-expand/definition-search/match-handler.hpp"
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/state.hpp"
+#include "clang-expand/common/query.hpp"
 
 // Clang includes
 #include <clang/AST/ASTContext.h>
@@ -33,7 +34,7 @@ bool contextMatches(const Context& context,
 }  // namespace
 
 MatchHandler::MatchHandler(const DeclarationData& declaration,
-                           const StateCallback& stateCallback)
+                           const QueryCallback& stateCallback)
 : _declaration(declaration), _stateCallback(stateCallback) {
 }
 

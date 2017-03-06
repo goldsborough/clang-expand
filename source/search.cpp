@@ -1,5 +1,6 @@
 // Library includes
 #include "clang-expand/search.hpp"
+#include "clang-expand/common/query.hpp"
 #include "clang-expand/common/state.hpp"
 #include "clang-expand/definition-search/tool-factory.hpp"
 #include "clang-expand/symbol-search/tool-factory.hpp"
@@ -28,8 +29,8 @@ int Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
     return error;
   }
 
-  if (auto* definition = std::get_if<ClangExpand::DefinitionData>(&*_state)) {
-    llvm::outs() << definition->code << '\n';
+  if (_state->isDefinition()) {
+    llvm::outs() << _state->definition().code << '\n';
     return EXIT_SUCCESS;
   }
 
@@ -37,8 +38,8 @@ int Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
     return error;
   }
 
-  if (auto* definition = std::get_if<ClangExpand::DefinitionData>(&*_state)) {
-    llvm::outs() << definition->code << '\n';
+  if (_state->isDefinition()) {
+    llvm::outs() << _state->definition().code << '\n';
     return EXIT_SUCCESS;
   }
 
@@ -64,7 +65,7 @@ int Search::_definitionSearch(CompilationDatabase& compilationDatabase,
 
   // clang-format off
   return DefinitionSearch.run(new ClangExpand::DefinitionSearch::ToolFactory(
-      _location.filename, std::get<ClangExpand::DeclarationData>(*_state),
+      _location.filename, _state->declaration(),
       [this](auto&& result) {
         _state = std::move(result);
     }));

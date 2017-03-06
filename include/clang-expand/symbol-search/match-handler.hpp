@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_SYMBOL_SEARCH_MATCH_HANDLER_HPP
 
 // Project includes
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/query.hpp"
 
 // Clang includes
 #include <clang/ASTMatchers/ASTMatchFinder.h>
@@ -17,13 +17,13 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
   using MatchResult = clang::ast_matchers::MatchFinder::MatchResult;
 
   explicit MatchHandler(const clang::SourceLocation& targetLocation,
-                        const StateCallback& stateCallback);
+                        const QueryCallback& stateCallback);
 
   void run(const MatchResult& result) override;
 
  private:
   const clang::SourceLocation& _targetLocation;
-  const StateCallback _stateCallback;
+  const QueryCallback _stateCallback;
 };
 
 }  // namespace ClangExpand::SymbolSearch

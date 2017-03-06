@@ -36,7 +36,7 @@ void verifyToken(bool errorOccurred, const clang::Token& token) {
 }  // namespace
 
 Action::Action(const EasyLocation& targetLocation,
-               const StateCallback& stateCallback)
+               const QueryCallback& stateCallback)
 : _stateCallback(stateCallback)
 , _alreadyFoundMacro(false)
 , _targetLocation(targetLocation) {
@@ -86,7 +86,7 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
   // clang-format off
   auto hooks = std::make_unique<MacroSearch>(
     compiler, _callLocation,
-    [this] (auto&& definition) {
+    [this] (auto&& definition) mutable {
       _alreadyFoundMacro = true;
       _stateCallback(std::move(definition));
     });

@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_SYMBOL_SEARCH_ACTION_HPP
 
 // Project includes
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/query.hpp"
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
@@ -27,7 +27,7 @@ class StringRef;
 
 namespace ClangExpand::SymbolSearch {
 
-class State;
+class Query;
 
 class Action : public clang::ASTFrontendAction {
  public:
@@ -35,7 +35,7 @@ class Action : public clang::ASTFrontendAction {
   using ASTConsumerPointer = std::unique_ptr<clang::ASTConsumer>;
 
   Action(const EasyLocation& targetLocation,
-         const StateCallback& stateCallback);
+         const QueryCallback& stateCallback);
 
   bool BeginInvocation(clang::CompilerInstance& compiler) override;
 
@@ -50,7 +50,7 @@ class Action : public clang::ASTFrontendAction {
   clang::FileID _getFileID(clang::SourceManager& sourceManager) const;
 
   std::string _spelling;
-  StateCallback _stateCallback;
+  QueryCallback _stateCallback;
   clang::SourceLocation _callLocation;
   bool _alreadyFoundMacro;
   EasyLocation _targetLocation;

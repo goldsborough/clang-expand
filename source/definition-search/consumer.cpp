@@ -1,6 +1,7 @@
 // Library includes
 #include "clang-expand/definition-search/consumer.hpp"
 #include "clang-expand/common/state.hpp"
+#include "clang-expand/common/query.hpp"
 
 // Clang includes
 #include <clang/ASTMatchers/ASTMatchFinder.h>
@@ -16,7 +17,7 @@ auto createAstMatcher(const DeclarationData& declaration) {
 }  // namespace
 
 Consumer::Consumer(const DeclarationData& declaration,
-                   const StateCallback& stateCallback)
+                   const QueryCallback& stateCallback)
 : _declaration(declaration), _matchHandler(declaration, stateCallback) {
 }
 

@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_DEFINITION_SEARCH_CONSUMER_HPP
 
 // Library includes
-#include "clang-expand/common/state.hpp"
+#include "clang-expand/common/query.hpp"
 #include "clang-expand/definition-search/match-handler.hpp"
 
 // Clang includes
@@ -17,7 +17,7 @@ namespace ClangExpand::DefinitionSearch {
 class Consumer : public clang::ASTConsumer {
  public:
   Consumer(const DeclarationData& declaration,
-           const StateCallback& stateCallback);
+           const QueryCallback& stateCallback);
 
   void HandleTranslationUnit(clang::ASTContext& context) override;
 

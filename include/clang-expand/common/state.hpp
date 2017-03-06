@@ -10,6 +10,7 @@
 // LLVM includes
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringMap.h>
+#include <llvm/ADT/StringRef.h>
 
 // Standard includes
 #include <functional>
@@ -59,10 +60,6 @@ struct DefinitionData {
   EasyLocation location;
   std::string code;
 };
-
-using State = std::variant<std::monostate, DeclarationData, DefinitionData>;
-using StateCallback = std::function<void(State&&)>;
-
 }  // namespace ClangExpand
 
 #endif  // CLANG_EXPAND_COMMON_STATE_HPP

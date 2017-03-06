@@ -1,5 +1,6 @@
 // Library includes
 #include "clang-expand/symbol-search/match-handler.hpp"
+#include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/state.hpp"
 
@@ -25,7 +26,7 @@
 namespace ClangExpand::SymbolSearch {
 namespace {
 auto collectDeclarationData(const clang::FunctionDecl& function,
-                             const clang::ASTContext& astContext) {
+                            const clang::ASTContext& astContext) {
   ClangExpand::DeclarationData declaration(function.getName());
 
   const auto& policy = astContext.getPrintingPolicy();
@@ -76,7 +77,7 @@ ParameterMap mapCallParameters(const clang::CallExpr& call,
 }  // namespace
 
 MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
-                           const StateCallback& stateCallback)
+                           const QueryCallback& stateCallback)
 : _targetLocation(targetLocation), _stateCallback(stateCallback) {
 }
 

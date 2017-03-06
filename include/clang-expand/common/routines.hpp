@@ -17,6 +17,10 @@ namespace llvm {
 class StringRef;
 }
 
+namespace ClangExpand {
+struct DefinitionData;
+}
+
 namespace ClangExpand::Routines {
 bool locationsAreEqual(const clang::SourceLocation& first,
                        const clang::SourceLocation& second,
@@ -27,8 +31,8 @@ llvm::StringRef getSourceText(const clang::SourceRange& range,
                               const clang::LangOptions& languageOptions);
 
 DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
-                                       clang::ASTContext& context,
-                                       const ParameterMap& parameterMap);
+                                     clang::ASTContext& context,
+                                     const ParameterMap& parameterMap);
 
 }  // namespace ClangExpand::Routines
 

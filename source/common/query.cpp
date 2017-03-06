@@ -1,4 +1,3 @@
-
 // Project includes
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/state.hpp"
@@ -12,8 +11,10 @@ Query::Query() = default;
 
 Query::Query(DeclarationData&& declaration) : _state(declaration) {
 }
+
 Query::Query(DefinitionData&& definition) : _state(definition) {
 }
+
 Query::Query(DeclarationData&& declaration, CallData&& call)
 : _state(declaration), _call(call) {
 }
@@ -29,7 +30,8 @@ bool Query::hasCall() const noexcept {
 }
 
 const DeclarationData& Query::declaration() const noexcept {
-  assert(isDefinition() && "Query state does not currently hold a declaration");
+  assert(isDeclaration() &&
+         "Query state does not currently hold a declaration");
   return std::get<DeclarationData>(_state);
 }
 
