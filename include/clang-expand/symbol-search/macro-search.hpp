@@ -5,30 +5,31 @@
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
-#include <clang/Basic/LangOptions.h>
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Lex/PPCallbacks.h>
-#include <clang/Lex/Preprocessor.h>
 
 // LLVM includes
-#include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringMap.h>
 
 // Standard includes
 #include <functional>
-#include <string>
+#include <iosfwd>
 
 namespace clang {
+class LangOptions;
 class CompilerInstance;
-class FileEntry;
 class MacroArgs;
 class MacroDefinition;
 class MacroInfo;
 class Preprocessor;
 class SourceManager;
-class SourceRange;
 class Token;
 }  // namespace clang
+
+namespace llvm {
+template <unsigned int InternalLen>
+class SmallString;
+}
 
 namespace ClangExpand {
 struct DefinitionState;
@@ -42,8 +43,8 @@ struct MacroSearch : public clang::PPCallbacks {
   using MatchCallback = std::function<void(DefinitionState&&)>;
 
   MacroSearch(clang::CompilerInstance& compiler,
-                    const clang::SourceLocation& location,
-                    const MatchCallback& callback);
+              const clang::SourceLocation& location,
+              const MatchCallback& callback);
 
   void MacroExpands(const clang::Token& macroNameToken,
                     const clang::MacroDefinition& macroDefinition,

@@ -3,12 +3,9 @@
 #include "clang-expand/common/state.hpp"
 
 // Clang includes
-#include <clang/AST/ASTContext.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
-
-// Standard includes
-#include <string>
+#include <clang/ASTMatchers/ASTMatchersInternal.h>
 
 namespace ClangExpand::DefinitionSearch {
 namespace {

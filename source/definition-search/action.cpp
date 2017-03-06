@@ -4,6 +4,7 @@
 
 // LLVM includes
 #include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/StringRef.h>
 #include <llvm/Support/FileSystem.h>
 
 // Standard includes

@@ -5,19 +5,16 @@
 #include "clang-expand/common/state.hpp"
 
 // Clang includes
-#include <clang/Basic/SourceLocation.h>
 #include <clang/Frontend/FrontendAction.h>
-#include <clang/Lex/Token.h>
 
 // Standard includes
-#include <functional>
+#include <iosfwd>
 #include <memory>
 #include <string>
 
 namespace clang {
 class CompilerInstance;
-class FileID;
-class SourceManager;
+class ASTConsumer;
 }
 
 namespace llvm {
@@ -25,8 +22,6 @@ class StringRef;
 }
 
 namespace ClangExpand::DefinitionSearch {
-
-class State;
 
 class Action : public clang::ASTFrontendAction {
  public:

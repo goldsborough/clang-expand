@@ -5,9 +5,6 @@
 // Clang includes
 #include <clang/Frontend/FrontendAction.h>
 
-// Standard includes
-#include <string>
-
 namespace ClangExpand::DefinitionSearch {
 ToolFactory::ToolFactory(const std::string& declarationFile,
                          const DeclarationState& declaration,

@@ -1,11 +1,16 @@
 #ifndef CLANG_EXPAND_COMMON_ROUTINES_HPP
 #define CLANG_EXPAND_COMMON_ROUTINES_HPP
 
+// Project includes
+#include "clang-expand/common/state.hpp"
+
 namespace clang {
 class SourceLocation;
 class SourceManager;
 class LangOptions;
 class SourceRange;
+class FunctionDecl;
+class ASTContext;
 }
 
 namespace llvm {
@@ -20,6 +25,10 @@ bool locationsAreEqual(const clang::SourceLocation& first,
 llvm::StringRef getSourceText(const clang::SourceRange& range,
                               const clang::SourceManager& sourceManager,
                               const clang::LangOptions& languageOptions);
+
+DefinitionState collectDefinitionState(const clang::FunctionDecl& function,
+                                       clang::ASTContext& context,
+                                       const ParameterMap& parameterMap);
 
 }  // namespace ClangExpand::Routines
 

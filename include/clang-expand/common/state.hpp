@@ -10,18 +10,26 @@
 // LLVM includes
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringMap.h>
-#include <llvm/ADT/StringRef.h>
 
 // Standard includes
 #include <functional>
 #include <string>
 #include <variant>
 
+namespace clang {
+class ASTContext;
+class FunctionDecl;
+}
+
+namespace llvm {
+class StringRef;
+}
+
 namespace ClangExpand {
 
 struct ExpectedContext {
   ExpectedContext(clang::Decl::Kind kind_, const llvm::StringRef& name_)
-  : kind(kind_), name(name_) {
+  : kind(kind_), name(name_.str()) {
   }
 
   clang::Decl::Kind kind;
@@ -30,7 +38,7 @@ struct ExpectedContext {
 
 using ExpectedContextVector = llvm::SmallVector<ExpectedContext, 8>;
 using TypeVector = llvm::SmallVector<std::string, 8>;
-using ParameterMap = llvm::StringMap<llvm::StringRef>;
+using ParameterMap = llvm::StringMap<std::string>;
 
 struct DeclarationState {
   explicit DeclarationState(const llvm::StringRef& name_) : name(name_.str()) {

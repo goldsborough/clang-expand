@@ -2,8 +2,10 @@
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
-#include <clang/Basic/SourceLocation.h>
 #include <clang/Basic/SourceManager.h>
+
+// LLVM includes
+#include <llvm/ADT/StringRef.h>
 
 // Standard includes
 #include <utility>

@@ -1,23 +1,26 @@
 // Library includes
 #include "clang-expand/symbol-search/match-handler.hpp"
-#include "clang-expand/common/parameter-rewriter.hpp"
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/state.hpp"
 
 // Clang includes
+#include <clang/AST/ASTContext.h>
 #include <clang/AST/Decl.h>
-#include <clang/Basic/SourceLocation.h>
-#include <clang/Rewrite/Core/Rewriter.h>
+#include <clang/AST/DeclBase.h>
+#include <clang/AST/Expr.h>
+#include <clang/AST/ExprCXX.h>
+#include <clang/AST/Type.h>
+#include <clang/ASTMatchers/ASTMatchers.h>
 
 // LLVM includes
-#include <llvm/ADT/SmallVector.h>
-#include <llvm/ADT/StringMap.h>
 #include <llvm/ADT/StringRef.h>
-#include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/Casting.h>
 
 // Standard includes
 #include <cassert>
 #include <string>
+#include <type_traits>
+
 
 namespace ClangExpand::SymbolSearch {
 namespace {
@@ -38,11 +41,9 @@ auto collectDeclarationState(const clang::FunctionDecl& function,
   for (; context; context = context->getParent()) {
     const auto kind = context->getDeclKind();
     if (auto* ns = llvm::dyn_cast<clang::NamespaceDecl>(context)) {
-      llvm::outs() << "Picked up " << ns->getName() << '\n';
-      declaration.contexts.emplace_back(kind, ns->getName());
+      declaration.contexts.emplace_back(kind, ns->getName().str());
     } else if (auto* record = llvm::dyn_cast<clang::RecordDecl>(context)) {
-      llvm::outs() << "Picked up " << record->getName() << '\n';
-      declaration.contexts.emplace_back(kind, record->getName());
+      declaration.contexts.emplace_back(kind, record->getName().str());
     }
   }
 
@@ -72,24 +73,6 @@ ParameterMap mapCallParameters(const clang::CallExpr& call,
 
   return expressions;
 }
-
-ClangExpand::DefinitionState
-collectDefinitionState(const clang::FunctionDecl& function,
-                       clang::ASTContext& context,
-                       const ParameterMap& parameterMap) {
-  const auto& sourceManager = context.getSourceManager();
-  Structures::EasyLocation location(function.getLocation(), sourceManager);
-
-  assert(function.hasBody());
-  auto* body = function.getBody();
-
-  clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
-  UsageFinder(parameterMap, rewriter).TraverseStmt(body);
-
-  const auto text = rewriter.getRewrittenText(body->getSourceRange());
-  return {std::move(location), text};
-}
-
 }  // namespace
 
 MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
@@ -115,7 +98,9 @@ void MatchHandler::run(const MatchResult& result) {
   auto parameterMap = mapCallParameters(*call, *function, context);
 
   if (function->hasBody()) {
-    _stateCallback(collectDefinitionState(*function, context, parameterMap));
+    auto definition =
+        Routines::collectDefinitionState(*function, context, parameterMap);
+    _stateCallback(std::move(definition));
   } else {
     auto declaration = collectDeclarationState(*function, context);
     declaration.parameterMap = std::move(parameterMap);

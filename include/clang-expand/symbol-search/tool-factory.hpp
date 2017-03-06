@@ -3,19 +3,15 @@
 
 // Project includes
 #include "clang-expand/common/state.hpp"
-#include "clang-expand/common/structures.hpp"
 
 // Clang includes
+#include <clang/Frontend/FrontendAction.h>
 #include <clang/Tooling/Tooling.h>
 
-// LLVM includes
-#include <llvm/ADT/StringRef.h>
-
-// Standard includes
-#include <functional>
-
-namespace clang {
-class FrontendAction;
+namespace ClangExpand {
+namespace Structures {
+struct EasyLocation;
+}
 }
 
 namespace ClangExpand::SymbolSearch {

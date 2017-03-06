@@ -13,9 +13,9 @@ class Stmt;
 }
 
 namespace ClangExpand {
-class UsageFinder : public clang::RecursiveASTVisitor<UsageFinder> {
+class ParameterRewriter : public clang::RecursiveASTVisitor<ParameterRewriter> {
  public:
-  explicit UsageFinder(const ParameterMap& parameterMap,
+  explicit ParameterRewriter(const ParameterMap& parameterMap,
                        clang::Rewriter& rewriter);
 
   bool VisitStmt(clang::Stmt* statement);

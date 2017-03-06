@@ -1,13 +1,12 @@
 // Project includes
 #include "clang-expand/symbol-search/macro-search.hpp"
-#include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/state.hpp"
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
 #include <clang/Basic/IdentifierTable.h>
 #include <clang/Basic/SourceLocation.h>
-#include <clang/Basic/SourceManager.h>
+#include <clang/Basic/TokenKinds.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Lex/Lexer.h>
 #include <clang/Lex/MacroArgs.h>
@@ -15,14 +14,22 @@
 #include <clang/Lex/Token.h>
 #include <clang/Lex/TokenLexer.h>
 #include <clang/Rewrite/Core/Rewriter.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Twine.h>
 
 // LLVM includes
 #include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/StringMap.h>
 
 // System includes
 #include <cassert>
 #include <iterator>
 #include <string>
+#include <type_traits>
+
+namespace clang {
+class LangOptions;
+}
 
 namespace ClangExpand::SymbolSearch {
 namespace {
@@ -63,8 +70,8 @@ void rewriteSimpleMacroArgument(clang::Rewriter& rewriter,
 }  // namespace
 
 MacroSearch::MacroSearch(clang::CompilerInstance& compiler,
-                                     const clang::SourceLocation& location,
-                                     const MatchCallback& callback)
+                         const clang::SourceLocation& location,
+                         const MatchCallback& callback)
 : _sourceManager(compiler.getSourceManager())
 , _languageOptions(compiler.getLangOpts())
 , _preprocessor(compiler.getPreprocessor())
@@ -74,9 +81,9 @@ MacroSearch::MacroSearch(clang::CompilerInstance& compiler,
 }
 
 void MacroSearch::MacroExpands(const clang::Token&,
-                                     const clang::MacroDefinition& macro,
-                                     clang::SourceRange range,
-                                     const clang::MacroArgs* arguments) {
+                               const clang::MacroDefinition& macro,
+                               clang::SourceRange range,
+                               const clang::MacroArgs* arguments) {
   Structures::CanonicalLocation canonical(range.getBegin(), _sourceManager);
   if (_callLocation != canonical) return;
 
@@ -94,7 +101,7 @@ void MacroSearch::MacroExpands(const clang::Token&,
 }
 
 std::string MacroSearch::_rewriteMacro(const clang::MacroInfo& info,
-                                             const ParameterMapping& mapping) {
+                                       const ParameterMapping& mapping) {
   clang::Rewriter rewriter(_sourceManager, _languageOptions);
 
   unsigned hashCount = 0;
@@ -128,7 +135,7 @@ std::string MacroSearch::_rewriteMacro(const clang::MacroInfo& info,
 
 MacroSearch::ParameterMapping
 MacroSearch::_createParameterMapping(const clang::MacroInfo& info,
-                                           const clang::MacroArgs& arguments) {
+                                     const clang::MacroArgs& arguments) {
   ParameterMapping mapping;
   if (info.getNumArgs() == 0) return mapping;
 

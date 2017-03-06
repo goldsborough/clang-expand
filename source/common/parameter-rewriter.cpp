@@ -3,16 +3,25 @@
 
 // Clang includes
 #include <clang/AST/Decl.h>
+#include <clang/AST/Expr.h>
+#include <clang/AST/Stmt.h>
 #include <clang/Rewrite/Core/Rewriter.h>
+
+// LLVM includes
+#include <llvm/ADT/StringMap.h>
+#include <llvm/Support/Casting.h>
+
+// Standard includes
+#include <cassert>
 
 namespace ClangExpand {
 
-UsageFinder::UsageFinder(const ParameterMap& parameterMap,
-                         clang::Rewriter& rewriter)
+ParameterRewriter::ParameterRewriter(const ParameterMap& parameterMap,
+                                     clang::Rewriter& rewriter)
 : _parameterMap(parameterMap), _rewriter(rewriter) {
 }
 
-bool UsageFinder::VisitStmt(clang::Stmt* statement) {
+bool ParameterRewriter::VisitStmt(clang::Stmt* statement) {
   const auto* use = llvm::dyn_cast<clang::DeclRefExpr>(statement);
   if (!use) return true;
 

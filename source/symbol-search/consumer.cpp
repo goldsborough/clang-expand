@@ -2,14 +2,9 @@
 #include "clang-expand/symbol-search/consumer.hpp"
 
 // Clang includes
-#include <clang/AST/ASTContext.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
-#include <clang/Basic/IdentifierTable.h>
-#include <clang/Lex/Token.h>
-
-// Standard includes
-#include <string>
+#include <clang/ASTMatchers/ASTMatchersInternal.h>
 
 namespace ClangExpand::SymbolSearch {
 namespace {

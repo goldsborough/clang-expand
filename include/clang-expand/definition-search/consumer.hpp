@@ -2,6 +2,7 @@
 #define CLANG_EXPAND_DEFINITION_SEARCH_CONSUMER_HPP
 
 // Library includes
+#include "clang-expand/common/state.hpp"
 #include "clang-expand/definition-search/match-handler.hpp"
 
 // Clang includes
@@ -9,13 +10,6 @@
 
 namespace clang {
 class ASTContext;
-class MacroInfo;
-class FunctionDecl;
-class Token;
-}
-
-namespace ClangExpand {
-struct DeclarationState;
 }
 
 namespace ClangExpand::DefinitionSearch {

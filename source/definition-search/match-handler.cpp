@@ -1,8 +1,7 @@
 // Library includes
 #include "clang-expand/definition-search/match-handler.hpp"
-#include "clang-expand/common/parameter-rewriter.hpp"
+#include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/state.hpp"
-#include "clang-expand/common/structures.hpp"
 
 // Clang includes
 #include <clang/AST/ASTContext.h>
@@ -10,15 +9,17 @@
 #include <clang/AST/DeclBase.h>
 #include <clang/AST/Type.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
-#include <clang/Rewrite/Core/Rewriter.h>
+#include <clang/Basic/SourceLocation.h>
 
 // LLVM includes
-#include "llvm/ADT/StringRef.h"
-#include "llvm/Support/Casting.h"
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Support/Casting.h>
+#include "llvm/Support/raw_ostream.h"
 
 // Standard includes
 #include <cassert>
 #include <string>
+#include <type_traits>
 
 namespace ClangExpand::DefinitionSearch {
 namespace {
@@ -48,6 +49,11 @@ void MatchHandler::run(const MatchResult& result) {
   llvm::outs() << "Found correct definition at ";
   function->getLocation().dump(*result.SourceManager);
   llvm::outs() << '\n';
+
+  auto state = Routines::collectDefinitionState(*function,
+                                                *result.Context,
+                                                _declaration.parameterMap);
+  _stateCallback(std::move(state));
 }
 
 bool MatchHandler::_matchParameters(const clang::ASTContext& context,
@@ -58,11 +64,7 @@ bool MatchHandler::_matchParameters(const clang::ASTContext& context,
   auto expectedType = _declaration.parameterTypes.begin();
   for (const auto* parameter : function.parameters()) {
     const auto type = parameter->getOriginalType().getCanonicalType();
-    if (*expectedType != type.getAsString(policy)) {
-      llvm::outs() << "Wrong type: " << type.getAsString(policy) << '('
-                   << *expectedType << ')' << '\n';
-      return false;
-    }
+    if (*expectedType != type.getAsString(policy)) return false;
     ++expectedType;
   }
 

@@ -5,10 +5,11 @@
 #include <clang/Tooling/CommonOptionsParser.h>
 
 // LLVM includes
-#include <llvm/Support/CommandLine.h>
 #include <llvm/ADT/StringRef.h>
+#include <llvm/Support/CommandLine.h>
 
 // Standard includes
+#include <iosfwd>
 #include <string>
 #include <vector>
 

@@ -2,14 +2,15 @@
 #define CLANG_EXPAND_SYMBOL_SEARCH_CONSUMER_HPP
 
 // Library includes
-#include "clang-expand/symbol-search/match-handler.hpp"
 #include "clang-expand/common/state.hpp"
+#include "clang-expand/symbol-search/match-handler.hpp"
 
 // Clang includes
 #include <clang/AST/ASTConsumer.h>
 
 // Standard includes
 #include <functional>
+#include <iosfwd>
 #include <string>
 
 namespace clang {

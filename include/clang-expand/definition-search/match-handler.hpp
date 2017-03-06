@@ -6,10 +6,6 @@
 
 // Clang includes
 #include <clang/ASTMatchers/ASTMatchFinder.h>
-#include <clang/Basic/SourceLocation.h>
-
-// Standard includes
-#include <functional>
 
 namespace clang {
 class ASTContext;

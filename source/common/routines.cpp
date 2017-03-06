@@ -1,16 +1,22 @@
 // Project includes
 #include "clang-expand/common/routines.hpp"
+#include "clang-expand/common/parameter-rewriter.hpp"
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
+#include <clang/AST/ASTContext.h>
+#include <clang/AST/Decl.h>
+#include <clang/AST/Stmt.h>
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Lex/Lexer.h>
+#include <clang/Rewrite/Core/Rewriter.h>
 
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
 
 // Standard includes
 #include <cassert>
+#include <type_traits>
 
 namespace ClangExpand::Routines {
 bool locationsAreEqual(const clang::SourceLocation& first,
@@ -36,5 +42,21 @@ llvm::StringRef getSourceText(const clang::SourceRange& range,
   assert(!error && "Error getting source text");
 
   return text;
+}
+
+DefinitionState collectDefinitionState(const clang::FunctionDecl& function,
+                                       clang::ASTContext& context,
+                                       const ParameterMap& parameterMap) {
+  const auto& sourceManager = context.getSourceManager();
+  Structures::EasyLocation location(function.getLocation(), sourceManager);
+
+  assert(function.hasBody());
+  auto* body = function.getBody();
+
+  clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
+  ParameterRewriter(parameterMap, rewriter).TraverseStmt(body);
+
+  const auto text = rewriter.getRewrittenText(body->getSourceRange());
+  return {std::move(location), text};
 }
 }  // namespace ClangExpand::Routines

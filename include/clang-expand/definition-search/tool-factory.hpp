@@ -5,14 +5,11 @@
 #include "clang-expand/common/state.hpp"
 
 // Clang includes
+#include <clang/Frontend/FrontendAction.h>
 #include <clang/Tooling/Tooling.h>
 
 // Standard includes
-#include <string>
-
-namespace clang {
-class FrontendAction;
-}
+#include <iosfwd>
 
 namespace ClangExpand::DefinitionSearch {
 
