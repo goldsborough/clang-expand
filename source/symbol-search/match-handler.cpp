@@ -20,9 +20,9 @@
 
 // Standard includes
 #include <cassert>
+#include <cstdlib>
 #include <string>
 #include <type_traits>
-#include <cstdlib>
 
 namespace ClangExpand::SymbolSearch {
 namespace {
@@ -96,13 +96,11 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
   assert(depth > 0 && "Reached invalid depth while walking up call expression");
 
   for (const auto parent : context.getParents(expression)) {
-    const auto kind = parent.getNodeKind();
-    llvm::outs() << kind.asStringRef() << '\n';
     if (const auto* node = parent.get<clang::ReturnStmt>()) {
       return CallData({node->getSourceRange(), context.getSourceManager()});
     } else if (const auto* node = parent.get<clang::CallExpr>()) {
       llvm::outs() << "Cannot expand call inside another call expression\n";
-      std::exit(1);
+      std::exit(EXIT_FAILURE);
     } else if (const auto* node = parent.get<clang::VarDecl>()) {
       return handleCallForAssignment(*node, context);
     }
@@ -111,7 +109,7 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
   // You could call this a BFS that favors the first parents, or simply a
   // mixture of BFS and DFS, since we first walk all parents, but then recurse
   // into the first parent (so it's neither DFS not BFS, but something that
-  // should work fine for us).
+  // should work better for our purposes).
   if (depth > 1) {
     for (const auto parent : context.getParents(expression)) {
       if (const auto* node = parent.get<clang::Expr>()) {
@@ -122,6 +120,7 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
     }
   }
 
+  // Found no call :(
   return {};
 }
 }  // namespace

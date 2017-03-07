@@ -47,9 +47,9 @@ void MatchHandler::run(const MatchResult& result) {
   if (!_matchParameters(*result.Context, *function)) return;
   if (!_matchContexts(*function)) return;
 
-  llvm::outs() << "Found correct definition at ";
+  llvm::errs() << "Found correct definition at ";
   function->getLocation().dump(*result.SourceManager);
-  llvm::outs() << '\n';
+  llvm::errs() << '\n';
 
   *_query = Routines::collectDefinitionData(*function,
                                             *result.Context,

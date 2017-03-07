@@ -24,16 +24,15 @@ class Search {
   using CompilationDatabase = clang::tooling::CompilationDatabase;
   using SourceVector = std::vector<std::string>;
   using Result = DefinitionData;
-  using ResultOrError = std::variant<int, Result>;
 
   Search(const std::string& file, unsigned line, unsigned column);
 
-  ResultOrError
-  run(CompilationDatabase& compilationDatabase, const SourceVector& sources);
+  Result run(CompilationDatabase& compilationDatabase,
+             const SourceVector& sources);
 
  private:
-  int _symbolSearch(CompilationDatabase& compilationDatabase, Query& query);
-  int _definitionSearch(CompilationDatabase& compilationDatabase,
+  void _symbolSearch(CompilationDatabase& compilationDatabase, Query& query);
+  void _definitionSearch(CompilationDatabase& compilationDatabase,
                         const SourceVector& sources,
                         Query& query);
 

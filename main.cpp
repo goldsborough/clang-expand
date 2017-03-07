@@ -53,12 +53,8 @@ auto main(int argc, const char* argv[]) -> int {
 
   ClangExpand::Search search(fileOption, lineOption, columnOption);
   const auto result = search.run(db, sources);
-  if (const auto* error = std::get_if<int>(&result); error) {
-    return *error;
-  }
-  
-  llvm::outs() << "Success!" << '\n';
-  llvm::outs() << std::get<ClangExpand::Search::Result>(result).code << '\n';
+
+  llvm::outs() << result.code << '\n';
 }
 
 

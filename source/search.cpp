@@ -21,69 +21,53 @@ Search::Search(const std::string& file, unsigned line, unsigned column)
 : _location(file, line, column) {
 }
 
-Search::ResultOrError
+Search::Result
 Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
             const SourceVector& sources) {
   Query query;
 
-  if (auto error = _symbolSearch(compilationDatabase, query); error) {
-    return error;
-  }
-
-  llvm::outs() << "decl: " << query.isDeclaration()
-               << " def: " << query.isDefinition() << '\n';
-
-  if (!query) {
-    llvm::outs() << "Found nothing at all" << '\n';
-    return EXIT_FAILURE;
-  }
+  _symbolSearch(compilationDatabase, query);
 
   if (const auto& call = query.call(); call) {
-    llvm::outs() << "Found call information: At " << call->extent.begin.line
+    llvm::errs() << "Found call information: At " << call->extent.begin.line
                  << ':' << call->extent.begin.column << " - "
                  << call->extent.end.line << ':' << call->extent.end.column;
 
     if (call->variable) {
-      llvm::outs() << ": type = " << call->variable->type
+      llvm::errs() << ": type = " << call->variable->type
                    << ", name = " << call->variable->name;
     }
 
-    llvm::outs() << '\n';
+    llvm::errs() << '\n';
   }
 
-  if (query.isDefinition()) {
-    llvm::outs() << query.definition().code << '\n';
-    return EXIT_SUCCESS;
+  if (!query.isDefinition()) {
+    _definitionSearch(compilationDatabase, sources, query);
   }
 
-  const auto error = _definitionSearch(compilationDatabase, sources, query);
-  if (error) return error;
-
-  if (query.isDefinition()) {
-    llvm::outs() << query.definition().code << '\n';
-    return EXIT_SUCCESS;
-  }
-
-  return EXIT_FAILURE;
+  assert(query.isDefinition() && "Should have a definition here");
+  return query.definition();
 }
 
-int Search::_symbolSearch(CompilationDatabase& compilationDatabase,
-                          Query& query) {
+void Search::_symbolSearch(CompilationDatabase& compilationDatabase,
+                           Query& query) {
   clang::tooling::ClangTool SymbolSearch(compilationDatabase,
                                          {_location.filename});
 
-  return SymbolSearch.run(
+  const auto error = SymbolSearch.run(
       new ClangExpand::SymbolSearch::ToolFactory(_location, &query));
+  if (error) std::exit(error);
 }
 
-int Search::_definitionSearch(CompilationDatabase& compilationDatabase,
-                              const SourceVector& sources,
-                              Query& query) {
+void Search::_definitionSearch(CompilationDatabase& compilationDatabase,
+                               const SourceVector& sources,
+                               Query& query) {
   clang::tooling::ClangTool DefinitionSearch(compilationDatabase, sources);
 
-  return DefinitionSearch.run(
+  const auto error = DefinitionSearch.run(
       new ClangExpand::DefinitionSearch::ToolFactory(_location.filename,
                                                      &query));
+  if (error) std::exit(error);
 }
 
 }  // namespace ClangExpand
