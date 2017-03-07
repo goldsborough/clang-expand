@@ -80,16 +80,24 @@ ParameterMap mapCallParameters(const clang::CallExpr& call,
 
 CallData handleCallForAssignment(const clang::VarDecl& variable,
                                  const clang::ASTContext& context) {
-  const auto type = variable.getType().getCanonicalType();
+  const auto qualType = variable.getType().getCanonicalType();
+  const auto* type = qualType.getTypePtr();
 
-  if (type.isConstQualified()) {
+  if (qualType.isConstQualified()) {
     Routines::error("Cannot expand call with const assignee");
-  } else if (type.getTypePtr()->isReferenceType()) {
+  } else if (type->isReferenceType()) {
     Routines::error("Cannot expand call with reference assignee");
+  } else if (const auto* record = type->getAsCXXRecordDecl(); record) {
+    llvm::outs() << "record!" << '\n';
+    if (!record->hasDefaultConstructor()) {
+      Routines::error(
+          "Cannot expand call with non-default-constructible assignee");
+    }
   }
 
   const auto& policy = context.getPrintingPolicy();
-  const auto typeString = type.getAsString(policy);
+  const auto typeString = qualType.getAsString(policy);
+  llvm::outs() << typeString << '\n';
   const auto name = variable.getName();
   Range range(variable.getSourceRange(), context.getSourceManager());
 
@@ -98,12 +106,13 @@ CallData handleCallForAssignment(const clang::VarDecl& variable,
 
 std::optional<CallData> collectCallData(const clang::Expr& expression,
                                         clang::ASTContext& context,
-                                        unsigned depth = 3) {
+                                        unsigned depth = 10) {
   // Not checking the base case is generally bad for the first call, but we
   // don't actually want this to be called with depth = 0 the first time.
   assert(depth > 0 && "Reached invalid depth while walking up call expression");
 
   for (const auto parent : context.getParents(expression)) {
+    llvm::outs() << parent.getNodeKind().asStringRef() << '\n';
     if (const auto* node = parent.get<clang::ReturnStmt>()) {
       return CallData({node->getSourceRange(), context.getSourceManager()});
     } else if (const auto* node = parent.get<clang::CallExpr>()) {
@@ -111,6 +120,7 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
     } else if (const auto* node = parent.get<clang::VarDecl>()) {
       return handleCallForAssignment(*node, context);
     }
+    llvm::outs() << "?" << '\n';
   }
 
   // You could call this a BFS that favors the first parents, or simply a
