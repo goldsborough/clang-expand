@@ -1,8 +1,7 @@
 #ifndef CLANG_EXPAND_DEFINITION_SEARCH_CONSUMER_HPP
 #define CLANG_EXPAND_DEFINITION_SEARCH_CONSUMER_HPP
 
-// Library includes
-#include "clang-expand/common/query.hpp"
+// Project includes
 #include "clang-expand/definition-search/match-handler.hpp"
 
 // Clang includes
@@ -12,17 +11,20 @@ namespace clang {
 class ASTContext;
 }
 
+namespace ClangExpand {
+class Query;
+}
+
 namespace ClangExpand::DefinitionSearch {
 
 class Consumer : public clang::ASTConsumer {
  public:
-  Consumer(const DeclarationData& declaration,
-           const QueryCallback& stateCallback);
+  explicit Consumer(Query* query);
 
   void HandleTranslationUnit(clang::ASTContext& context) override;
 
  private:
-  const DeclarationData& _declaration;
+  Query* _query;
   MatchHandler _matchHandler;
 };
 

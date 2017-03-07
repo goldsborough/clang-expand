@@ -12,6 +12,9 @@
 #include <memory>
 #include <string>
 
+// Standard includes
+#include <optional>
+
 namespace clang {
 class CompilerInstance;
 class ASTConsumer;
@@ -21,6 +24,10 @@ namespace llvm {
 class StringRef;
 }
 
+namespace ClangExpand {
+class Query;
+}
+
 namespace ClangExpand::DefinitionSearch {
 
 class Action : public clang::ASTFrontendAction {
@@ -28,17 +35,14 @@ class Action : public clang::ASTFrontendAction {
   using super = clang::ASTFrontendAction;
   using ASTConsumerPointer = std::unique_ptr<clang::ASTConsumer>;
 
-  Action(const std::string& declarationFile,
-         const DeclarationData& declaration,
-         const QueryCallback& stateCallback);
+  Action(const std::string& declarationFile, Query* query);
 
   ASTConsumerPointer CreateASTConsumer(clang::CompilerInstance& compiler,
                                        llvm::StringRef filename) override;
 
  private:
-  const std::string _declarationFile;
-  const DeclarationData& _declaration;
-  QueryCallback _stateCallback;
+  std::string _declarationFile;
+  Query* _query;
 };
 
 }  // namespace ClangExpand::DefinitionSearch

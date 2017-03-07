@@ -1,4 +1,4 @@
-// Library includes
+// Project includes
 #include "clang-expand/search.hpp"
 
 // Clang includes
@@ -7,10 +7,11 @@
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/CommandLine.h>
+#include <llvm/Support/raw_ostream.h>
 
 // Standard includes
-#include <iosfwd>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace {
@@ -50,8 +51,14 @@ auto main(int argc, const char* argv[]) -> int {
     fileOption = sources.front();
   }
 
-  return ClangExpand::Search(fileOption, lineOption, columnOption)
-      .run(db, sources);
+  ClangExpand::Search search(fileOption, lineOption, columnOption);
+  const auto result = search.run(db, sources);
+  if (const auto* error = std::get_if<int>(&result); error) {
+    return *error;
+  }
+  
+  llvm::outs() << "Success!" << '\n';
+  llvm::outs() << std::get<ClangExpand::Search::Result>(result).code << '\n';
 }
 
 

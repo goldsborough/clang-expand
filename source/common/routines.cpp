@@ -1,8 +1,8 @@
 // Project includes
 #include "clang-expand/common/routines.hpp"
+#include "clang-expand/common/data.hpp"
 #include "clang-expand/common/parameter-rewriter.hpp"
 #include "clang-expand/common/structures.hpp"
-#include "clang-expand/common/data.hpp"
 
 // Clang includes
 #include <clang/AST/ASTContext.h>
@@ -46,8 +46,9 @@ llvm::StringRef getSourceText(const clang::SourceRange& range,
 }
 
 DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
-                                       clang::ASTContext& context,
-                                       const ParameterMap& parameterMap) {
+                                     clang::ASTContext& context,
+                                     const ParameterMap& parameterMap,
+                                     const OptionalCall& callData) {
   const auto& sourceManager = context.getSourceManager();
   EasyLocation location(function.getLocation(), sourceManager);
 
@@ -55,7 +56,7 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
   auto* body = function.getBody();
 
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
-  ParameterRewriter(parameterMap, rewriter).TraverseStmt(body);
+  ParameterRewriter(rewriter, parameterMap, callData).TraverseStmt(body);
 
   const auto startNoBraces = body->getLocStart().getLocWithOffset(+1);
   const auto endNoBraces = body->getLocEnd().getLocWithOffset(-1);

@@ -4,6 +4,9 @@
 // Project includes
 #include "clang-expand/common/data.hpp"
 
+// Standard includes
+#include <optional>
+
 namespace clang {
 class SourceLocation;
 class SourceManager;
@@ -22,6 +25,8 @@ struct DefinitionData;
 }
 
 namespace ClangExpand::Routines {
+using OptionalCall = std::optional<CallData>;
+
 bool locationsAreEqual(const clang::SourceLocation& first,
                        const clang::SourceLocation& second,
                        const clang::SourceManager& sourceManager);
@@ -32,7 +37,8 @@ llvm::StringRef getSourceText(const clang::SourceRange& range,
 
 DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                      clang::ASTContext& context,
-                                     const ParameterMap& parameterMap);
+                                     const ParameterMap& parameterMap,
+                                     const OptionalCall& callData);
 
 }  // namespace ClangExpand::Routines
 

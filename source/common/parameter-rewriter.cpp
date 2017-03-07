@@ -17,9 +17,10 @@
 
 namespace ClangExpand {
 
-ParameterRewriter::ParameterRewriter(const ParameterMap& parameterMap,
-                                     clang::Rewriter& rewriter)
-: _parameterMap(parameterMap), _rewriter(rewriter) {
+ParameterRewriter::ParameterRewriter(clang::Rewriter& rewriter,
+                                     const ParameterMap& parameterMap,
+                                     const OptionalCall& call)
+: _rewriter(rewriter), _parameterMap(parameterMap), _call(call) {
 }
 
 bool ParameterRewriter::VisitStmt(clang::Stmt* statement) {

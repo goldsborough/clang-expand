@@ -2,7 +2,6 @@
 #define CLANG_EXPAND_SYMBOL_SEARCH_ACTION_HPP
 
 // Project includes
-#include "clang-expand/common/query.hpp"
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
@@ -25,19 +24,18 @@ namespace llvm {
 class StringRef;
 }
 
-namespace ClangExpand::SymbolSearch {
-
+namespace ClangExpand {
 class Query;
+}
+
+namespace ClangExpand::SymbolSearch {
 
 class Action : public clang::ASTFrontendAction {
  public:
   using super = clang::ASTFrontendAction;
   using ASTConsumerPointer = std::unique_ptr<clang::ASTConsumer>;
 
-  Action(const EasyLocation& targetLocation,
-         const QueryCallback& stateCallback);
-
-  bool BeginInvocation(clang::CompilerInstance& compiler) override;
+  Action(const EasyLocation& targetLocation, Query* query);
 
   bool BeginSourceFileAction(clang::CompilerInstance& compiler,
                              llvm::StringRef filename) override;
@@ -50,7 +48,7 @@ class Action : public clang::ASTFrontendAction {
   clang::FileID _getFileID(clang::SourceManager& sourceManager) const;
 
   std::string _spelling;
-  QueryCallback _stateCallback;
+  Query* _query;
   clang::SourceLocation _callLocation;
   bool _alreadyFoundMacro;
   EasyLocation _targetLocation;

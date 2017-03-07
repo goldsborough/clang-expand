@@ -25,9 +25,11 @@ class Query {
   bool hasCall() const noexcept;
   bool isEmpty() const noexcept;
 
+  explicit operator bool() const noexcept;
+
   const DeclarationData& declaration() const noexcept;
   const DefinitionData& definition() const noexcept;
-  const CallData& call() const noexcept;
+  const OptionalCall& call() const noexcept;
 
  private:
   using PartialState =

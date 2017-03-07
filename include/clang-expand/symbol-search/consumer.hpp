@@ -1,8 +1,7 @@
 #ifndef CLANG_EXPAND_SYMBOL_SEARCH_CONSUMER_HPP
 #define CLANG_EXPAND_SYMBOL_SEARCH_CONSUMER_HPP
 
-// Library includes
-#include "clang-expand/common/query.hpp"
+// Project includes
 #include "clang-expand/symbol-search/match-handler.hpp"
 
 // Clang includes
@@ -18,6 +17,10 @@ class ASTContext;
 class SourceLocation;
 }
 
+namespace ClangExpand {
+class Query;
+}
+
 namespace ClangExpand::SymbolSearch {
 
 class Consumer : public clang::ASTConsumer {
@@ -27,7 +30,7 @@ class Consumer : public clang::ASTConsumer {
   Consumer(const clang::SourceLocation& invocationLocation,
            const std::string& invocationSpelling,
            const LazyBoolean& alreadyFoundMacro,
-           const QueryCallback& stateCallback);
+           Query* query);
 
   void HandleTranslationUnit(clang::ASTContext& context) override;
 

@@ -1,10 +1,13 @@
-// Library includes
+// Project includes
 #include "clang-expand/symbol-search/consumer.hpp"
 
 // Clang includes
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
 #include <clang/ASTMatchers/ASTMatchersInternal.h>
+
+// Standard includes
+#include <string>
 
 namespace ClangExpand::SymbolSearch {
 namespace {
@@ -23,10 +26,10 @@ auto createAstMatcher(const std::string& spelling) {
 Consumer::Consumer(const clang::SourceLocation& invocationLocation,
                    const std::string& invocationSpelling,
                    const LazyBoolean& alreadyFoundMacro,
-                   const QueryCallback& stateCallback)
+                   Query* query)
 : _callSpelling(invocationSpelling)
 , _alreadyFoundMacro(alreadyFoundMacro)
-, _matchHandler(invocationLocation, stateCallback) {
+, _matchHandler(invocationLocation, query) {
 }
 
 void Consumer::HandleTranslationUnit(clang::ASTContext& context) {

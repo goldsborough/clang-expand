@@ -35,6 +35,10 @@ bool Query::isEmpty() const noexcept {
   return _state.index() == 0;
 }
 
+Query::operator bool() const noexcept {
+  return !isEmpty();
+}
+
 const DeclarationData& Query::declaration() const noexcept {
   assert(isDeclaration() &&
          "Query state does not currently hold a declaration");
@@ -45,9 +49,9 @@ const DefinitionData& Query::definition() const noexcept {
   assert(isDefinition() && "Query state does not currently hold a definition");
   return std::get<DefinitionData>(_state);
 }
-const CallData& Query::call() const noexcept {
+const Query::OptionalCall& Query::call() const noexcept {
   assert(hasCall() && "Query does not currently hold a call");
-  return *_call;
+  return _call;
 }
 
 }  // namespace ClangExpand

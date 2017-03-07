@@ -1,5 +1,6 @@
 // Project includes
 #include "clang-expand/definition-search/action.hpp"
+#include "clang-expand/common/query.hpp"
 #include "clang-expand/definition-search/consumer.hpp"
 
 // LLVM includes
@@ -22,18 +23,16 @@ std::string makeAbsolute(const std::string& filename) {
 }
 }  // namespace
 
-Action::Action(const std::string& declarationFile,
-               const DeclarationData& declaration,
-               const QueryCallback& stateCallback)
+Action::Action(const std::string& declarationFile, Query* query)
 : _declarationFile(makeAbsolute(declarationFile))
-, _declaration(declaration)
-, _stateCallback(stateCallback) {
+, _query(query) {
 }
 
 Action::ASTConsumerPointer
 Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef filename) {
+  // Skip the file we found the declaration in
   if (filename == _declarationFile) return nullptr;
-  return std::make_unique<Consumer>(_declaration, _stateCallback);
+  return std::make_unique<Consumer>(_query);
 }
 
 }  // namespace ClangExpand::DefinitionSearch

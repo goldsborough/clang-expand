@@ -1,4 +1,4 @@
-// Library includes
+// Project includes
 #include "clang-expand/symbol-search/match-handler.hpp"
 #include "clang-expand/common/data.hpp"
 #include "clang-expand/common/query.hpp"
@@ -130,8 +130,8 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
 }  // namespace
 
 MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
-                           const QueryCallback& stateCallback)
-: _targetLocation(targetLocation), _stateCallback(stateCallback) {
+                           Query* query)
+: _targetLocation(targetLocation), _query(query) {
 }
 
 void MatchHandler::run(const MatchResult& result) {
@@ -155,13 +155,14 @@ void MatchHandler::run(const MatchResult& result) {
   llvm::outs() << "found call data: " << callData.has_value() << '\n';
 
   if (function->hasBody()) {
-    auto definition =
-        Routines::collectDefinitionData(*function, context, parameterMap);
-    _stateCallback(std::move(definition));
+    *_query = Routines::collectDefinitionData(*function,
+                                              context,
+                                              parameterMap,
+                                              callData);
   } else {
     auto declaration =
         collectDeclarationData(*function, context, std::move(parameterMap));
-    _stateCallback(Query(std::move(declaration), std::move(callData)));
+    *_query = Query(std::move(declaration), std::move(callData));
   }
 }
 

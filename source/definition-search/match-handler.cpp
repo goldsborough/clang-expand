@@ -1,8 +1,8 @@
-// Library includes
+// Project includes
 #include "clang-expand/definition-search/match-handler.hpp"
-#include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/data.hpp"
 #include "clang-expand/common/query.hpp"
+#include "clang-expand/common/routines.hpp"
 
 // Clang includes
 #include <clang/AST/ASTContext.h>
@@ -33,16 +33,16 @@ bool contextMatches(const Context& context,
 }
 }  // namespace
 
-MatchHandler::MatchHandler(const DeclarationData& declaration,
-                           const QueryCallback& stateCallback)
-: _declaration(declaration), _stateCallback(stateCallback) {
+MatchHandler::MatchHandler(Query* query) : _query(query) {
 }
 
 void MatchHandler::run(const MatchResult& result) {
   const auto* function = result.Nodes.getNodeAs<clang::FunctionDecl>("fn");
   assert(function != nullptr && "Got null function node in match handler");
 
-  if (function->getNumParams() != _declaration.parameterTypes.size()) return;
+  const auto& parameterTypes = _query->declaration().parameterTypes;
+
+  if (function->getNumParams() != parameterTypes.size()) return;
 
   if (!_matchParameters(*result.Context, *function)) return;
   if (!_matchContexts(*function)) return;
@@ -51,10 +51,10 @@ void MatchHandler::run(const MatchResult& result) {
   function->getLocation().dump(*result.SourceManager);
   llvm::outs() << '\n';
 
-  auto state = Routines::collectDefinitionData(*function,
-                                                *result.Context,
-                                                _declaration.parameterMap);
-  _stateCallback(std::move(state));
+  *_query = Routines::collectDefinitionData(*function,
+                                            *result.Context,
+                                            _query->declaration().parameterMap,
+                                            _query->call());
 }
 
 bool MatchHandler::_matchParameters(const clang::ASTContext& context,
@@ -62,7 +62,7 @@ bool MatchHandler::_matchParameters(const clang::ASTContext& context,
     noexcept {
   const auto& policy = context.getPrintingPolicy();
 
-  auto expectedType = _declaration.parameterTypes.begin();
+  auto expectedType = _query->declaration().parameterTypes.begin();
   for (const auto* parameter : function.parameters()) {
     const auto type = parameter->getOriginalType().getCanonicalType();
     if (*expectedType != type.getAsString(policy)) return false;
@@ -74,7 +74,7 @@ bool MatchHandler::_matchParameters(const clang::ASTContext& context,
 
 bool MatchHandler::_matchContexts(const clang::FunctionDecl& function) const
     noexcept {
-  auto expectedContext = _declaration.contexts.begin();
+  auto expectedContext = _query->declaration().contexts.begin();
 
   const auto* context = function.getPrimaryContext()->getParent();
   for (; context; context = context->getParent()) {

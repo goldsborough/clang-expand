@@ -1,5 +1,6 @@
 // Project includes
 #include "clang-expand/symbol-search/action.hpp"
+#include "clang-expand/common/query.hpp"
 #include "clang-expand/symbol-search/consumer.hpp"
 #include "clang-expand/symbol-search/macro-search.hpp"
 
@@ -35,15 +36,8 @@ void verifyToken(bool errorOccurred, const clang::Token& token) {
 }
 }  // namespace
 
-Action::Action(const EasyLocation& targetLocation,
-               const QueryCallback& stateCallback)
-: _stateCallback(stateCallback)
-, _alreadyFoundMacro(false)
-, _targetLocation(targetLocation) {
-}
-
-bool Action::BeginInvocation(clang::CompilerInstance& compiler) {
-  return true;
+Action::Action(const EasyLocation& targetLocation, Query* query)
+: _query(query), _alreadyFoundMacro(false), _targetLocation(targetLocation) {
 }
 
 bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
@@ -86,12 +80,10 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
   // clang-format off
   auto hooks = std::make_unique<MacroSearch>(
     compiler, _callLocation,
-    [this] (auto&& definition) mutable {
-      _alreadyFoundMacro = true;
-      _stateCallback(std::move(definition));
+    [this](auto&& definition) {
+      *_query = std::move(definition);
     });
-  // clang-format on
-
+  // clang-format off
   compiler.getPreprocessor().addPPCallbacks(std::move(hooks));
 
   return true;
@@ -107,7 +99,7 @@ Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef) {
   return std::make_unique<Consumer>(_callLocation,
                                     _spelling,
                                     [this] { return _alreadyFoundMacro; },
-                                    _stateCallback);
+                                    _query);
 }
 
 clang::FileID Action::_getFileID(clang::SourceManager& sourceManager) const {

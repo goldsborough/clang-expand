@@ -15,14 +15,18 @@ class Stmt;
 namespace ClangExpand {
 class ParameterRewriter : public clang::RecursiveASTVisitor<ParameterRewriter> {
  public:
-  explicit ParameterRewriter(const ParameterMap& parameterMap,
-                       clang::Rewriter& rewriter);
+  using OptionalCall = std::optional<CallData>;
+
+  explicit ParameterRewriter(clang::Rewriter& rewriter,
+                             const ParameterMap& parameterMap,
+                             const OptionalCall& call);
 
   bool VisitStmt(clang::Stmt* statement);
 
  private:
-  const ParameterMap& _parameterMap;
   clang::Rewriter& _rewriter;
+  const ParameterMap& _parameterMap;
+  const OptionalCall& _call;
 };
 }  // namespace ClangExpand
 

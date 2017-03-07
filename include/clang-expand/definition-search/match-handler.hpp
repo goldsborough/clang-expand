@@ -7,9 +7,16 @@
 // Clang includes
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 
+// Standard includes
+#include <optional>
+
 namespace clang {
 class ASTContext;
 class FunctionDecl;
+}
+
+namespace ClangExpand {
+class Query;
 }
 
 namespace ClangExpand::DefinitionSearch {
@@ -17,8 +24,7 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
  public:
   using MatchResult = clang::ast_matchers::MatchFinder::MatchResult;
 
-  MatchHandler(const DeclarationData& declaration,
-               const QueryCallback& stateCallback);
+  explicit MatchHandler(Query* query);
 
   void run(const MatchResult& result) override;
 
@@ -28,8 +34,7 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
 
   bool _matchContexts(const clang::FunctionDecl& function) const noexcept;
 
-  const DeclarationData& _declaration;
-  const QueryCallback _stateCallback;
+  Query* _query;
 };
 
 }  // namespace ClangExpand::DefinitionSearch
