@@ -22,7 +22,7 @@
 #include <cassert>
 #include <string>
 #include <type_traits>
-
+#include <cstdlib>
 
 namespace ClangExpand::SymbolSearch {
 namespace {
@@ -101,7 +101,8 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
     if (const auto* node = parent.get<clang::ReturnStmt>()) {
       return CallData({node->getSourceRange(), context.getSourceManager()});
     } else if (const auto* node = parent.get<clang::CallExpr>()) {
-      return {};
+      llvm::outs() << "Cannot expand call inside another call expression\n";
+      std::exit(1);
     } else if (const auto* node = parent.get<clang::VarDecl>()) {
       return handleCallForAssignment(*node, context);
     }
