@@ -95,7 +95,7 @@ void MacroSearch::MacroExpands(const clang::Token&,
   }
 
   const auto mapping = _createParameterMapping(*info, *arguments);
-  const auto text = _rewriteMacro(*info, mapping);
+  std::string text = _rewriteMacro(*info, mapping);
 
   EasyLocation location(info->getDefinitionLoc(), _sourceManager);
   _callback({std::move(location), std::move(text)});

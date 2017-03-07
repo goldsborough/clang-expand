@@ -13,12 +13,16 @@
 #include <clang/Rewrite/Core/Rewriter.h>
 
 // LLVM includes
+#include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Path.h>
 
 // Standard includes
 #include <cassert>
 #include <string>
+#include <system_error>
 #include <type_traits>
 
 namespace ClangExpand::Routines {
@@ -115,5 +119,14 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
 
   const auto text = withoutIndentation(rewriter.getRewrittenText(range));
   return {std::move(location), text};
+}
+
+std::string makeAbsolute(const std::string& filename) {
+  llvm::SmallString<256> absolutePath(filename);
+  const auto failure = llvm::sys::path::remove_dots(absolutePath, true);
+  assert(!failure && "Error cleaning path before making it absolute");
+  const auto error = llvm::sys::fs::make_absolute(absolutePath);
+  assert(!error && "Error generating absolute path");
+  return absolutePath.str();
 }
 }  // namespace ClangExpand::Routines

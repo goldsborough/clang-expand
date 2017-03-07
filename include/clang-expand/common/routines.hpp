@@ -5,6 +5,7 @@
 #include "clang-expand/common/data.hpp"
 
 // Standard includes
+#include <iosfwd>
 #include <optional>
 
 namespace clang {
@@ -39,6 +40,8 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                      clang::ASTContext& context,
                                      const ParameterMap& parameterMap,
                                      const OptionalCall& call);
+
+std::string makeAbsolute(const std::string& filename);
 
 }  // namespace ClangExpand::Routines
 

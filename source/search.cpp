@@ -2,6 +2,7 @@
 #include "clang-expand/search.hpp"
 #include "clang-expand/common/data.hpp"
 #include "clang-expand/common/query.hpp"
+#include "clang-expand/common/routines.hpp"
 #include "clang-expand/definition-search/tool-factory.hpp"
 #include "clang-expand/symbol-search/tool-factory.hpp"
 
@@ -16,9 +17,8 @@
 #include <vector>
 
 namespace ClangExpand {
-
 Search::Search(const std::string& file, unsigned line, unsigned column)
-: _location(file, line, column) {
+: _location(Routines::makeAbsolute(file), line, column) {
 }
 
 Search::Result

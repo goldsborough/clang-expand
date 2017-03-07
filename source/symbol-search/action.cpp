@@ -104,6 +104,7 @@ Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef) {
 
 clang::FileID Action::_getFileID(clang::SourceManager& sourceManager) const {
   auto& fileManager = sourceManager.getFileManager();
+
   const auto* fileEntry = fileManager.getFile(_targetLocation.filename);
   if (fileEntry == nullptr || !fileEntry->isValid()) {
     llvm::errs() << "Could not find file " << _targetLocation.filename
