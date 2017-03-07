@@ -65,7 +65,6 @@ Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
   }
 
   return EXIT_FAILURE;
-  // return optional<definition query> instead of error code and print in main
 }
 
 int Search::_symbolSearch(CompilationDatabase& compilationDatabase,

@@ -99,16 +99,12 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
     const auto kind = parent.getNodeKind();
     llvm::outs() << kind.asStringRef() << '\n';
     if (const auto* node = parent.get<clang::ReturnStmt>()) {
-      llvm::outs() << "Return\n";
       return CallData({node->getSourceRange(), context.getSourceManager()});
     } else if (const auto* node = parent.get<clang::CallExpr>()) {
-      llvm::outs() << "Call\n";
       return {};
     } else if (const auto* node = parent.get<clang::VarDecl>()) {
-      llvm::outs() << "Ass\n";
       return handleCallForAssignment(*node, context);
     }
-    llvm::outs() << "Matched none!" << '\n';
   }
 
   // You could call this a BFS that favors the first parents, or simply a

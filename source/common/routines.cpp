@@ -14,12 +14,41 @@
 
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Twine.h>
 
 // Standard includes
 #include <cassert>
+#include <string>
 #include <type_traits>
 
 namespace ClangExpand::Routines {
+namespace {
+void insertCall(const VariableData& variable,
+                const clang::SourceLocation& location,
+                clang::Rewriter& rewriter) {
+  const auto text =
+      (llvm::Twine(variable.type) + " " + variable.name + ";").str();
+  const auto error = rewriter.InsertTextAfter(location, text);
+  assert(!error && "Error inserting declaration at start of body");
+}
+
+std::string withoutIndentation(std::string text) {
+  auto last = text.begin();
+  while (true) {
+    auto start = std::find(last, text.end(), '\n');
+    if (start == text.end()) break;
+    // Keep the newline (++start)
+    auto end = std::find_if(++start, text.end(), [](char character) {
+      return !::isspace(character);
+    });
+    last = text.erase(start, end);
+  }
+
+  // RVO
+  return text;
+}
+}  // namespace
+
 bool locationsAreEqual(const clang::SourceLocation& first,
                        const clang::SourceLocation& second,
                        const clang::SourceManager& sourceManager) {
@@ -48,7 +77,7 @@ llvm::StringRef getSourceText(const clang::SourceRange& range,
 DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                      clang::ASTContext& context,
                                      const ParameterMap& parameterMap,
-                                     const OptionalCall& callData) {
+                                     const OptionalCall& call) {
   const auto& sourceManager = context.getSourceManager();
   EasyLocation location(function.getLocation(), sourceManager);
 
@@ -56,12 +85,17 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
   auto* body = function.getBody();
 
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
-  ParameterRewriter(rewriter, parameterMap, callData).TraverseStmt(body);
+  ParameterRewriter(rewriter, parameterMap, call).TraverseStmt(body);
 
-  const auto startNoBraces = body->getLocStart().getLocWithOffset(+1);
-  const auto endNoBraces = body->getLocEnd().getLocWithOffset(-1);
-  const auto text = rewriter.getRewrittenText({startNoBraces, endNoBraces});
+  const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
+  const auto beforeBrace = body->getLocEnd().getLocWithOffset(-1);
+  const clang::SourceRange range(afterBrace, beforeBrace);
 
+  if (call && call->variable) {
+    insertCall(*call->variable, afterBrace, rewriter);
+  }
+
+  const auto text = withoutIndentation(rewriter.getRewrittenText(range));
   return {std::move(location), text};
 }
 }  // namespace ClangExpand::Routines

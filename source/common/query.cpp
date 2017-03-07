@@ -50,7 +50,6 @@ const DefinitionData& Query::definition() const noexcept {
   return std::get<DefinitionData>(_state);
 }
 const Query::OptionalCall& Query::call() const noexcept {
-  assert(hasCall() && "Query does not currently hold a call");
   return _call;
 }
 

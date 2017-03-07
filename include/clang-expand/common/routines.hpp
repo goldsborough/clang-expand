@@ -38,7 +38,7 @@ llvm::StringRef getSourceText(const clang::SourceRange& range,
 DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                      clang::ASTContext& context,
                                      const ParameterMap& parameterMap,
-                                     const OptionalCall& callData);
+                                     const OptionalCall& call);
 
 }  // namespace ClangExpand::Routines
 
