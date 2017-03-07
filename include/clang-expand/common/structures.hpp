@@ -4,6 +4,9 @@
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
 
+// Standard includes
+#include <string>
+
 namespace clang {
 class FileEntry;
 class SourceLocation;
@@ -49,7 +52,7 @@ struct EasyLocation {
 
   EasyLocation(const llvm::StringRef& filename, unsigned line, unsigned column);
 
-  llvm::StringRef filename;
+  std::string filename;
   Offset offset;
 };
 }  // namespace ClangExpand

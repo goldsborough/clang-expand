@@ -43,6 +43,8 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
 
 std::string makeAbsolute(const std::string& filename);
 
+[[noreturn]] void error(const char* message);
+
 }  // namespace ClangExpand::Routines
 
 

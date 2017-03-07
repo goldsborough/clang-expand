@@ -1,6 +1,7 @@
 // Project includes
 #include "clang-expand/symbol-search/action.hpp"
 #include "clang-expand/common/query.hpp"
+#include "clang-expand/common/routines.hpp"
 #include "clang-expand/symbol-search/consumer.hpp"
 #include "clang-expand/symbol-search/macro-search.hpp"
 
@@ -20,18 +21,13 @@
 
 namespace ClangExpand::SymbolSearch {
 namespace {
-void error(const char* message) {
-  llvm::errs() << message << "\n";
-  std::exit(EXIT_FAILURE);
-}
-
 void verifyToken(bool errorOccurred, const clang::Token& token) {
   if (errorOccurred) {
-    error("Error lexing token at given location");
+    Routines::error("Error lexing token at given location");
   }
 
   if (!token.is(clang::tok::raw_identifier)) {
-    error("Token at given location is not an identifier");
+    Routines::error("Token at given location is not an identifier");
   }
 }
 }  // namespace
@@ -53,7 +49,7 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
   const auto location = sourceManager.translateLineCol(fileID, line, column);
 
   if (location.isInvalid()) {
-    error("Location is not valid");
+    Routines::error("Location is not valid");
   }
 
   const auto startLocation = clang::Lexer::GetBeginningOfToken(location,
@@ -61,7 +57,7 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
                                                                languageOptions);
 
   if (startLocation.isInvalid()) {
-    error("Error retrieving start of token");
+    Routines::error("Error retrieving start of token");
   }
 
   clang::Token token;
@@ -104,7 +100,6 @@ Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef) {
 
 clang::FileID Action::_getFileID(clang::SourceManager& sourceManager) const {
   auto& fileManager = sourceManager.getFileManager();
-
   const auto* fileEntry = fileManager.getFile(_targetLocation.filename);
   if (fileEntry == nullptr || !fileEntry->isValid()) {
     llvm::errs() << "Could not find file " << _targetLocation.filename
@@ -118,8 +113,7 @@ clang::FileID Action::_getFileID(clang::SourceManager& sourceManager) const {
   const auto fileID =
       sourceManager.getOrCreateFileID(fileEntry, clang::SrcMgr::C_User);
   if (!fileID.isValid()) {
-    llvm::errs() << "Error getting file ID from file entry\n";
-    std::exit(EXIT_FAILURE);
+    Routines::error("Error getting file ID from file entry");
   }
 
   return fileID;

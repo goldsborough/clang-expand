@@ -18,8 +18,10 @@
 #include <llvm/ADT/Twine.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Path.h>
+#include <llvm/Support/raw_ostream.h>
 
 // Standard includes
+#include <cstdlib>
 #include <cassert>
 #include <string>
 #include <system_error>
@@ -128,5 +130,10 @@ std::string makeAbsolute(const std::string& filename) {
   const auto error = llvm::sys::fs::make_absolute(absolutePath);
   assert(!error && "Error generating absolute path");
   return absolutePath.str();
+}
+
+void error(const char* message) {
+  llvm::errs() << message << '\n';
+  std::exit(EXIT_FAILURE);
 }
 }  // namespace ClangExpand::Routines

@@ -80,12 +80,20 @@ ParameterMap mapCallParameters(const clang::CallExpr& call,
 
 CallData handleCallForAssignment(const clang::VarDecl& variable,
                                  const clang::ASTContext& context) {
+  const auto type = variable.getType().getCanonicalType();
+
+  if (type.isConstQualified()) {
+    Routines::error("Cannot expand call with const assignee");
+  } else if (type.getTypePtr()->isReferenceType()) {
+    Routines::error("Cannot expand call with reference assignee");
+  }
+
   const auto& policy = context.getPrintingPolicy();
-  const auto type = variable.getType().getCanonicalType().getAsString(policy);
+  const auto typeString = type.getAsString(policy);
   const auto name = variable.getName();
   Range range(variable.getSourceRange(), context.getSourceManager());
 
-  return {type, name, range};
+  return {typeString, name, range};
 }
 
 std::optional<CallData> collectCallData(const clang::Expr& expression,
@@ -99,8 +107,7 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
     if (const auto* node = parent.get<clang::ReturnStmt>()) {
       return CallData({node->getSourceRange(), context.getSourceManager()});
     } else if (const auto* node = parent.get<clang::CallExpr>()) {
-      llvm::outs() << "Cannot expand call inside another call expression\n";
-      std::exit(EXIT_FAILURE);
+      Routines::error("Cannot expand call inside another call expression");
     } else if (const auto* node = parent.get<clang::VarDecl>()) {
       return handleCallForAssignment(*node, context);
     }
