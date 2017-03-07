@@ -24,6 +24,9 @@ class ParameterRewriter : public clang::RecursiveASTVisitor<ParameterRewriter> {
   bool VisitStmt(clang::Stmt* statement);
 
  private:
+  void _rewriteReturn(const clang::ReturnStmt& returnStatement,
+                     const CallData& call);
+
   clang::Rewriter& _rewriter;
   const ParameterMap& _parameterMap;
   const OptionalCall& _call;

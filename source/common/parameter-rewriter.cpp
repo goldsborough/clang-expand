@@ -24,22 +24,44 @@ ParameterRewriter::ParameterRewriter(clang::Rewriter& rewriter,
 }
 
 bool ParameterRewriter::VisitStmt(clang::Stmt* statement) {
-  const auto* use = llvm::dyn_cast<clang::DeclRefExpr>(statement);
-  if (!use) return true;
+  if (_call && llvm::isa<clang::ReturnStmt>(statement)) {
+    if (const auto* rtn = llvm::dyn_cast<clang::ReturnStmt>(statement)) {
+      _rewriteReturn(*rtn, *_call);
+      return true;
+    }
+  }
 
-  const auto* decl = llvm::dyn_cast<clang::ParmVarDecl>(use->getDecl());
-  if (!decl) return true;
+  const auto* reference = llvm::dyn_cast<clang::DeclRefExpr>(statement);
+  if (!reference) return true;
 
-  const auto name = decl->getName();
+  const auto* declaration =
+      llvm::dyn_cast<clang::ParmVarDecl>(reference->getDecl());
+  if (!declaration) return true;
+
+  const auto name = declaration->getName();
 
   auto iterator = _parameterMap.find(name);
   if (iterator != _parameterMap.end()) {
     const auto& argument = iterator->getValue();
-    bool error = _rewriter.ReplaceText(use->getSourceRange(), argument);
+    bool error = _rewriter.ReplaceText(reference->getSourceRange(), argument);
     assert(!error && "Error replacing text in definition");
   }
 
   return true;
+}
+
+void ParameterRewriter::_rewriteReturn(const clang::ReturnStmt& returnStatement,
+                                       const CallData& call) {
+  static constexpr auto lengthOfTheWordReturn = 6;
+
+  if (!call.variable) return;
+
+  const auto begin = returnStatement.getSourceRange().getBegin();
+  const auto end = begin.getLocWithOffset(lengthOfTheWordReturn);
+  const auto assignment = call.variable->name + " =";
+
+  bool error = _rewriter.ReplaceText({begin, end}, assignment);
+  assert(!error && "Error replacing return statement in definition");
 }
 
 }  // namespace ClangExpand

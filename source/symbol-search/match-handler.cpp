@@ -152,7 +152,6 @@ void MatchHandler::run(const MatchResult& result) {
   auto parameterMap = mapCallParameters(*call, *function, context);
 
   auto callData = collectCallData(*call, context);
-  llvm::outs() << "found call data: " << callData.has_value() << '\n';
 
   if (function->hasBody()) {
     *_query = Routines::collectDefinitionData(*function,
