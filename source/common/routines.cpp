@@ -33,15 +33,20 @@ void insertCall(const VariableData& variable,
 }
 
 std::string withoutIndentation(std::string text) {
-  auto last = text.begin();
+  auto start = text.begin();
   while (true) {
-    auto start = std::find(last, text.end(), '\n');
-    if (start == text.end()) break;
-    // Keep the newline (++start)
-    auto end = std::find_if(++start, text.end(), [](char character) {
+    // Find the first character after the newline that is not space
+    auto end = std::find_if(start, text.end(), [](char character) {
       return !::isspace(character);
     });
-    last = text.erase(start, end);
+
+    // Remove between all whitespace (handle two edge case at start)
+    if (start != text.begin()) ++start;
+    end = text.erase(start, end);
+
+    // Find the next newline
+    start = std::find(end, text.end(), '\n');
+    if (start == text.end()) break;
   }
 
   // RVO
