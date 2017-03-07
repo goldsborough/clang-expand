@@ -34,15 +34,28 @@ void insertCall(const VariableData& variable,
 
 std::string withoutIndentation(std::string text) {
   auto start = text.begin();
+  int offset = -1;
   while (true) {
     // Find the first character after the newline that is not space
     auto end = std::find_if(start, text.end(), [](char character) {
       return !::isspace(character);
     });
 
-    // Remove between all whitespace (handle two edge case at start)
-    if (start != text.begin()) ++start;
-    end = text.erase(start, end);
+    if (start != end) {
+      if (start == text.begin()) {
+        end = text.erase(start, end);
+      } else {
+        // Skip the newline
+        ++start;
+
+        // If this is the first time we find whitespaace,
+        // take this as the reference offset.
+        if (offset == -1) offset = end - start;
+
+        // Now erase only as much whitespace as we encountered the first time
+        end = text.erase(start, start + offset);
+      }
+    }
 
     // Find the next newline
     start = std::find(end, text.end(), '\n');
