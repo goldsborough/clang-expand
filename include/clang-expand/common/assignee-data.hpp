@@ -15,6 +15,13 @@ class AssigneeData {
   // <<=/>>= should be the longest compound assignment.
   using OperatorString = llvm::SmallString<3>;
 
+  struct Type {
+    Type(const std::string& name_ = std::string(),
+         bool isDefaultConstructible_ = true) noexcept;
+    std::string name;
+    bool isDefaultConstructible;
+  };
+
   class Builder {
    public:
     explicit Builder(AssigneeData&& assignee = AssigneeData());
@@ -22,9 +29,9 @@ class AssigneeData {
     Builder& operator=(const Builder&) = delete;
 
     Builder& name(const llvm::StringRef& name);
-    Builder& type(const llvm::StringRef& type);
+    Builder& type(const llvm::StringRef& name,
+                  bool isDefaultConstructible = true);
     Builder& op(const llvm::StringRef& op);
-    Builder& defaultConstructible(bool yes = true);
 
     AssigneeData build();
 
@@ -32,10 +39,9 @@ class AssigneeData {
     AssigneeData&& _assignee;
   };
 
-  bool isDefaultConstructible;
   OperatorString op;
   std::string name;
-  std::string type;
+  std::optional<Type> type;
 };
 }  // namespace ClangExpand
 

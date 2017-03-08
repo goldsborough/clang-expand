@@ -57,6 +57,8 @@ void DefinitionRewriter::_rewriteReturn(
 
   if (!call.assignee) return;
 
+  // "Cannot expand call with non-default-constructible assignee"
+
   const auto begin = returnStatement.getSourceRange().getBegin();
   const auto end = begin.getLocWithOffset(lengthOfTheWordReturn);
   const auto assignment = (call.assignee->name + " " + call.assignee->op).str();

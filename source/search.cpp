@@ -34,7 +34,7 @@ Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
                  << call->extent.end.line << ':' << call->extent.end.column;
 
     if (call->assignee) {
-      llvm::errs() << ": type = " << call->assignee->type
+      llvm::errs() << ": type = " << call->assignee->type->name
                    << ", name = " << call->assignee->name;
     }
 

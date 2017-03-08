@@ -14,7 +14,7 @@ CallData::CallData(Range&& extent_) : extent(extent_) {
 }
 
 bool CallData::requiresDeclaration() const noexcept {
-  return assignee.has_value() && !assignee->type.empty();
+  return assignee.has_value() && assignee->type.has_value();
 }
 
 }  // namespace ClangExpand

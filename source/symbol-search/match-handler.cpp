@@ -87,12 +87,19 @@ CallData handleCallForVarDecl(const clang::VarDecl& variable,
   const auto typeString = qualType.getAsString(policy);
 
   Range range(variable.getSourceRange(), context.getSourceManager());
-
   auto assignee = AssigneeData::Builder()
                       .name(variable.getName())
                       .op("=")
                       .type(typeString)
                       .build();
+
+  if (qualType.isConstQualified() || type->isReferenceType()) {
+    assignee.type->isDefaultConstructible = false;
+  } else if (const auto* record = type->getAsCXXRecordDecl(); record) {
+    if (!record->hasDefaultConstructor()) {
+      assignee.type->isDefaultConstructible = false;
+    }
+  }
 
   return {std::move(assignee), std::move(range)};
 }

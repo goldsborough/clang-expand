@@ -29,11 +29,11 @@
 
 namespace ClangExpand::Routines {
 namespace {
-void insertCall(const AssigneeData& assignee,
-                const clang::SourceLocation& location,
-                clang::Rewriter& rewriter) {
+void insertDeclaration(const AssigneeData& assignee,
+                       const clang::SourceLocation& location,
+                       clang::Rewriter& rewriter) {
   const auto text =
-      (llvm::Twine(assignee.type) + " " + assignee.name + ";").str();
+      (llvm::Twine(assignee.type->name) + " " + assignee.name + ";").str();
   const auto error = rewriter.InsertTextAfter(location, text);
   assert(!error && "Error inserting declaration at start of body");
 }
@@ -116,7 +116,7 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
   const clang::SourceRange range(afterBrace, beforeBrace);
 
   if (call && call->requiresDeclaration()) {
-    insertCall(*call->assignee, afterBrace, rewriter);
+    insertDeclaration(*call->assignee, afterBrace, rewriter);
   }
 
   const auto text = withoutIndentation(rewriter.getRewrittenText(range));
