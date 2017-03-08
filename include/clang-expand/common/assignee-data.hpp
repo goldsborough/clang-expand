@@ -39,6 +39,8 @@ class AssigneeData {
     AssigneeData&& _assignee;
   };
 
+  bool isDefaultConstructible() const noexcept;
+
   OperatorString op;
   std::string name;
   std::optional<Type> type;

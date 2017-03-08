@@ -9,6 +9,7 @@
 #include <clang/AST/RecursiveASTVisitor.h>
 
 namespace clang {
+class ASTContext;
 class Rewriter;
 class Stmt;
 }
@@ -21,7 +22,8 @@ class DefinitionRewriter
 
   explicit DefinitionRewriter(clang::Rewriter& rewriter,
                               const ParameterMap& parameterMap,
-                              const OptionalCall& call);
+                              const OptionalCall& call,
+                              clang::ASTContext& context);
 
   bool VisitStmt(clang::Stmt* statement);
 
@@ -32,6 +34,7 @@ class DefinitionRewriter
   clang::Rewriter& _rewriter;
   const ParameterMap& _parameterMap;
   const OptionalCall& _call;
+  clang::ASTContext& _context;
 };
 }  // namespace ClangExpand
 

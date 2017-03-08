@@ -30,5 +30,5 @@ TabWidth: 2
 UseTab: Never
 
 PenaltyExcessCharacter: 1000000
-PenaltyReturnTypeOnItsOwnLine: 100
+PenaltyReturnTypeOnItsOwnLine: 10
 PenaltyBreakBeforeFirstCallParameter: 1000

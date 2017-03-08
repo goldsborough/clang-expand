@@ -109,7 +109,7 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
   auto* body = function.getBody();
 
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
-  DefinitionRewriter(rewriter, parameterMap, call).TraverseStmt(body);
+  DefinitionRewriter(rewriter, parameterMap, call, context).TraverseStmt(body);
 
   const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
   const auto beforeBrace = body->getLocEnd().getLocWithOffset(-1);

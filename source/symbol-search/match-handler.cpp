@@ -84,13 +84,10 @@ CallData handleCallForVarDecl(const clang::VarDecl& variable,
   const auto qualType = variable.getType().getCanonicalType();
   const auto* type = qualType.getTypePtr();
   const auto& policy = context.getPrintingPolicy();
-  const auto typeString = qualType.getAsString(policy);
-
-  Range range(variable.getSourceRange(), context.getSourceManager());
   auto assignee = AssigneeData::Builder()
+                      .type(qualType.getAsString(policy))
                       .name(variable.getName())
                       .op("=")
-                      .type(typeString)
                       .build();
 
   if (qualType.isConstQualified() || type->isReferenceType()) {
@@ -101,6 +98,7 @@ CallData handleCallForVarDecl(const clang::VarDecl& variable,
     }
   }
 
+  Range range(variable.getSourceRange(), context.getSourceManager());
   return {std::move(assignee), std::move(range)};
 }
 

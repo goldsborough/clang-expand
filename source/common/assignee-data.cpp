@@ -40,4 +40,9 @@ AssigneeData::Builder& AssigneeData::Builder::op(const llvm::StringRef& op) {
 AssigneeData AssigneeData::Builder::build() {
   return std::move(_assignee);
 }
+
+bool AssigneeData::isDefaultConstructible() const noexcept {
+  return !type.has_value() || type->isDefaultConstructible;
+}
+
 }  // namespace ClangExpand
