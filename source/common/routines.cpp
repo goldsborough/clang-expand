@@ -82,9 +82,10 @@ bool locationsAreEqual(const clang::SourceLocation& first,
 
 llvm::StringRef getSourceText(const clang::SourceRange& range,
                               const clang::SourceManager& sourceManager,
-                              const clang::LangOptions& languageOptions) {
-  const clang::SourceRange adjustedRange(range.getBegin(),
-                                         range.getEnd().getLocWithOffset(+1));
+                              const clang::LangOptions& languageOptions,
+                              unsigned offsetAtEnd) {
+  const auto end = range.getEnd().getLocWithOffset(offsetAtEnd);
+  const clang::SourceRange adjustedRange(range.getBegin(), end);
   const auto charRange = clang::Lexer::getAsCharRange(adjustedRange,
                                                       sourceManager,
                                                       languageOptions);

@@ -18,6 +18,7 @@
 
 // Standard includes
 #include <cassert>
+#include <string>
 
 namespace ClangExpand {
 namespace {
@@ -89,11 +90,17 @@ void DefinitionRewriter::_rewriteReturn(
     ensureDefaultConstructible(_context, returnStatement);
   }
 
+  std::string operation;
+  if (call.assignee->name.back() == ' ') {
+    operation = (call.assignee->name + call.assignee->op).str();
+  } else {
+    operation = (call.assignee->name + " " + call.assignee->op).str();
+  }
+
   const auto begin = returnStatement.getSourceRange().getBegin();
   const auto end = begin.getLocWithOffset(lengthOfTheWordReturn);
-  const auto assignment = (call.assignee->name + " " + call.assignee->op).str();
 
-  bool error = _rewriter.ReplaceText({begin, end}, assignment);
+  bool error = _rewriter.ReplaceText({begin, end}, operation);
   assert(!error && "Error replacing return statement in definition");
 }
 

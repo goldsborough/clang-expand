@@ -2,8 +2,8 @@
 #define CLANG_EXPAND_COMMON_ROUTINES_HPP
 
 // Project includes
-#include "clang-expand/common/data.hpp"
 #include "clang-expand/common/call-data.hpp"
+#include "clang-expand/common/data.hpp"
 
 // Standard includes
 #include <iosfwd>
@@ -36,7 +36,8 @@ bool locationsAreEqual(const clang::SourceLocation& first,
 
 llvm::StringRef getSourceText(const clang::SourceRange& range,
                               const clang::SourceManager& sourceManager,
-                              const clang::LangOptions& languageOptions);
+                              const clang::LangOptions& languageOptions,
+                              unsigned offsetAtEnd = +1);
 
 DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                      clang::ASTContext& context,

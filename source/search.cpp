@@ -45,7 +45,10 @@ Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
     _definitionSearch(compilationDatabase, sources, query);
   }
 
-  assert(query.isDefinition() && "Should have a definition here");
+  if (!query.isDefinition()) {
+    Routines::error("Could not find definition");
+  }
+
   return query.definition();
 }
 

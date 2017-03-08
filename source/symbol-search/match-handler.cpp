@@ -112,13 +112,24 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
                     llvm::Twine(binaryOperator.getOpcodeStr()));
   }
 
+  std::string name;
+
   const auto* lhs = binaryOperator.getLHS();
-  const auto* declRefExpr = llvm::dyn_cast<clang::DeclRefExpr>(lhs);
-  if (declRefExpr == nullptr) {
+  if (const auto* declRefExpr = llvm::dyn_cast<clang::DeclRefExpr>(lhs)) {
+    name = declRefExpr->getDecl()->getName();
+  } else if (const auto* member = llvm::dyn_cast<clang::MemberExpr>(lhs)) {
+    // There are so many different kinds of member expressions like x.x, x.X::x,
+    // x->x, x-> template x etc. that it's easiest to just grab the source.
+    // FIXME: if this becomes a performance issue.
+    llvm::outs() << member->getMemberNameInfo().getName() << '\n';
+    name = Routines::getSourceText(member->getSourceRange(),
+                                   context.getSourceManager(),
+                                   context.getLangOpts(),
+                                   /*offsetAtEnd=*/+2);
+  } else {
     Routines::error("Cannot expand call because assignee is not recognized");
   }
 
-  const auto name = declRefExpr->getDecl()->getName();
   auto assignee = AssigneeData::Builder()
                       .name(name)
                       .op(binaryOperator.getOpcodeStr())
@@ -139,18 +150,14 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
   for (const auto parent : context.getParents(expression)) {
     llvm::outs() << parent.getNodeKind().asStringRef() << '\n';
     if (const auto* node = parent.get<clang::ReturnStmt>()) {
-      llvm::outs() << "ret" << '\n';
       return CallData({node->getSourceRange(), context.getSourceManager()});
     } else if (const auto* node = parent.get<clang::CallExpr>()) {
       Routines::error("Cannot expand call inside another call expression");
     } else if (const auto* node = parent.get<clang::VarDecl>()) {
-      llvm::outs() << "var" << '\n';
       return handleCallForVarDecl(*node, context);
     } else if (const auto* node = parent.get<clang::BinaryOperator>()) {
-      llvm::outs() << "bin op" << '\n';
       return handleCallForBinaryOperator(*node, context);
     }
-    llvm::outs() << "?" << '\n';
   }
 
   // You could call this a BFS that favors the first parents, or simply a
