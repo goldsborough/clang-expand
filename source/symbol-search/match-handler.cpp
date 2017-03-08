@@ -83,25 +83,16 @@ CallData handleCallForVarDecl(const clang::VarDecl& variable,
                               const clang::ASTContext& context) {
   const auto qualType = variable.getType().getCanonicalType();
   const auto* type = qualType.getTypePtr();
-
-  if (qualType.isConstQualified()) {
-    Routines::error("Cannot expand call with const assignee");
-  } else if (type->isReferenceType()) {
-    Routines::error("Cannot expand call with reference assignee");
-  } else if (const auto* record = type->getAsCXXRecordDecl(); record) {
-    llvm::outs() << "record!" << '\n';
-    if (!record->hasDefaultConstructor()) {
-      Routines::error(
-          "Cannot expand call with non-default-constructible assignee");
-    }
-  }
-
   const auto& policy = context.getPrintingPolicy();
   const auto typeString = qualType.getAsString(policy);
-  const auto name = variable.getName();
 
-  AssigneeData assignee("=", name, typeString);
   Range range(variable.getSourceRange(), context.getSourceManager());
+
+  auto assignee = AssigneeData::Builder()
+                      .name(variable.getName())
+                      .op("=")
+                      .type(typeString)
+                      .build();
 
   return {std::move(assignee), std::move(range)};
 }
@@ -123,7 +114,10 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
   }
 
   const auto name = declRefExpr->getDecl()->getName();
-  AssigneeData assignee(binaryOperator.getOpcodeStr(), name);
+  auto assignee = AssigneeData::Builder()
+                      .name(name)
+                      .op(binaryOperator.getOpcodeStr())
+                      .build();
 
   Range range(binaryOperator.getSourceRange(), context.getSourceManager());
 

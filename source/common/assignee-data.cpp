@@ -10,13 +10,34 @@
 #include <string>
 
 namespace ClangExpand {
-AssigneeData::AssigneeData(const std::string& name_)
-: AssigneeData("=", name_) {
+
+AssigneeData::Builder::Builder(AssigneeData&& assignee)
+: _assignee(std::move(assignee)) {
 }
 
-AssigneeData::AssigneeData(const llvm::StringRef& op_,
-                           const std::string& name_,
-                           const std::string& type_)
-: op(op_), name(name_), type(type_) {
+AssigneeData::Builder&
+AssigneeData::Builder::name(const llvm::StringRef& name) {
+  _assignee.name = name;
+  return *this;
+}
+
+AssigneeData::Builder&
+AssigneeData::Builder::type(const llvm::StringRef& type) {
+  _assignee.type = type;
+  return *this;
+}
+
+AssigneeData::Builder& AssigneeData::Builder::op(const llvm::StringRef& op) {
+  _assignee.op = op;
+  return *this;
+}
+
+AssigneeData::Builder& AssigneeData::Builder::defaultConstructible(bool yes) {
+  _assignee.isDefaultConstructible = yes;
+  return *this;
+}
+
+AssigneeData AssigneeData::Builder::build() {
+  return std::move(_assignee);
 }
 }  // namespace ClangExpand
