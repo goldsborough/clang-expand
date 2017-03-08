@@ -33,7 +33,7 @@ void insertDeclaration(const AssigneeData& assignee,
                        const clang::SourceLocation& location,
                        clang::Rewriter& rewriter) {
   const auto text =
-      (llvm::Twine(assignee.type->name) + " " + assignee.name + ";").str();
+      (llvm::Twine(assignee.type->name) + " " + assignee.name + ";\n").str();
   const auto error = rewriter.InsertTextAfter(location, text);
   assert(!error && "Error inserting declaration at start of body");
 }
