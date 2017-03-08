@@ -1,7 +1,7 @@
 // Project includes
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/data.hpp"
-#include "clang-expand/common/parameter-rewriter.hpp"
+#include "clang-expand/common/definition-rewriter.hpp"
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
@@ -21,19 +21,19 @@
 #include <llvm/Support/raw_ostream.h>
 
 // Standard includes
-#include <cstdlib>
 #include <cassert>
+#include <cstdlib>
 #include <string>
 #include <system_error>
 #include <type_traits>
 
 namespace ClangExpand::Routines {
 namespace {
-void insertCall(const VariableData& variable,
+void insertCall(const AssigneeData& assignee,
                 const clang::SourceLocation& location,
                 clang::Rewriter& rewriter) {
   const auto text =
-      (llvm::Twine(variable.type) + " " + variable.name + ";").str();
+      (llvm::Twine(assignee.type) + " " + assignee.name + ";").str();
   const auto error = rewriter.InsertTextAfter(location, text);
   assert(!error && "Error inserting declaration at start of body");
 }
@@ -109,14 +109,14 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
   auto* body = function.getBody();
 
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
-  ParameterRewriter(rewriter, parameterMap, call).TraverseStmt(body);
+  DefinitionRewriter(rewriter, parameterMap, call).TraverseStmt(body);
 
   const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
   const auto beforeBrace = body->getLocEnd().getLocWithOffset(-1);
   const clang::SourceRange range(afterBrace, beforeBrace);
 
-  if (call && call->variable) {
-    insertCall(*call->variable, afterBrace, rewriter);
+  if (call && call->requiresDeclaration()) {
+    insertCall(*call->assignee, afterBrace, rewriter);
   }
 
   const auto text = withoutIndentation(rewriter.getRewrittenText(range));
@@ -136,4 +136,10 @@ void error(const char* message) {
   llvm::errs() << message << '\n';
   std::exit(EXIT_FAILURE);
 }
+
+void error(llvm::Twine&& twine) {
+  llvm::errs() << twine.str() << '\n';
+  std::exit(EXIT_FAILURE);
+}
+
 }  // namespace ClangExpand::Routines

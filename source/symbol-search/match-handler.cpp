@@ -1,5 +1,6 @@
 // Project includes
 #include "clang-expand/symbol-search/match-handler.hpp"
+#include "clang-expand/common/call-data.hpp"
 #include "clang-expand/common/data.hpp"
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
@@ -78,8 +79,8 @@ ParameterMap mapCallParameters(const clang::CallExpr& call,
   return expressions;
 }
 
-CallData handleCallForAssignment(const clang::VarDecl& variable,
-                                 const clang::ASTContext& context) {
+CallData handleCallForVarDecl(const clang::VarDecl& variable,
+                              const clang::ASTContext& context) {
   const auto qualType = variable.getType().getCanonicalType();
   const auto* type = qualType.getTypePtr();
 
@@ -97,11 +98,36 @@ CallData handleCallForAssignment(const clang::VarDecl& variable,
 
   const auto& policy = context.getPrintingPolicy();
   const auto typeString = qualType.getAsString(policy);
-  llvm::outs() << typeString << '\n';
   const auto name = variable.getName();
+
+  AssigneeData assignee("=", name, typeString);
   Range range(variable.getSourceRange(), context.getSourceManager());
 
-  return {typeString, name, range};
+  return {std::move(assignee), std::move(range)};
+}
+
+CallData
+handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
+                            const clang::ASTContext& context) {
+  if (!binaryOperator.isAssignmentOp() &&
+      !binaryOperator.isCompoundAssignmentOp() &&
+      !binaryOperator.isShiftAssignOp()) {
+    Routines::error("Cannot expand call as operand of " +
+                    llvm::Twine(binaryOperator.getOpcodeStr()));
+  }
+
+  const auto* lhs = binaryOperator.getLHS();
+  const auto* declRefExpr = llvm::dyn_cast<clang::DeclRefExpr>(lhs);
+  if (declRefExpr == nullptr) {
+    Routines::error("Cannot expand call because assignee is not recognized");
+  }
+
+  const auto name = declRefExpr->getDecl()->getName();
+  AssigneeData assignee(binaryOperator.getOpcodeStr(), name);
+
+  Range range(binaryOperator.getSourceRange(), context.getSourceManager());
+
+  return {std::move(assignee), std::move(range)};
 }
 
 std::optional<CallData> collectCallData(const clang::Expr& expression,
@@ -114,11 +140,16 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
   for (const auto parent : context.getParents(expression)) {
     llvm::outs() << parent.getNodeKind().asStringRef() << '\n';
     if (const auto* node = parent.get<clang::ReturnStmt>()) {
+      llvm::outs() << "ret" << '\n';
       return CallData({node->getSourceRange(), context.getSourceManager()});
     } else if (const auto* node = parent.get<clang::CallExpr>()) {
       Routines::error("Cannot expand call inside another call expression");
     } else if (const auto* node = parent.get<clang::VarDecl>()) {
-      return handleCallForAssignment(*node, context);
+      llvm::outs() << "var" << '\n';
+      return handleCallForVarDecl(*node, context);
+    } else if (const auto* node = parent.get<clang::BinaryOperator>()) {
+      llvm::outs() << "bin op" << '\n';
+      return handleCallForBinaryOperator(*node, context);
     }
     llvm::outs() << "?" << '\n';
   }

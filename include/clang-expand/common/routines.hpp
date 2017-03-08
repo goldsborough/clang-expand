@@ -3,6 +3,7 @@
 
 // Project includes
 #include "clang-expand/common/data.hpp"
+#include "clang-expand/common/call-data.hpp"
 
 // Standard includes
 #include <iosfwd>
@@ -19,6 +20,7 @@ class ASTContext;
 
 namespace llvm {
 class StringRef;
+class Twine;
 }
 
 namespace ClangExpand {
@@ -44,6 +46,7 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
 std::string makeAbsolute(const std::string& filename);
 
 [[noreturn]] void error(const char* message);
+[[noreturn]] void error(llvm::Twine&& twine);
 
 }  // namespace ClangExpand::Routines
 

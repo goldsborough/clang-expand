@@ -14,6 +14,9 @@
 #include <clang/Lex/Preprocessor.h>
 #include <clang/Lex/Token.h>
 
+// LLVM includes
+#include <llvm/ADT/Twine.h>
+
 // Standard includes
 #include <cstdlib>
 #include <memory>
@@ -79,14 +82,14 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
     [this](auto&& definition) {
       *_query = std::move(definition);
     });
-  // clang-format off
+  // clang-format on
   compiler.getPreprocessor().addPPCallbacks(std::move(hooks));
 
   return true;
 }
 
-Action::ASTConsumerPointer
-Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef) {
+Action::ASTConsumerPointer Action::CreateASTConsumer(clang::CompilerInstance&,
+                                                     llvm::StringRef) {
   // We already have the token at this point, because BeginInvocation is
   // guaranteed to be called before this method. We don't have the macro pointer
   // yet (if ever), because we get it in the preprocessor hooks, which are
@@ -102,9 +105,9 @@ clang::FileID Action::_getFileID(clang::SourceManager& sourceManager) const {
   auto& fileManager = sourceManager.getFileManager();
   const auto* fileEntry = fileManager.getFile(_targetLocation.filename);
   if (fileEntry == nullptr || !fileEntry->isValid()) {
-    llvm::errs() << "Could not find file " << _targetLocation.filename
-                 << " in file manager\n";
-    std::exit(EXIT_FAILURE);
+    Routines::error("Could not find file " +
+                    llvm::Twine(_targetLocation.filename) +
+                    " in file manager\n");
   }
 
   assert(fileEntry->getName() == _targetLocation.filename &&

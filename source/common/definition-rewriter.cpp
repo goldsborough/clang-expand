@@ -1,6 +1,7 @@
 // Project includes
-#include "clang-expand/common/parameter-rewriter.hpp"
 #include "clang-expand/common/data.hpp"
+#include "clang-expand/common/call-data.hpp"
+#include "clang-expand/common/definition-rewriter.hpp"
 
 // Clang includes
 #include <clang/AST/Decl.h>
@@ -17,13 +18,13 @@
 
 namespace ClangExpand {
 
-ParameterRewriter::ParameterRewriter(clang::Rewriter& rewriter,
-                                     const ParameterMap& parameterMap,
-                                     const OptionalCall& call)
+DefinitionRewriter::DefinitionRewriter(clang::Rewriter& rewriter,
+                                       const ParameterMap& parameterMap,
+                                       const OptionalCall& call)
 : _rewriter(rewriter), _parameterMap(parameterMap), _call(call) {
 }
 
-bool ParameterRewriter::VisitStmt(clang::Stmt* statement) {
+bool DefinitionRewriter::VisitStmt(clang::Stmt* statement) {
   if (_call && llvm::isa<clang::ReturnStmt>(statement)) {
     if (const auto* rtn = llvm::dyn_cast<clang::ReturnStmt>(statement)) {
       _rewriteReturn(*rtn, *_call);
@@ -50,15 +51,15 @@ bool ParameterRewriter::VisitStmt(clang::Stmt* statement) {
   return true;
 }
 
-void ParameterRewriter::_rewriteReturn(const clang::ReturnStmt& returnStatement,
-                                       const CallData& call) {
+void DefinitionRewriter::_rewriteReturn(
+    const clang::ReturnStmt& returnStatement, const CallData& call) {
   static constexpr auto lengthOfTheWordReturn = 6;
 
-  if (!call.variable) return;
+  if (!call.assignee) return;
 
   const auto begin = returnStatement.getSourceRange().getBegin();
   const auto end = begin.getLocWithOffset(lengthOfTheWordReturn);
-  const auto assignment = call.variable->name + " =";
+  const auto assignment = (call.assignee->name + " " + call.assignee->op).str();
 
   bool error = _rewriter.ReplaceText({begin, end}, assignment);
   assert(!error && "Error replacing return statement in definition");

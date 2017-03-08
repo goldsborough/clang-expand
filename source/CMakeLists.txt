@@ -12,10 +12,12 @@ set(CLANG_EXPAND_SOURCES
   definition-search/consumer.cpp
   definition-search/match-handler.cpp
   definition-search/tool-factory.cpp
-  common/parameter-rewriter.cpp
+  common/definition-rewriter.cpp
   common/query.cpp
   common/routines.cpp
   common/structures.cpp
+  common/call-data.cpp
+  common/assignee-data.cpp
   search.cpp
 )
 
