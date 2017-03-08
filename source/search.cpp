@@ -28,17 +28,8 @@ Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
 
   _symbolSearch(compilationDatabase, query);
 
-  if (const auto& call = query.call(); call) {
-    llvm::errs() << "Found call information: At " << call->extent.begin.line
-                 << ':' << call->extent.begin.column << " - "
-                 << call->extent.end.line << ':' << call->extent.end.column;
-
-    if (call->assignee) {
-      llvm::errs() << ": type = " << call->assignee->type->name
-                   << ", name = " << call->assignee->name;
-    }
-
-    llvm::errs() << '\n';
+  if (query.isEmpty()) {
+    Routines::error("Could not recognize token at specified location");
   }
 
   if (!query.isDefinition()) {

@@ -62,6 +62,12 @@ bool DefinitionRewriter::VisitStmt(clang::Stmt* statement) {
     }
   }
 
+  if (const auto* member = llvm::dyn_cast<clang::MemberExpr>(statement)) {
+    if (llvm::isa<clang::CXXThisExpr>(member->getBase())) {
+      _rewriteMemberExpression(*member);
+    }
+  }
+
   const auto* reference = llvm::dyn_cast<clang::DeclRefExpr>(statement);
   if (!reference) return true;
 
@@ -102,6 +108,29 @@ void DefinitionRewriter::_rewriteReturn(
 
   bool error = _rewriter.ReplaceText({begin, end}, operation);
   assert(!error && "Error replacing return statement in definition");
+}
+
+void DefinitionRewriter::_rewriteMemberExpression(
+    const clang::MemberExpr& member) {
+  assert(_call.has_value() &&
+         "Found member expression we'd like to replace, but no call data");
+
+  // If the base is empty, this means (should mean) that this function was an
+  // implicit access, e.g. calling `f()` inside the class that declares `f()`.
+  // Therefore all member expressions will already be valid and don't need any
+  // change anyway (i.e. referencing the field `x` by `x` will be fine).
+  if (_call->base.empty()) return;
+
+  if (member.isImplicitAccess()) {
+    _rewriter.InsertText(member.getMemberLoc(), _call->base);
+    return;
+  }
+
+  // Gobble up any kind of 'this->' statement or qualifier (e.g. super::x, where
+  // 'super' is typedef for the base class, i.e. still an implicit access).
+  const auto start = member.getLocStart();
+  const auto end = member.getMemberLoc().getLocWithOffset(-1);
+  _rewriter.ReplaceText({start, end}, _call->base);
 }
 
 }  // namespace ClangExpand

@@ -16,6 +16,7 @@ struct CallData {
 
   bool requiresDeclaration() const noexcept;
 
+  std::string base;
   std::optional<AssigneeData> assignee;
   Range extent;
 };

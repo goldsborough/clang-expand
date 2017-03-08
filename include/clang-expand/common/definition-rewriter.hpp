@@ -10,6 +10,7 @@
 
 namespace clang {
 class ASTContext;
+class MemberExpr;
 class Rewriter;
 class Stmt;
 }
@@ -30,6 +31,8 @@ class DefinitionRewriter
  private:
   void _rewriteReturn(const clang::ReturnStmt& returnStatement,
                       const CallData& call);
+
+  void _rewriteMemberExpression(const clang::MemberExpr& member);
 
   clang::Rewriter& _rewriter;
   const ParameterMap& _parameterMap;

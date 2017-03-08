@@ -4,6 +4,7 @@
 #include "clang-expand/common/data.hpp"
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
+#include "clang-expand/common/structures.hpp"
 
 // Clang includes
 #include <clang/AST/ASTContext.h>
@@ -102,6 +103,17 @@ CallData handleCallForVarDecl(const clang::VarDecl& variable,
   return {std::move(assignee), std::move(range)};
 }
 
+llvm::StringRef entireMemberExpressionString(const clang::MemberExpr& member,
+                                             const clang::ASTContext& context) {
+  // There are so many different kinds of member expressions like x.x, x.X::x,
+  // x->x, x-> template x etc. that it's easiest to just grab the source.
+  // FIXME: if this becomes a performance issue.
+  return Routines::getSourceText(member.getSourceRange(),
+                                 context.getSourceManager(),
+                                 context.getLangOpts(),
+                                 /*offsetAtEnd=*/+2);
+}
+
 CallData
 handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
                             const clang::ASTContext& context) {
@@ -118,13 +130,7 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
   if (const auto* declRefExpr = llvm::dyn_cast<clang::DeclRefExpr>(lhs)) {
     name = declRefExpr->getDecl()->getName();
   } else if (const auto* member = llvm::dyn_cast<clang::MemberExpr>(lhs)) {
-    // There are so many different kinds of member expressions like x.x, x.X::x,
-    // x->x, x-> template x etc. that it's easiest to just grab the source.
-    // FIXME: if this becomes a performance issue.
-    name = Routines::getSourceText(member->getSourceRange(),
-                                   context.getSourceManager(),
-                                   context.getLangOpts(),
-                                   /*offsetAtEnd=*/+2);
+    name = entireMemberExpressionString(*member, context);
   } else {
     Routines::error("Cannot expand call because assignee is not recognized");
   }
@@ -139,9 +145,10 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
   return {std::move(assignee), std::move(range)};
 }
 
-std::optional<CallData> collectCallData(const clang::Expr& expression,
-                                        clang::ASTContext& context,
-                                        unsigned depth = 10) {
+std::optional<CallData>
+collectCallDataFromContext(const clang::Expr& expression,
+                           clang::ASTContext& context,
+                           unsigned depth = 8) {
   // Not checking the base case is generally bad for the first call, but we
   // don't actually want this to be called with depth = 0 the first time.
   assert(depth > 0 && "Reached invalid depth while walking up call expression");
@@ -165,9 +172,8 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
   if (depth > 1) {
     for (const auto parent : context.getParents(expression)) {
       if (const auto* node = parent.get<clang::Expr>()) {
-        if (auto result = collectCallData(*node, context, depth - 1); result) {
-          return result;
-        }
+        auto result = collectCallDataFromContext(*node, context, depth - 1);
+        if (result) return result;
       }
     }
   }
@@ -187,15 +193,6 @@ clang::SourceLocation getCallLocation(const MatchHandler::MatchResult& result) {
   return member->getMemberLoc();
 }
 
-void errorIfExplicitMethodInvocation(const MatchHandler::MatchResult& result) {
-  if (const auto* member =
-          result.Nodes.getNodeAs<clang::MemberExpr>("member")) {
-    if (!member->isImplicitAccess()) {
-      Routines::error("Refuse to expand external method invocations");
-    }
-  }
-}
-
 bool callLocationMatches(const MatchHandler::MatchResult& result,
                          const clang::SourceLocation& targetLocation) {
   const auto& sourceManager = *result.SourceManager;
@@ -204,6 +201,27 @@ bool callLocationMatches(const MatchHandler::MatchResult& result,
                                      targetLocation,
                                      sourceManager);
 }
+
+llvm::StringRef memberBaseExpressionString(const clang::MemberExpr& member,
+                                           const clang::ASTContext& context) {
+  const auto start = member.getLocStart();
+  const auto end = member.getMemberLoc().getLocWithOffset(-1);
+  return Routines::getSourceText({start, end},
+                                 context.getSourceManager(),
+                                 context.getLangOpts());
+}
+
+void decorateCallDataWithMemberBase(std::optional<CallData>& callData,
+                                    const MatchHandler::MatchResult& result) {
+  assert(callData.has_value() && "Should have call data at this point");
+
+  if (auto* member = result.Nodes.getNodeAs<clang::MemberExpr>("member")) {
+    if (!llvm::isa<clang::CXXThisExpr>(*member->child_begin())) {
+      callData->base = memberBaseExpressionString(*member, *result.Context);
+    }
+  }
+}
+
 }  // namespace
 
 MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
@@ -214,8 +232,6 @@ MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
 void MatchHandler::run(const MatchResult& result) {
   if (!callLocationMatches(result, _targetLocation)) return;
 
-  errorIfExplicitMethodInvocation(result);
-
   const auto* function = result.Nodes.getNodeAs<clang::FunctionDecl>("fn");
   assert(function != nullptr);
 
@@ -223,7 +239,16 @@ void MatchHandler::run(const MatchResult& result) {
   const auto* call = result.Nodes.getNodeAs<clang::CallExpr>("call");
   auto parameterMap = mapCallParameters(*call, *function, context);
 
-  auto callData = collectCallData(*call, context);
+  std::optional<CallData> callData = collectCallDataFromContext(*call, context);
+  if (!callData.has_value()) {
+    // If we found no "context" (i.e. assignment or return statement) to collect
+    // information about and the range of the full statement, this is probably
+    // just a plain function call like f() or foo.bar(). In that case we simply
+    // pick the call expression as the range.
+    callData.emplace(Range(call->getSourceRange(), context.getSourceManager()));
+  }
+
+  decorateCallDataWithMemberBase(callData, result);
 
   if (function->hasBody()) {
     *_query = Routines::collectDefinitionData(*function,
