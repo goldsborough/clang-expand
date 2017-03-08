@@ -37,7 +37,7 @@ bool locationsAreEqual(const clang::SourceLocation& first,
 llvm::StringRef getSourceText(const clang::SourceRange& range,
                               const clang::SourceManager& sourceManager,
                               const clang::LangOptions& languageOptions,
-                              unsigned offsetAtEnd = +1);
+                              unsigned offsetAtEnd);
 
 DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                      clang::ASTContext& context,

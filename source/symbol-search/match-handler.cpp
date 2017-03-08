@@ -70,8 +70,10 @@ ParameterMap mapCallParameters(const clang::CallExpr& call,
 
     const auto originalName = (*parameter)->getName();
     const auto range = argument->getSourceRange();
-    const auto callName =
-        Routines::getSourceText(range, sourceManager, languageOptions);
+    const auto callName = Routines::getSourceText(range,
+                                                  sourceManager,
+                                                  languageOptions,
+                                                  /*offsetAtEnd=*/+1);
     expressions.insert({originalName, callName});
 
     ++parameter;
@@ -202,13 +204,13 @@ bool callLocationMatches(const MatchHandler::MatchResult& result,
                                      sourceManager);
 }
 
-llvm::StringRef memberBaseExpressionString(const clang::MemberExpr& member,
-                                           const clang::ASTContext& context) {
-  const auto start = member.getLocStart();
-  const auto end = member.getMemberLoc().getLocWithOffset(-1);
-  return Routines::getSourceText({start, end},
-                                 context.getSourceManager(),
-                                 context.getLangOpts());
+const char* bufferPointerAt(const clang::SourceLocation& location,
+                            const MatchHandler::MatchResult& result) {
+  bool error;
+  const char* data = result.SourceManager->getCharacterData(location, &error);
+  assert(!error && "Error getting character data pointer");
+
+  return data;
 }
 
 void decorateCallDataWithMemberBase(std::optional<CallData>& callData,
@@ -217,7 +219,9 @@ void decorateCallDataWithMemberBase(std::optional<CallData>& callData,
 
   if (auto* member = result.Nodes.getNodeAs<clang::MemberExpr>("member")) {
     if (!llvm::isa<clang::CXXThisExpr>(*member->child_begin())) {
-      callData->base = memberBaseExpressionString(*member, *result.Context);
+      const char* start = bufferPointerAt(member->getLocStart(), result);
+      const char* end = bufferPointerAt(member->getMemberLoc(), result);
+      callData->base.assign(start, end);
     }
   }
 }
