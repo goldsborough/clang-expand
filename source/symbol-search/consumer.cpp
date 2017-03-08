@@ -14,10 +14,13 @@ namespace {
 auto createAstMatcher(const std::string& spelling) {
   using namespace clang::ast_matchers;  // NOLINT(build/namespaces)
   // clang-format off
-  return callExpr(hasDescendant(
-           declRefExpr(
+  return callExpr(anyOf(
+           hasDescendant(declRefExpr(
              hasDeclaration(functionDecl(hasName(spelling)).bind("fn")))
-           .bind("ref")))
+           .bind("ref")),
+           hasDescendant(memberExpr(
+             hasDeclaration(cxxMethodDecl(hasName(spelling)).bind("fn")))
+           .bind("member"))))
          .bind("call");
   // clang-format on
 }

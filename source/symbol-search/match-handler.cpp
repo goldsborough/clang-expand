@@ -121,7 +121,6 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
     // There are so many different kinds of member expressions like x.x, x.X::x,
     // x->x, x-> template x etc. that it's easiest to just grab the source.
     // FIXME: if this becomes a performance issue.
-    llvm::outs() << member->getMemberNameInfo().getName() << '\n';
     name = Routines::getSourceText(member->getSourceRange(),
                                    context.getSourceManager(),
                                    context.getLangOpts(),
@@ -148,7 +147,6 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
   assert(depth > 0 && "Reached invalid depth while walking up call expression");
 
   for (const auto parent : context.getParents(expression)) {
-    llvm::outs() << parent.getNodeKind().asStringRef() << '\n';
     if (const auto* node = parent.get<clang::ReturnStmt>()) {
       return CallData({node->getSourceRange(), context.getSourceManager()});
     } else if (const auto* node = parent.get<clang::CallExpr>()) {
@@ -177,6 +175,35 @@ std::optional<CallData> collectCallData(const clang::Expr& expression,
   // Found no call :(
   return {};
 }
+
+clang::SourceLocation getCallLocation(const MatchHandler::MatchResult& result) {
+  if (const auto* ref = result.Nodes.getNodeAs<clang::DeclRefExpr>("ref")) {
+    return ref->getLocation();
+  }
+
+  const auto* member = result.Nodes.getNodeAs<clang::MemberExpr>("member");
+  assert(member && "Found neither a function nor a method in match");
+
+  return member->getMemberLoc();
+}
+
+void errorIfExplicitMethodInvocation(const MatchHandler::MatchResult& result) {
+  if (const auto* member =
+          result.Nodes.getNodeAs<clang::MemberExpr>("member")) {
+    if (!member->isImplicitAccess()) {
+      Routines::error("Refuse to expand external method invocations");
+    }
+  }
+}
+
+bool callLocationMatches(const MatchHandler::MatchResult& result,
+                         const clang::SourceLocation& targetLocation) {
+  const auto& sourceManager = *result.SourceManager;
+  const auto callLocation = getCallLocation(result);
+  return Routines::locationsAreEqual(callLocation,
+                                     targetLocation,
+                                     sourceManager);
+}
 }  // namespace
 
 MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
@@ -185,14 +212,9 @@ MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
 }
 
 void MatchHandler::run(const MatchResult& result) {
-  const auto* ref = result.Nodes.getNodeAs<clang::DeclRefExpr>("ref");
-  assert(ref != nullptr);
+  if (!callLocationMatches(result, _targetLocation)) return;
 
-  const auto& sourceManager = *result.SourceManager;
-  const auto callLocation = ref->getLocation();
-  const auto foundRightCall =
-      Routines::locationsAreEqual(callLocation, _targetLocation, sourceManager);
-  if (!foundRightCall) return;
+  errorIfExplicitMethodInvocation(result);
 
   const auto* function = result.Nodes.getNodeAs<clang::FunctionDecl>("fn");
   assert(function != nullptr);

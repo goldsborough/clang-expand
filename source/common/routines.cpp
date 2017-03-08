@@ -21,6 +21,7 @@
 #include <llvm/Support/raw_ostream.h>
 
 // Standard includes
+#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <string>
@@ -51,15 +52,16 @@ std::string withoutIndentation(std::string text) {
       if (start == text.begin()) {
         end = text.erase(start, end);
       } else {
-        // Skip the newline
-        ++start;
+        // Skip the newline, unless this is extra whitespace going until the end
+        // of the string. Then we want to get rid of it (like rstrip-ing).
+        if (end != text.end()) ++start;
 
         // If this is the first time we find whitespaace,
         // take this as the reference offset.
         if (offset == -1) offset = end - start;
 
         // Now erase only as much whitespace as we encountered the first time
-        end = text.erase(start, start + offset);
+        end = text.erase(start, std::min(start + offset, end));
       }
     }
 
