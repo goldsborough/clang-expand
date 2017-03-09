@@ -63,7 +63,7 @@ bool DefinitionRewriter::VisitStmt(clang::Stmt* statement) {
   }
 
   if (const auto* member = llvm::dyn_cast<clang::MemberExpr>(statement)) {
-    if (llvm::isa<clang::CXXThisExpr>(member->getBase())) {
+    if (llvm::isa<clang::CXXThisExpr>(member->getBase()->IgnoreImplicit())) {
       _rewriteMemberExpression(*member);
     }
   }
