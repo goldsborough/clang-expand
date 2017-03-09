@@ -82,23 +82,18 @@ bool locationsAreEqual(const clang::SourceLocation& first,
          CanonicalLocation(second, sourceManager);
 }
 
-llvm::StringRef getSourceText(const clang::SourceRange& range,
-                              const clang::SourceManager& sourceManager,
-                              const clang::LangOptions& languageOptions,
-                              unsigned offsetAtEnd) {
-  const auto end = range.getEnd().getLocWithOffset(offsetAtEnd);
-  const clang::SourceRange adjustedRange(range.getBegin(), end);
-  const auto charRange = clang::Lexer::getAsCharRange(adjustedRange,
-                                                      sourceManager,
-                                                      languageOptions);
-  bool error;
-  auto text = clang::Lexer::getSourceText(charRange,
-                                          sourceManager,
-                                          languageOptions,
-                                          &error);
-  assert(!error && "Error getting source text");
+std::string getSourceText(const clang::SourceRange& range,
+                          clang::SourceManager& sourceManager,
+                          const clang::LangOptions& languageOptions) {
+  clang::Rewriter rewriter(sourceManager, languageOptions);
+  return rewriter.getRewrittenText(range);
+}
 
-  return text;
+std::string
+getSourceText(const clang::SourceRange& range, clang::ASTContext& context) {
+  return getSourceText(range,
+                       context.getSourceManager(),
+                       context.getLangOpts());
 }
 
 DefinitionData collectDefinitionData(const clang::FunctionDecl& function,

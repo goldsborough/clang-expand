@@ -19,7 +19,6 @@ class ASTContext;
 }
 
 namespace llvm {
-class StringRef;
 class Twine;
 }
 
@@ -34,10 +33,12 @@ bool locationsAreEqual(const clang::SourceLocation& first,
                        const clang::SourceLocation& second,
                        const clang::SourceManager& sourceManager);
 
-llvm::StringRef getSourceText(const clang::SourceRange& range,
-                              const clang::SourceManager& sourceManager,
-                              const clang::LangOptions& languageOptions,
-                              unsigned offsetAtEnd);
+std::string getSourceText(const clang::SourceRange& range,
+                          clang::SourceManager& sourceManager,
+                          const clang::LangOptions& languageOptions);
+
+std::string getSourceText(const clang::SourceRange& range,
+                          clang::ASTContext& context);
 
 DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                      clang::ASTContext& context,

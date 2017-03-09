@@ -60,28 +60,24 @@ auto collectDeclarationData(const clang::FunctionDecl& function,
 void insertParameterMapping(ParameterMap& parameters,
                             const clang::ParmVarDecl& parameter,
                             const clang::Expr& argument,
-                            const clang::ASTContext& context) {
-  const auto& sourceManager = context.getSourceManager();
-  const auto& languageOptions = context.getLangOpts();
-  const auto originalName = parameter.getName();
+                            clang::ASTContext& context) {
+  // The rewriter is as reliable as it gets for getting the source text.
   const auto range = argument.getSourceRange();
-  const auto callName = Routines::getSourceText(range,
-                                                sourceManager,
-                                                languageOptions,
-                                                /*offsetAtEnd=*/+1);
+  const auto callName = Routines::getSourceText(range, context);
+  const auto originalName = parameter.getName();
+
   parameters.insert({originalName, callName});
 }
 
 bool isMemberOperatorOverload(const clang::CallExpr& call,
                               const clang::FunctionDecl& function) {
-  if (!llvm::isa<clang::CXXOperatorCallExpr>(call)) return false;
-  if (!llvm::isa<clang::CXXMethodDecl>(function)) return false;
-  return true;
+  return llvm::isa<clang::CXXOperatorCallExpr>(call) &&
+         llvm::isa<clang::CXXMethodDecl>(function);
 }
 
 ParameterMap mapCallParameters(const clang::CallExpr& call,
                                const clang::FunctionDecl& function,
-                               const clang::ASTContext& context) {
+                               clang::ASTContext& context) {
   ParameterMap parameters;
 
   // If this is a member operator overload, the second argument is the 'other'
@@ -134,20 +130,9 @@ CallData handleCallForVarDecl(const clang::VarDecl& variable,
   return {std::move(assignee), std::move(range)};
 }
 
-llvm::StringRef entireMemberExpressionString(const clang::MemberExpr& member,
-                                             const clang::ASTContext& context) {
-  // There are so many different kinds of member expressions like x.x, x.X::x,
-  // x->x, x-> template x etc. that it's easiest to just grab the source.
-  // FIXME: if this becomes a performance issue.
-  return Routines::getSourceText(member.getSourceRange(),
-                                 context.getSourceManager(),
-                                 context.getLangOpts(),
-                                 /*offsetAtEnd=*/+2);
-}
-
 CallData
 handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
-                            const clang::ASTContext& context) {
+                            clang::ASTContext& context) {
   if (!binaryOperator.isAssignmentOp() &&
       !binaryOperator.isCompoundAssignmentOp() &&
       !binaryOperator.isShiftAssignOp()) {
@@ -161,7 +146,10 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
   if (const auto* declRefExpr = llvm::dyn_cast<clang::DeclRefExpr>(lhs)) {
     name = declRefExpr->getDecl()->getName();
   } else if (const auto* member = llvm::dyn_cast<clang::MemberExpr>(lhs)) {
-    name = entireMemberExpressionString(*member, context);
+    // There are so many different kinds of member expressions like x.x, x.X::x,
+    // x->x, x-> template x etc. that it's easiest to just grab the source.
+    // FIXME: if this becomes a performance issue.
+    name = Routines::getSourceText(member->getSourceRange(), context);
   } else {
     Routines::error("Cannot expand call because assignee is not recognized");
   }
