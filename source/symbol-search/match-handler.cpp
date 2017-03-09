@@ -212,10 +212,20 @@ clang::SourceLocation getCallLocation(const MatchHandler::MatchResult& result) {
     return member->getMemberLoc();
   }
 
+  if (const auto* memberCall =
+          result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("call")) {
+    if (memberCall->getMethodDecl()->isOverloadedOperator()) {
+      // Since we only lex one token in the action (we have very primitive tools
+      // down there), non-infix operator calls have to be recognized by the
+      // location of the operator token (e.g. '<<' or '~' or '=') and not the
+      // actual function, which begins at the 'operator' token.
+      return memberCall->getExprLoc().getLocWithOffset(+8);
+    }
+  }
+
   const auto* constructor =
       result.Nodes.getNodeAs<clang::CXXConstructExpr>("construct");
-  assert(constructor &&
-         "Found neither a function nor a method nor a constructor in match");
+  assert(constructor && "Found no callable in match result");
 
   return constructor->getLocation();
 }
