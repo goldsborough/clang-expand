@@ -23,6 +23,7 @@
 // Standard includes
 #include <cassert>
 #include <cstdlib>
+#include <iterator>
 #include <string>
 #include <type_traits>
 
@@ -56,30 +57,58 @@ auto collectDeclarationData(const clang::FunctionDecl& function,
   return declaration;
 }
 
+void insertParameterMapping(ParameterMap& parameters,
+                            const clang::ParmVarDecl& parameter,
+                            const clang::Expr& argument,
+                            const clang::ASTContext& context) {
+  const auto& sourceManager = context.getSourceManager();
+  const auto& languageOptions = context.getLangOpts();
+  const auto originalName = parameter.getName();
+  const auto range = argument.getSourceRange();
+  const auto callName = Routines::getSourceText(range,
+                                                sourceManager,
+                                                languageOptions,
+                                                /*offsetAtEnd=*/+1);
+  parameters.insert({originalName, callName});
+}
+
+bool isMemberOperatorOverload(const clang::CallExpr& call,
+                              const clang::FunctionDecl& function) {
+  if (!llvm::isa<clang::CXXOperatorCallExpr>(call)) return false;
+  if (!llvm::isa<clang::CXXMethodDecl>(function)) return false;
+  return true;
+}
+
 ParameterMap mapCallParameters(const clang::CallExpr& call,
                                const clang::FunctionDecl& function,
                                const clang::ASTContext& context) {
-  ParameterMap expressions;
-  const auto& sourceManager = context.getSourceManager();
-  const auto& languageOptions = context.getLangOpts();
+  ParameterMap parameters;
+
+  // If this is a member operator overload, the second argument is the 'other'
+  // parameter of the function declaration (i.e. #params = 1, #args = 2!).
+  if (isMemberOperatorOverload(call, function)) {
+    insertParameterMapping(parameters,
+                           **function.param_begin(),
+                           **std::next(call.arg_begin()),
+                           context);
+    return parameters;
+  }
 
   auto parameter = function.param_begin();
   for (const auto* argument : call.arguments()) {
-    // We only want to map argument that were actually passed in the call...
+    argument = argument->IgnoreImplicit();
+
+    // We only want to map argument that were actually passed in the call
     if (llvm::isa<clang::CXXDefaultArgExpr>(argument)) continue;
 
-    const auto originalName = (*parameter)->getName();
-    const auto range = argument->getSourceRange();
-    const auto callName = Routines::getSourceText(range,
-                                                  sourceManager,
-                                                  languageOptions,
-                                                  /*offsetAtEnd=*/+1);
-    expressions.insert({originalName, callName});
+    assert(parameter != function.param_end() &&
+           "Function has more parameters than arguments?");
+    insertParameterMapping(parameters, **parameter, *argument, context);
 
     ++parameter;
   }
 
-  return expressions;
+  return parameters;
 }
 
 CallData handleCallForVarDecl(const clang::VarDecl& variable,
@@ -218,7 +247,8 @@ void decorateCallDataWithMemberBase(std::optional<CallData>& callData,
   assert(callData.has_value() && "Should have call data at this point");
 
   if (auto* member = result.Nodes.getNodeAs<clang::MemberExpr>("member")) {
-    if (!llvm::isa<clang::CXXThisExpr>(*member->child_begin())) {
+    const auto* child = member->child_begin()->IgnoreImplicit();
+    if (!llvm::isa<clang::CXXThisExpr>(child)) {
       const char* start = bufferPointerAt(member->getLocStart(), result);
       const char* end = bufferPointerAt(member->getMemberLoc(), result);
       callData->base.assign(start, end);

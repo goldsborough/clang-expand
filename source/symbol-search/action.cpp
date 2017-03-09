@@ -15,23 +15,60 @@
 #include <clang/Lex/Token.h>
 
 // LLVM includes
+#include <llvm/ADT/StringSet.h>
 #include <llvm/ADT/Twine.h>
 
 // Standard includes
 #include <cstdlib>
+#include <initializer_list>
 #include <memory>
 #include <string>
 
 namespace ClangExpand::SymbolSearch {
 namespace {
-void verifyToken(bool errorOccurred, const clang::Token& token) {
+bool verifyToken(bool errorOccurred, const clang::Token& token) {
+  static const llvm::StringSet<> operatorTokens = {
+      "amp",                  // &
+      "ampamp",               // &&
+      "ampequal",             // &=
+      "star",                 // *
+      "starequal",            // *=
+      "plus",                 // +
+      "plusequal",            // +=
+      "minus",                // -
+      "minusminus",           // --
+      "minusequal",           // -=
+      "tilde",                // ~
+      "exclaim",              // !
+      "exclaimequal",         // !=
+      "slash",                // /
+      "slashequal",           // /=
+      "percent",              // %
+      "percentequal",         // %=
+      "less",                 // <
+      "lessless",             // <<
+      "lessequal",            // <=
+      "lesslessequal",        // <<=
+      "greater",              // >
+      "greatergreater",       // >>
+      "greaterequal",         // >=
+      "greatergreaterequal",  // >>=
+      "caret",                // ^
+      "caretequal",           // ^=
+      "pipe",                 // |
+      "pipepipe",             // ||
+      "pipeequal",            // |=
+      "equalequal"            // ==
+  };
+
   if (errorOccurred) {
     Routines::error("Error lexing token at given location");
   }
 
-  if (!token.is(clang::tok::raw_identifier)) {
-    Routines::error("Token at given location is not an identifier");
-  }
+  if (token.is(clang::tok::raw_identifier)) return false;
+  if (operatorTokens.count(token.getName())) return true;
+
+  Routines::error("Token at given location is not an identifier");
 }
 }  // namespace
 
@@ -70,11 +107,13 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
                                                  languageOptions,
                                                  /*IgnoreWhiteSpace=*/true);
 
-  verifyToken(errorOccurred, token);
+  bool isOperator = verifyToken(errorOccurred, token);
 
   // Good to go.
   _callLocation = startLocation;
   _spelling = clang::Lexer::getSpelling(token, sourceManager, languageOptions);
+
+  if (isOperator) _spelling = "operator" + _spelling;
 
   // clang-format off
   auto hooks = std::make_unique<MacroSearch>(
@@ -88,8 +127,8 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
   return true;
 }
 
-Action::ASTConsumerPointer Action::CreateASTConsumer(clang::CompilerInstance&,
-                                                     llvm::StringRef) {
+Action::ASTConsumerPointer
+Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef) {
   // We already have the token at this point, because BeginInvocation is
   // guaranteed to be called before this method. We don't have the macro pointer
   // yet (if ever), because we get it in the preprocessor hooks, which are
