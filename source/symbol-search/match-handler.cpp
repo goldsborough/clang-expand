@@ -26,6 +26,7 @@
 #include <iterator>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 namespace ClangExpand::SymbolSearch {
 namespace {
@@ -61,7 +62,6 @@ void insertParameterMapping(ParameterMap& parameters,
                             const clang::ParmVarDecl& parameter,
                             const clang::Expr& argument,
                             clang::ASTContext& context) {
-  // The rewriter is as reliable as it gets for getting the source text.
   const auto range = argument.getSourceRange();
   const auto callName = Routines::getSourceText(range, context);
   const auto originalName = parameter.getName();
@@ -69,13 +69,15 @@ void insertParameterMapping(ParameterMap& parameters,
   parameters.insert({originalName, callName});
 }
 
-bool isMemberOperatorOverload(const clang::CallExpr& call,
+template <typename CallOrConstruction>
+bool isMemberOperatorOverload(const CallOrConstruction& call,
                               const clang::FunctionDecl& function) {
   return llvm::isa<clang::CXXOperatorCallExpr>(call) &&
          llvm::isa<clang::CXXMethodDecl>(function);
 }
 
-ParameterMap mapCallParameters(const clang::CallExpr& call,
+template <typename CallOrConstruction>
+ParameterMap mapCallParameters(const CallOrConstruction& call,
                                const clang::FunctionDecl& function,
                                clang::ASTContext& context) {
   ParameterMap parameters;
@@ -202,14 +204,20 @@ collectCallDataFromContext(const clang::Expr& expression,
 }
 
 clang::SourceLocation getCallLocation(const MatchHandler::MatchResult& result) {
-  if (const auto* ref = result.Nodes.getNodeAs<clang::DeclRefExpr>("ref")) {
+  if (auto* ref = result.Nodes.getNodeAs<clang::DeclRefExpr>("ref")) {
     return ref->getLocation();
   }
 
-  const auto* member = result.Nodes.getNodeAs<clang::MemberExpr>("member");
-  assert(member && "Found neither a function nor a method in match");
+  if (auto* member = result.Nodes.getNodeAs<clang::MemberExpr>("member")) {
+    return member->getMemberLoc();
+  }
 
-  return member->getMemberLoc();
+  const auto* constructor =
+      result.Nodes.getNodeAs<clang::CXXConstructExpr>("construct");
+  assert(constructor &&
+         "Found neither a function nor a method nor a constructor in match");
+
+  return constructor->getLocation();
 }
 
 bool callLocationMatches(const MatchHandler::MatchResult& result,
@@ -240,10 +248,31 @@ void decorateCallDataWithMemberBase(std::optional<CallData>& callData,
       const char* start = bufferPointerAt(member->getLocStart(), result);
       const char* end = bufferPointerAt(member->getMemberLoc(), result);
       callData->base.assign(start, end);
+      return;
     }
+  }
+
+  const auto* constructor =
+      result.Nodes.getNodeAs<clang::CXXConstructorDecl>("fn");
+  if (constructor && callData->assignee.has_value()) {
+    callData->base = callData->assignee->name + ".";
   }
 }
 
+std::pair<const clang::Expr*, ParameterMap>
+inspectCall(const clang::FunctionDecl& function,
+            const MatchHandler::MatchResult& result) {
+  auto& context = *result.Context;
+  if (auto* functionCall = result.Nodes.getNodeAs<clang::CallExpr>("call")) {
+    auto parameterMap = mapCallParameters(*functionCall, function, context);
+    return {functionCall, std::move(parameterMap)};
+  }
+  const auto* constructor =
+      result.Nodes.getNodeAs<clang::CXXConstructExpr>("construct");
+  auto parameterMap = mapCallParameters(*constructor, function, context);
+
+  return {constructor, std::move(parameterMap)};
+}
 }  // namespace
 
 MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
@@ -254,13 +283,15 @@ MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
 void MatchHandler::run(const MatchResult& result) {
   if (!callLocationMatches(result, _targetLocation)) return;
 
+  // This is either a pure FunctionDecl, a CXXMethodDecl or a CXXConstructorDecl
   const auto* function = result.Nodes.getNodeAs<clang::FunctionDecl>("fn");
-  assert(function != nullptr);
+  assert(function && "Did not match required function declaration");
+
+  auto[call, parameterMap] = inspectCall(*function, result);
+
+  assert(call && "Matched neither function call nor constructor invocation");
 
   auto& context = *result.Context;
-  const auto* call = result.Nodes.getNodeAs<clang::CallExpr>("call");
-  auto parameterMap = mapCallParameters(*call, *function, context);
-
   std::optional<CallData> callData = collectCallDataFromContext(*call, context);
   if (!callData.has_value()) {
     // If we found no "context" (i.e. assignment or return statement) to collect

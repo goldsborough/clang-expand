@@ -1,5 +1,6 @@
 # clang-expand
 
 todo:
-operator overloads
 constructors
+unary operators
+make sure we expand only on top level decl

@@ -14,14 +14,22 @@ namespace {
 auto createAstMatcher(const std::string& spelling) {
   using namespace clang::ast_matchers;  // NOLINT(build/namespaces)
   // clang-format off
-  return callExpr(anyOf(
-           hasDescendant(declRefExpr(
-             hasDeclaration(functionDecl(hasName(spelling)).bind("fn")))
-           .bind("ref")),
-           hasDescendant(memberExpr(
-             hasDeclaration(cxxMethodDecl(hasName(spelling)).bind("fn")))
-           .bind("member"))))
-         .bind("call");
+  return expr(anyOf(
+           callExpr(anyOf(
+             hasDescendant(declRefExpr(
+               hasDeclaration(functionDecl(hasName(spelling)).bind("fn")))
+             .bind("ref")),
+             hasDescendant(memberExpr(
+               hasDeclaration(cxxMethodDecl(hasName(spelling)).bind("fn")))
+             .bind("member"))))
+           .bind("call"),
+           cxxConstructExpr(
+              hasDeclaration(
+                cxxConstructorDecl(
+                  hasName(spelling),
+                  isUserProvided())
+                .bind("fn")))
+           .bind("construct")));
   // clang-format on
 }
 }  // namespace

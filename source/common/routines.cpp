@@ -103,19 +103,22 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
   const auto& sourceManager = context.getSourceManager();
   EasyLocation location(function.getLocation(), sourceManager);
 
-  assert(function.hasBody());
-  auto* body = function.getBody();
-
-  clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
-  DefinitionRewriter(rewriter, parameterMap, call, context).TraverseStmt(body);
+  assert(function.hasBody() &&
+         "Function should have a body to collect definition");
+  auto* body = llvm::cast<clang::CompoundStmt>(function.getBody());
 
   const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
   const auto beforeBrace = body->getLocEnd().getLocWithOffset(-1);
   const clang::SourceRange range(afterBrace, beforeBrace);
 
+  clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
   if (call && call->requiresDeclaration()) {
     insertDeclaration(*call->assignee, afterBrace, rewriter);
   }
+
+  if (body->body_empty()) return {location, ""};
+
+  DefinitionRewriter(rewriter, parameterMap, call, context).TraverseStmt(body);
 
   const auto text = withoutIndentation(rewriter.getRewrittenText(range));
   return {std::move(location), text};
