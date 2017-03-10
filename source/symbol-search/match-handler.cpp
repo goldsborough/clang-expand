@@ -69,11 +69,13 @@ void insertParameterMapping(ParameterMap& parameters,
   parameters.insert({originalName, callName});
 }
 
-template <typename CallOrConstruction>
-bool isMemberOperatorOverload(const CallOrConstruction& call,
-                              const clang::FunctionDecl& function) {
+bool isMemberOperatorOverloadCall(const clang::CallExpr& call) {
   return llvm::isa<clang::CXXOperatorCallExpr>(call) &&
-         llvm::isa<clang::CXXMethodDecl>(function);
+         llvm::isa<clang::CXXMethodDecl>(call.getDirectCallee());
+}
+
+bool isMemberOperatorOverloadCall(const clang::CXXConstructExpr&) {
+  return false;
 }
 
 template <typename CallOrConstruction>
@@ -82,13 +84,17 @@ ParameterMap mapCallParameters(const CallOrConstruction& call,
                                clang::ASTContext& context) {
   ParameterMap parameters;
 
-  // If this is a member operator overload, the second argument is the 'other'
-  // parameter of the function declaration (i.e. #params = 1, #args = 2!).
-  if (isMemberOperatorOverload(call, function)) {
-    insertParameterMapping(parameters,
-                           **function.param_begin(),
-                           **std::next(call.arg_begin()),
-                           context);
+
+  if (isMemberOperatorOverloadCall(call)) {
+    if (llvm::cast<clang::CXXOperatorCallExpr>(call).isInfixBinaryOp()) {
+      // If this is a binary member operator overload, the second argument is
+      // the 'other' parameter of the function declaration (i.e. #params = 1,
+      // #args = 2!).
+      insertParameterMapping(parameters,
+                             **function.param_begin(),
+                             **std::next(call.arg_begin()),
+                             context);
+    }
     return parameters;
   }
 
@@ -208,10 +214,6 @@ clang::SourceLocation getCallLocation(const MatchHandler::MatchResult& result) {
     return ref->getLocation();
   }
 
-  if (auto* member = result.Nodes.getNodeAs<clang::MemberExpr>("member")) {
-    return member->getMemberLoc();
-  }
-
   if (const auto* memberCall =
           result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("call")) {
     if (memberCall->getMethodDecl()->isOverloadedOperator()) {
@@ -221,6 +223,10 @@ clang::SourceLocation getCallLocation(const MatchHandler::MatchResult& result) {
       // actual function, which begins at the 'operator' token.
       return memberCall->getExprLoc().getLocWithOffset(+8);
     }
+  }
+
+  if (auto* member = result.Nodes.getNodeAs<clang::MemberExpr>("member")) {
+    return member->getMemberLoc();
   }
 
   const auto* constructor =
@@ -251,6 +257,16 @@ const char* bufferPointerAt(const clang::SourceLocation& location,
 void decorateCallDataWithMemberBase(std::optional<CallData>& callData,
                                     const MatchHandler::MatchResult& result) {
   assert(callData.has_value() && "Should have call data at this point");
+
+  if (auto* call = result.Nodes.getNodeAs<clang::CallExpr>("call")) {
+    if (isMemberOperatorOverloadCall(*call)) {
+      const auto lhs = *(call->arg_begin());
+      callData->base =
+          Routines::getSourceText(lhs->getSourceRange(), *result.Context);
+      callData->base += ".";
+      return;
+    }
+  }
 
   if (auto* member = result.Nodes.getNodeAs<clang::MemberExpr>("member")) {
     const auto* child = member->child_begin()->IgnoreImplicit();

@@ -6,11 +6,14 @@
 #include "clang-expand/common/data.hpp"
 
 // Clang includes
+#include <clang/AST/Expr.h>
 #include <clang/AST/RecursiveASTVisitor.h>
+
+// LLVM includes
+#include <llvm/ADT/SmallPtrSet.h>
 
 namespace clang {
 class ASTContext;
-class MemberExpr;
 class Rewriter;
 class Stmt;
 }
@@ -38,6 +41,7 @@ class DefinitionRewriter
   const ParameterMap& _parameterMap;
   const OptionalCall& _call;
   clang::ASTContext& _context;
+  llvm::SmallPtrSet<const clang::MemberExpr*, 16> _rewrittenMembers;
 };
 }  // namespace ClangExpand
 
