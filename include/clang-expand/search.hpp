@@ -23,20 +23,30 @@ class Search {
  public:
   using CompilationDatabase = clang::tooling::CompilationDatabase;
   using SourceVector = std::vector<std::string>;
-  using Result = DefinitionData;
 
-  Search(const std::string& file, unsigned line, unsigned column);
+  struct Result {
+    explicit Result(const Query& query);
+    Range callExtent;
+    // Location declaration;
+    DefinitionData definition;
+  };
 
-  Result run(CompilationDatabase& compilationDatabase,
-             const SourceVector& sources);
+  Search(const std::string& file,
+         unsigned line,
+         unsigned column,
+         bool shouldRewrite);
+
+  Result
+  run(CompilationDatabase& compilationDatabase, const SourceVector& sources);
 
  private:
   void _symbolSearch(CompilationDatabase& compilationDatabase, Query& query);
   void _definitionSearch(CompilationDatabase& compilationDatabase,
-                        const SourceVector& sources,
-                        Query& query);
+                         const SourceVector& sources,
+                         Query& query);
 
-  EasyLocation _location;
+  Location _location;
+  bool _shouldRewrite;
 };
 }  // namespace ClangExpand
 

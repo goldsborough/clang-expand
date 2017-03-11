@@ -40,21 +40,22 @@ void MatchHandler::run(const MatchResult& result) {
   const auto* function = result.Nodes.getNodeAs<clang::FunctionDecl>("fn");
   assert(function != nullptr && "Got null function node in match handler");
 
-  const auto& parameterTypes = _query->declaration().parameterTypes;
+  const auto& parameterTypes = _query->declaration->parameterTypes;
 
   if (function->getNumParams() != parameterTypes.size()) return;
 
   if (!_matchParameters(*result.Context, *function)) return;
   if (!_matchContexts(*function)) return;
 
-  llvm::errs() << "Found correct definition at ";
-  function->getLocation().dump(*result.SourceManager);
+  function->getLocation().print(llvm::errs(), *result.SourceManager);
   llvm::errs() << '\n';
 
-  *_query = Routines::collectDefinitionData(*function,
-                                            *result.Context,
-                                            _query->declaration().parameterMap,
-                                            _query->call());
+  auto definition =
+      Routines::collectDefinitionData(*function,
+                                      *result.Context,
+                                      _query->declaration->parameterMap,
+                                      _query->call);
+  _query->definition = std::move(definition);
 }
 
 bool MatchHandler::_matchParameters(const clang::ASTContext& context,
@@ -62,7 +63,7 @@ bool MatchHandler::_matchParameters(const clang::ASTContext& context,
     noexcept {
   const auto& policy = context.getPrintingPolicy();
 
-  auto expectedType = _query->declaration().parameterTypes.begin();
+  auto expectedType = _query->declaration->parameterTypes.begin();
   for (const auto* parameter : function.parameters()) {
     const auto type = parameter->getOriginalType().getCanonicalType();
     if (*expectedType != type.getAsString(policy)) return false;
@@ -74,7 +75,7 @@ bool MatchHandler::_matchParameters(const clang::ASTContext& context,
 
 bool MatchHandler::_matchContexts(const clang::FunctionDecl& function) const
     noexcept {
-  auto expectedContext = _query->declaration().contexts.begin();
+  auto expectedContext = _query->declaration->contexts.begin();
 
   const auto* context = function.getPrimaryContext()->getParent();
   for (; context; context = context->getParent()) {

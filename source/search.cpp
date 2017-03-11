@@ -17,30 +17,40 @@
 #include <vector>
 
 namespace ClangExpand {
-Search::Search(const std::string& file, unsigned line, unsigned column)
-: _location(Routines::makeAbsolute(file), line, column) {
+Search::Result::Result(const Query& query)
+: callExtent(query.call->extent)
+// , declarationLocation(query->declaration.location)
+, definition(*query.definition) {
+}
+
+Search::Search(const std::string& file,
+               unsigned line,
+               unsigned column,
+               bool shouldRewrite)
+: _location(Routines::makeAbsolute(file), line, column)
+, _shouldRewrite(shouldRewrite) {
 }
 
 Search::Result
 Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
             const SourceVector& sources) {
-  Query query;
+  Query query(_shouldRewrite);
 
   _symbolSearch(compilationDatabase, query);
 
-  if (query.isEmpty()) {
+  if (!query.hasDeclaration()) {
     Routines::error("Could not recognize token at specified location");
   }
 
-  if (!query.isDefinition()) {
+  if (!query.hasDefinition()) {
     _definitionSearch(compilationDatabase, sources, query);
   }
 
-  if (!query.isDefinition()) {
+  if (!query.hasDefinition()) {
     Routines::error("Could not find definition");
   }
 
-  return query.definition();
+  return Result(query);
 }
 
 void Search::_symbolSearch(CompilationDatabase& compilationDatabase,

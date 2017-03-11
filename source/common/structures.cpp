@@ -47,13 +47,13 @@ Range::Range(const clang::SourceRange& range,
 Range::Range(Offset begin_, Offset end_) : begin(begin_), end(end_) {
 }
 
-EasyLocation::EasyLocation(const clang::SourceLocation& location,
+Location::Location(const clang::SourceLocation& location,
                            const clang::SourceManager& sourceManager)
 : filename(sourceManager.getFilename(location))
 , offset(location, sourceManager) {
 }
 
-EasyLocation::EasyLocation(const llvm::StringRef& filename_,
+Location::Location(const llvm::StringRef& filename_,
                            unsigned line,
                            unsigned column)
 : filename(filename_), offset{line, column} {

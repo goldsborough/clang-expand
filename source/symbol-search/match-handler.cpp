@@ -33,7 +33,9 @@ namespace {
 auto collectDeclarationData(const clang::FunctionDecl& function,
                             const clang::ASTContext& astContext,
                             ParameterMap&& parameterMap) {
-  ClangExpand::DeclarationData declaration(function.getName());
+  const Location location(function.getLocation(),
+                              astContext.getSourceManager());
+  ClangExpand::DeclarationData declaration(function.getName(), location);
   declaration.parameterMap = std::move(parameterMap);
 
   const auto& policy = astContext.getPrintingPolicy();
@@ -115,8 +117,36 @@ ParameterMap mapCallParameters(const CallOrConstruction& call,
   return parameters;
 }
 
-CallData handleCallForVarDecl(const clang::VarDecl& variable,
-                              const clang::ASTContext& context) {
+template <typename T, typename Node>
+std::optional<const T*>
+parentIfHasType(const Node& node, clang::ASTContext& context) {
+  const auto parents = context.getParents(node);
+  if (parents.empty()) return std::nullopt;
+  return parents.begin()->template get<T>();
+}
+
+bool isNestedInsideSomeOtherStatment(const clang::VarDecl& variable,
+                                     clang::ASTContext& context) {
+  // Make sure the parents are [DeclStmt[->CompoundStmt]].
+  if (auto parent = parentIfHasType<clang::DeclStmt>(variable, context)) {
+    // Found the parent and it's not what we wanted it to be.
+    if (parent.value() == nullptr) return true;
+    if (auto grandparent =
+            parentIfHasType<clang::CompoundStmt>(**parent, context)) {
+      if (grandparent.value() == nullptr) return true;
+    }
+  }
+
+  return false;
+}
+
+std::optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
+                                             clang::ASTContext& context) {
+  // Could be an IfStmt, a WhileStmt, a CallExpr etc. etc.
+  if (isNestedInsideSomeOtherStatment(variable, context)) {
+    return std::nullopt;
+  }
+
   const auto qualType = variable.getType().getCanonicalType();
   const auto* type = qualType.getTypePtr();
   const auto& policy = context.getPrintingPolicy();
@@ -135,7 +165,7 @@ CallData handleCallForVarDecl(const clang::VarDecl& variable,
   }
 
   Range range(variable.getSourceRange(), context.getSourceManager());
-  return {std::move(assignee), std::move(range)};
+  return CallData(std::move(assignee), std::move(range));
 }
 
 CallData
@@ -183,8 +213,6 @@ collectCallDataFromContext(const clang::Expr& expression,
   for (const auto parent : context.getParents(expression)) {
     if (const auto* node = parent.get<clang::ReturnStmt>()) {
       return CallData({node->getSourceRange(), context.getSourceManager()});
-    } else if (const auto* node = parent.get<clang::CallExpr>()) {
-      Routines::error("Cannot expand call inside another call expression");
     } else if (const auto* node = parent.get<clang::VarDecl>()) {
       return handleCallForVarDecl(*node, context);
     } else if (const auto* node = parent.get<clang::BinaryOperator>()) {
@@ -254,16 +282,14 @@ const char* bufferPointerAt(const clang::SourceLocation& location,
   return data;
 }
 
-void decorateCallDataWithMemberBase(std::optional<CallData>& callData,
+void decorateCallDataWithMemberBase(CallData& callData,
                                     const MatchHandler::MatchResult& result) {
-  assert(callData.has_value() && "Should have call data at this point");
-
   if (auto* call = result.Nodes.getNodeAs<clang::CallExpr>("call")) {
     if (isMemberOperatorOverloadCall(*call)) {
       const auto lhs = *(call->arg_begin());
-      callData->base =
+      callData.base =
           Routines::getSourceText(lhs->getSourceRange(), *result.Context);
-      callData->base += ".";
+      callData.base += ".";
       return;
     }
   }
@@ -273,15 +299,15 @@ void decorateCallDataWithMemberBase(std::optional<CallData>& callData,
     if (!llvm::isa<clang::CXXThisExpr>(child)) {
       const char* start = bufferPointerAt(member->getLocStart(), result);
       const char* end = bufferPointerAt(member->getMemberLoc(), result);
-      callData->base.assign(start, end);
+      callData.base.assign(start, end);
       return;
     }
   }
 
   const auto* constructor =
       result.Nodes.getNodeAs<clang::CXXConstructorDecl>("fn");
-  if (constructor && callData->assignee.has_value()) {
-    callData->base = callData->assignee->name + ".";
+  if (constructor && callData.assignee.has_value()) {
+    callData.base = callData.assignee->name + ".";
   }
 }
 
@@ -299,6 +325,21 @@ inspectCall(const clang::FunctionDecl& function,
 
   return {constructor, std::move(parameterMap)};
 }
+
+CallData collectCallData(const clang::Expr& call, clang::ASTContext& context) {
+  if (auto parent = parentIfHasType<clang::CompoundStmt>(call, context)) {
+    if (parent.value() != nullptr) {
+      return CallData({call.getSourceRange(), context.getSourceManager()});
+    }
+  }
+
+  if (auto optional = collectCallDataFromContext(call, context)) {
+    return optional.value();
+  }
+
+  Routines::error("Refuse or unable to expand at given location");
+}
+
 }  // namespace
 
 MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
@@ -318,26 +359,21 @@ void MatchHandler::run(const MatchResult& result) {
   assert(call && "Matched neither function call nor constructor invocation");
 
   auto& context = *result.Context;
-  std::optional<CallData> callData = collectCallDataFromContext(*call, context);
-  if (!callData.has_value()) {
-    // If we found no "context" (i.e. assignment or return statement) to collect
-    // information about and the range of the full statement, this is probably
-    // just a plain function call like f() or foo.bar(). In that case we simply
-    // pick the call expression as the range.
-    callData.emplace(Range(call->getSourceRange(), context.getSourceManager()));
-  }
+  auto callData = collectCallData(*call, context);
 
   decorateCallDataWithMemberBase(callData, result);
 
+  auto declaration =
+      collectDeclarationData(*function, context, std::move(parameterMap));
+  _query->declaration = std::move(declaration);
+  _query->call = std::move(callData);
+
   if (function->hasBody()) {
-    *_query = Routines::collectDefinitionData(*function,
-                                              context,
-                                              parameterMap,
-                                              callData);
-  } else {
-    auto declaration =
-        collectDeclarationData(*function, context, std::move(parameterMap));
-    *_query = Query(std::move(declaration), std::move(callData));
+    auto definition = Routines::collectDefinitionData(*function,
+                                                      context,
+                                                      parameterMap,
+                                                      callData);
+    _query->definition = std::move(definition);
   }
 }
 

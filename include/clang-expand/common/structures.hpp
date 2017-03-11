@@ -46,11 +46,11 @@ struct Range {
   Offset end;
 };
 
-struct EasyLocation {
-  EasyLocation(const clang::SourceLocation& location,
+struct Location {
+  Location(const clang::SourceLocation& location,
                const clang::SourceManager& sourceManager);
 
-  EasyLocation(const llvm::StringRef& filename, unsigned line, unsigned column);
+  Location(const llvm::StringRef& filename, unsigned line, unsigned column);
 
   std::string filename;
   Offset offset;

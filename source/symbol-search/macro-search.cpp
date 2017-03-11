@@ -1,7 +1,8 @@
 // Project includes
 #include "clang-expand/symbol-search/macro-search.hpp"
-#include "clang-expand/common/query.hpp"
 #include "clang-expand/common/data.hpp"
+#include "clang-expand/common/query.hpp"
+#include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
@@ -34,20 +35,14 @@ class LangOptions;
 
 namespace ClangExpand::SymbolSearch {
 namespace {
-DefinitionData
-collectDefinitionData(const clang::MacroInfo& info,
-                      clang::SourceManager& sourceManager,
-                      const clang::LangOptions& languageOptions) {
+std::string getDefinitionText(const clang::MacroInfo& info,
+                              clang::SourceManager& sourceManager,
+                              const clang::LangOptions& languageOptions) {
   // Using the rewriter (without actually rewriting) is honestly the only way I
   // found to get at the raw source text in a macro-safe way.
-  clang::Rewriter rewriter(sourceManager, languageOptions);
   const auto start = info.tokens_begin()->getLocation();
   const auto end = std::prev(info.tokens_end())->getEndLoc();
-  const auto definition = rewriter.getRewrittenText({start, end});
-
-  EasyLocation location(info.getDefinitionLoc(), sourceManager);
-
-  return {std::move(location), definition};
+  return Routines::getSourceText({start, end}, sourceManager, languageOptions);
 }
 
 void rewriteStringifiedMacroArgument(clang::Rewriter& rewriter,
@@ -89,16 +84,13 @@ void MacroSearch::MacroExpands(const clang::Token&,
   if (_callLocation != canonical) return;
 
   const auto* info = macro.getMacroInfo();
-  if (info->isObjectLike()) {
-    _callback(collectDefinitionData(*info, _sourceManager, _languageOptions));
-    return;
-  }
+  auto definition = getDefinitionText(*info, _sourceManager, _languageOptions);
 
   const auto mapping = _createParameterMapping(*info, *arguments);
   std::string text = _rewriteMacro(*info, mapping);
 
-  EasyLocation location(info->getDefinitionLoc(), _sourceManager);
-  _callback({std::move(location), std::move(text)});
+  Location location(info->getDefinitionLoc(), _sourceManager);
+  _callback({std::move(location), std::move(text), std::move(definition)});
 }
 
 std::string MacroSearch::_rewriteMacro(const clang::MacroInfo& info,
@@ -155,7 +147,6 @@ MacroSearch::_createParameterMapping(const clang::MacroInfo& info,
       clang::Token token;
       [[maybe_unused]] bool ok = lexer.Lex(token);
       assert(ok && "Error lexing token in macro invocation");
-
       wholeArgument += _getSpelling(token);
     }
 

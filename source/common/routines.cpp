@@ -101,7 +101,7 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                      const ParameterMap& parameterMap,
                                      const OptionalCall& call) {
   const auto& sourceManager = context.getSourceManager();
-  EasyLocation location(function.getLocation(), sourceManager);
+  Location location(function.getLocation(), sourceManager);
 
   assert(function.hasBody() &&
          "Function should have a body to collect definition");
@@ -112,16 +112,17 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
   const clang::SourceRange range(afterBrace, beforeBrace);
 
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
+  auto original = withoutIndentation(rewriter.getRewrittenText(range));
   if (call && call->requiresDeclaration()) {
     insertDeclaration(*call->assignee, afterBrace, rewriter);
   }
 
-  if (body->body_empty()) return {location, ""};
+  if (body->body_empty()) return {location, "", original};
 
   DefinitionRewriter(rewriter, parameterMap, call, context).TraverseStmt(body);
 
-  const auto text = withoutIndentation(rewriter.getRewrittenText(range));
-  return {std::move(location), text};
+  const auto replaced = withoutIndentation(rewriter.getRewrittenText(range));
+  return {std::move(location), replaced, original};
 }
 
 std::string makeAbsolute(const std::string& filename) {

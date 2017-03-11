@@ -36,6 +36,13 @@ llvm::cl::opt<unsigned>
                  llvm::cl::desc("The column number of the function to expand"),
                  llvm::cl::cat(clangExpandCategory));
 
+llvm::cl::opt<bool>
+    rewriteOption("rewrite",
+                  llvm::cl::init(true),
+                  llvm::cl::desc("Whether to also generate the rewritten "
+                                 "definition with parameters replaced"),
+                  llvm::cl::cat(clangExpandCategory));
+
 llvm::cl::extrahelp
     commonHelp(clang::tooling::CommonOptionsParser::HelpMessage);
 }  // namespace
@@ -51,13 +58,17 @@ auto main(int argc, const char* argv[]) -> int {
     fileOption = sources.front();
   }
 
-  ClangExpand::Search search(fileOption, lineOption, columnOption);
+  ClangExpand::Search search(fileOption,
+                             lineOption,
+                             columnOption,
+                             rewriteOption);
   const auto result = search.run(db, sources);
 
-  llvm::outs() << result.code << '\n';
+  llvm::outs() << result.definition.original << "\n\n";
+  llvm::outs() << result.definition.rewritten << '\n';
 }
 
 
 // Output json consisting of validity heuristic (depending on return value)
-// range to replace (initializer + function call)
-// text to replace with (return value declaration + body)
+// range to rewrite (initializer + function call)
+// text to rewrite with (return value declaration + body)

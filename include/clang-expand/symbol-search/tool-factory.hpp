@@ -7,18 +7,18 @@
 
 namespace ClangExpand {
 class Query;
-struct EasyLocation;
+struct Location;
 }
 
 namespace ClangExpand::SymbolSearch {
 class ToolFactory : public clang::tooling::FrontendActionFactory {
  public:
-  explicit ToolFactory(const EasyLocation& _targetLocation, Query* query);
+  explicit ToolFactory(const Location& _targetLocation, Query* query);
 
   clang::FrontendAction* create() override;
 
  private:
-  const EasyLocation& _targetLocation;
+  const Location& _targetLocation;
   Query* _query;
 };
 }  // namespace ClangExpand::SymbolSearch

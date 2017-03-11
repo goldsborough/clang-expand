@@ -72,7 +72,7 @@ bool verifyToken(bool errorOccurred, const clang::Token& token) {
 }
 }  // namespace
 
-Action::Action(const EasyLocation& targetLocation, Query* query)
+Action::Action(const Location& targetLocation, Query* query)
 : _query(query), _alreadyFoundMacro(false), _targetLocation(targetLocation) {
 }
 
@@ -119,7 +119,7 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
   auto hooks = std::make_unique<MacroSearch>(
     compiler, _callLocation,
     [this](auto&& definition) {
-      *_query = std::move(definition);
+      _query->definition = std::move(definition);
     });
   // clang-format on
   compiler.getPreprocessor().addPPCallbacks(std::move(hooks));

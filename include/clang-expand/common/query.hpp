@@ -8,36 +8,19 @@
 // Standard includes
 #include <functional>
 #include <optional>
-#include <variant>
 
 namespace ClangExpand {
 class Query {
  public:
-  using OptionalCall = std::optional<CallData>;
+  explicit Query(bool shouldRewrite_);
 
-  Query();
+  bool hasDefinition() const noexcept;
+  bool hasDeclaration() const noexcept;
 
-  Query(DeclarationData&& declaration);  // NOLINT(runtime/explicit)
-  Query(DefinitionData&& definition);    // NOLINT(runtime/explicit)
-  Query(DeclarationData&& declaration, OptionalCall&& call);
-
-  bool isDefinition() const noexcept;
-  bool isDeclaration() const noexcept;
-  bool hasCall() const noexcept;
-  bool isEmpty() const noexcept;
-
-  explicit operator bool() const noexcept;
-
-  const DeclarationData& declaration() const noexcept;
-  const DefinitionData& definition() const noexcept;
-  const OptionalCall& call() const noexcept;
-
- private:
-  using PartialState =
-      std::variant<std::monostate, DeclarationData, DefinitionData>;
-
-  PartialState _state;
-  OptionalCall _call;
+  std::optional<DeclarationData> declaration;
+  std::optional<DefinitionData> definition;
+  std::optional<CallData> call;
+  const bool shouldRewrite;
 };
 
 using QueryCallback = std::function<void(Query&&)>;

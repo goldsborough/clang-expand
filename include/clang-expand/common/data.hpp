@@ -41,18 +41,22 @@ using TypeVector = llvm::SmallVector<std::string, 8>;
 using ParameterMap = llvm::StringMap<std::string>;
 
 struct DeclarationData {
-  explicit DeclarationData(const llvm::StringRef& name_) : name(name_.str()) {
+  explicit DeclarationData(const llvm::StringRef& name_,
+                           const Location& location_)
+  : name(name_.str()), location(location_) {
   }
 
   std::string name;
   ContextDataVector contexts;
   TypeVector parameterTypes;
   ParameterMap parameterMap;
+  Location location;
 };
 
 struct DefinitionData {
-  EasyLocation location;
-  std::string code;
+  Location location;
+  std::string rewritten;
+  std::string original;
 };
 }  // namespace ClangExpand
 

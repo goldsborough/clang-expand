@@ -20,7 +20,7 @@ Consumer::Consumer(Query* query) : _query(query), _matchHandler(query) {
 }
 
 void Consumer::HandleTranslationUnit(clang::ASTContext& context) {
-  const auto matcher = createAstMatcher(_query->declaration());
+  const auto matcher = createAstMatcher(*_query->declaration);
   clang::ast_matchers::MatchFinder matchFinder;
   matchFinder.addMatcher(matcher, &_matchHandler);
   matchFinder.matchAST(context);

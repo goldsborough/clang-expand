@@ -35,7 +35,7 @@ class Action : public clang::ASTFrontendAction {
   using super = clang::ASTFrontendAction;
   using ASTConsumerPointer = std::unique_ptr<clang::ASTConsumer>;
 
-  Action(const EasyLocation& targetLocation, Query* query);
+  Action(const Location& targetLocation, Query* query);
 
   bool BeginSourceFileAction(clang::CompilerInstance& compiler,
                              llvm::StringRef filename) override;
@@ -51,7 +51,7 @@ class Action : public clang::ASTFrontendAction {
   Query* _query;
   clang::SourceLocation _callLocation;
   bool _alreadyFoundMacro;
-  EasyLocation _targetLocation;
+  Location _targetLocation;
 };
 
 }  // namespace ClangExpand::SymbolSearch
