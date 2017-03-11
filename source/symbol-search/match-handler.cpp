@@ -37,8 +37,9 @@ auto collectDeclarationData(const clang::FunctionDecl& function,
   ClangExpand::DeclarationData declaration(function.getName(), location);
 
   declaration.parameterMap = std::move(parameterMap);
-  declaration.text =
+  const auto text =
       Routines::getSourceText(function.getSourceRange(), astContext);
+  declaration.text = (std::move(text) + llvm::Twine(";")).str();
 
   const auto& policy = astContext.getPrintingPolicy();
   // Collect parameter types (their string representations)

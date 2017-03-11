@@ -39,7 +39,7 @@ struct MappingTraits<ClangExpand::DeclarationData> {
   mapping(llvm::yaml::IO& io, ClangExpand::DeclarationData& declaration) {
     io.mapRequired("location", declaration.location);
     io.mapRequired("name", declaration.name);
-    // io.mapRequired("text", declaration.text);
+    io.mapRequired("text", declaration.text);
   }
 };
 }  // namespace llvm::yaml

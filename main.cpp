@@ -69,11 +69,8 @@ auto main(int argc, const char* argv[]) -> int {
                              rewriteOption);
   auto result = search.run(db, sources);
 
-  // llvm::outs() << result.definition.original << "\n\n";
-  // llvm::outs() << result.definition.rewritten << '\n';
-
-  llvm::yaml::Output yaml(llvm::outs());
-  yaml << result.declaration;
+  llvm::yaml::Output yaml(llvm::outs(), /*context=*/nullptr, /*WrapColumn=*/0);
+  yaml << result;
 }
 
 

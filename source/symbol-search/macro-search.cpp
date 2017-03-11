@@ -1,6 +1,6 @@
 // Project includes
 #include "clang-expand/symbol-search/macro-search.hpp"
-
+#include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/location.hpp"
 #include "clang-expand/common/routines.hpp"
 
