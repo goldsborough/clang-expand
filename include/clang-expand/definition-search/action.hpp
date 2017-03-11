@@ -1,9 +1,6 @@
 #ifndef CLANG_EXPAND_DEFINITION_SEARCH_ACTION_HPP
 #define CLANG_EXPAND_DEFINITION_SEARCH_ACTION_HPP
 
-// Project includes
-#include "clang-expand/common/query.hpp"
-
 // Clang includes
 #include <clang/Frontend/FrontendAction.h>
 
@@ -11,9 +8,6 @@
 #include <iosfwd>
 #include <memory>
 #include <string>
-
-// Standard includes
-#include <optional>
 
 namespace clang {
 class CompilerInstance;

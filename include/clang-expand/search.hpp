@@ -7,7 +7,6 @@
 
 // Standard includes
 #include <string>
-#include <variant>
 #include <vector>
 
 namespace clang {

@@ -1,6 +1,5 @@
 // Project includes
 #include "clang-expand/search.hpp"
-
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/definition-search/tool-factory.hpp"
@@ -10,12 +9,15 @@
 // Clang includes
 #include <clang/Tooling/Tooling.h>
 
+// LLVM includes
+#include <llvm/ADT/ArrayRef.h>
+#include <llvm/ADT/StringRef.h>
+
 // Standard includes
 #include <cstdlib>
-#include <functional>
+#include <optional>
 #include <string>
-#include <variant>
-#include <vector>
+#include <type_traits>
 
 namespace ClangExpand {
 Search::Search(const std::string& file,

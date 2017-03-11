@@ -20,7 +20,6 @@
 
 // Standard includes
 #include <cassert>
-#include <cstdlib>
 #include <iterator>
 #include <string>
 #include <type_traits>
@@ -28,16 +27,20 @@
 
 namespace ClangExpand::SymbolSearch {
 namespace {
+using ParameterMap = DeclarationData::ParameterMap;
+
 auto collectDeclarationData(const clang::FunctionDecl& function,
-                            const clang::ASTContext& astContext,
+                            clang::ASTContext& astContext,
                             ParameterMap&& parameterMap) {
   const Location location(function.getLocation(),
                           astContext.getSourceManager());
   ClangExpand::DeclarationData declaration(function.getName(), location);
+
   declaration.parameterMap = std::move(parameterMap);
+  declaration.text =
+      Routines::getSourceText(function.getSourceRange(), astContext);
 
   const auto& policy = astContext.getPrintingPolicy();
-
   // Collect parameter types (their string representations)
   for (const auto* parameter : function.parameters()) {
     const auto type = parameter->getOriginalType().getCanonicalType();

@@ -1,9 +1,8 @@
 // Project includes
 #include "clang-expand/symbol-search/macro-search.hpp"
 
-#include "clang-expand/common/query.hpp"
-#include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/location.hpp"
+#include "clang-expand/common/routines.hpp"
 
 // Clang includes
 #include <clang/Basic/IdentifierTable.h>
@@ -16,12 +15,12 @@
 #include <clang/Lex/Token.h>
 #include <clang/Lex/TokenLexer.h>
 #include <clang/Rewrite/Core/Rewriter.h>
-#include <llvm/ADT/StringRef.h>
-#include <llvm/ADT/Twine.h>
 
 // LLVM includes
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringMap.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Twine.h>
 
 // System includes
 #include <cassert>

@@ -8,17 +8,21 @@
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/CommandLine.h>
+#include <llvm/Support/YAMLTraits.h>
 #include <llvm/Support/raw_ostream.h>
 
 // Standard includes
 #include <string>
-#include <variant>
 #include <vector>
 
 namespace {
-llvm::cl::OptionCategory clangExpandCategory("minus-tool options");
+llvm::cl::OptionCategory clangExpandCategory("clang-expand options");
 
-llvm::cl::extrahelp clangExpandCategoryHelp(R"()");
+llvm::cl::extrahelp clangExpandCategoryHelp(R"(
+Retrieves function, method, operator or macro definitions and optionally
+performs automatic parameter replacement. Allows for happy refactoring while
+solving the "I don't want to jump around all the time" problem.
+)");
 
 llvm::cl::opt<std::string>
     fileOption("file",
@@ -63,12 +67,13 @@ auto main(int argc, const char* argv[]) -> int {
                              lineOption,
                              columnOption,
                              rewriteOption);
-  const auto result = search.run(db, sources);
+  auto result = search.run(db, sources);
 
   // llvm::outs() << result.definition.original << "\n\n";
   // llvm::outs() << result.definition.rewritten << '\n';
 
-  llvm::outs() << result << '\n';
+  llvm::yaml::Output yaml(llvm::outs());
+  yaml << result.declaration;
 }
 
 

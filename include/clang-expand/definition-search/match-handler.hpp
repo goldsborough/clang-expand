@@ -1,14 +1,8 @@
 #ifndef CLANG_EXPAND_DEFINITION_SEARCH_MATCH_HANDLER_HPP
 #define CLANG_EXPAND_DEFINITION_SEARCH_MATCH_HANDLER_HPP
 
-// Project includes
-#include "clang-expand/common/query.hpp"
-
 // Clang includes
 #include <clang/ASTMatchers/ASTMatchFinder.h>
-
-// Standard includes
-#include <optional>
 
 namespace clang {
 class ASTContext;

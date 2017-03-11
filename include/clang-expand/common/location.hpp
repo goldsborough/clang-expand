@@ -1,11 +1,12 @@
-#ifndef CLANG_EXPAND_COMMON_STRUCTURES_HPP
-#define CLANG_EXPAND_COMMON_STRUCTURES_HPP
+#ifndef CLANG_EXPAND_COMMON_LOCATION_HPP
+#define CLANG_EXPAND_COMMON_LOCATION_HPP
 
 // Project includes
 #include "clang-expand/common/offset.hpp"
 
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
+#include <llvm/Support/YAMLTraits.h>
 
 // Standard includes
 #include <string>
@@ -27,5 +28,14 @@ struct Location {
 };
 }  // namespace ClangExpand
 
+namespace llvm::yaml {
+template <>
+struct MappingTraits<ClangExpand::Location> {
+  static void mapping(llvm::yaml::IO& io, ClangExpand::Location& location) {
+    io.mapRequired("filename", location.filename);
+    io.mapRequired("offset", location.offset);
+  }
+};
+}  // namespace llvm::yaml
 
-#endif  // CLANG_EXPAND_COMMON_STRUCTURES_HPP
+#endif  // CLANG_EXPAND_COMMON_LOCATION_HPP

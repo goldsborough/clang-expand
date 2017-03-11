@@ -6,6 +6,7 @@
 
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
+#include <llvm/Support/YAMLTraits.h>
 
 // Standard includes
 #include <string>
@@ -27,5 +28,14 @@ struct Range {
 };
 }  // namespace ClangExpand
 
+namespace llvm::yaml {
+template <>
+struct MappingTraits<ClangExpand::Range> {
+  static void mapping(llvm::yaml::IO& io, ClangExpand::Range& range) {
+    io.mapRequired("begin", range.begin);
+    io.mapRequired("end", range.end);
+  }
+};
+}  // namespace llvm::yaml
 
 #endif  // CLANG_EXPAND_COMMON_RANGE_HPP

@@ -1,12 +1,15 @@
 // Project includes
 #include "clang-expand/definition-search/consumer.hpp"
-
+#include "clang-expand/common/declaration-data.hpp"
 #include "clang-expand/common/query.hpp"
 
 // Clang includes
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
 #include <clang/ASTMatchers/ASTMatchersInternal.h>
+
+// Standard includes
+#include <optional>
 
 namespace ClangExpand::DefinitionSearch {
 namespace {
