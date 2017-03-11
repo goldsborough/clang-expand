@@ -1,4 +1,5 @@
 // Project includes
+#include "clang-expand/result.hpp"
 #include "clang-expand/search.hpp"
 
 // Clang includes
@@ -64,8 +65,10 @@ auto main(int argc, const char* argv[]) -> int {
                              rewriteOption);
   const auto result = search.run(db, sources);
 
-  llvm::outs() << result.definition.original << "\n\n";
-  llvm::outs() << result.definition.rewritten << '\n';
+  // llvm::outs() << result.definition.original << "\n\n";
+  // llvm::outs() << result.definition.rewritten << '\n';
+
+  llvm::outs() << result << '\n';
 }
 
 

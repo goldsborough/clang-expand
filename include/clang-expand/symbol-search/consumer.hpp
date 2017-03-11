@@ -30,7 +30,7 @@ class Consumer : public clang::ASTConsumer {
   Consumer(const clang::SourceLocation& invocationLocation,
            const std::string& invocationSpelling,
            const LazyBoolean& alreadyFoundMacro,
-           Query* query);
+           Query& query);
 
   void HandleTranslationUnit(clang::ASTContext& context) override;
 

@@ -16,6 +16,8 @@ struct CallData {
 
   bool requiresDeclaration() const noexcept;
 
+  std::string toJSON() const { return ""; }
+
   std::string base;
   std::optional<AssigneeData> assignee;
   Range extent;

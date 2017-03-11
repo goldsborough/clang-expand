@@ -24,7 +24,7 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
  public:
   using MatchResult = clang::ast_matchers::MatchFinder::MatchResult;
 
-  explicit MatchHandler(Query* query);
+  explicit MatchHandler(Query& query);
 
   void run(const MatchResult& result) override;
 
@@ -34,7 +34,7 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
 
   bool _matchContexts(const clang::FunctionDecl& function) const noexcept;
 
-  Query* _query;
+  Query& _query;
 };
 
 }  // namespace ClangExpand::DefinitionSearch

@@ -13,13 +13,13 @@ struct Location;
 namespace ClangExpand::SymbolSearch {
 class ToolFactory : public clang::tooling::FrontendActionFactory {
  public:
-  explicit ToolFactory(const Location& _targetLocation, Query* query);
+  explicit ToolFactory(const Location& _targetLocation, Query& query);
 
   clang::FrontendAction* create() override;
 
  private:
   const Location& _targetLocation;
-  Query* _query;
+  Query& _query;
 };
 }  // namespace ClangExpand::SymbolSearch
 

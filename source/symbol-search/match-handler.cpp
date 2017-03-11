@@ -1,7 +1,7 @@
 // Project includes
 #include "clang-expand/symbol-search/match-handler.hpp"
 #include "clang-expand/common/call-data.hpp"
-#include "clang-expand/common/data.hpp"
+
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/structures.hpp"
@@ -343,7 +343,7 @@ CallData collectCallData(const clang::Expr& call, clang::ASTContext& context) {
 }  // namespace
 
 MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
-                           Query* query)
+                           Query& query)
 : _targetLocation(targetLocation), _query(query) {
 }
 
@@ -365,13 +365,13 @@ void MatchHandler::run(const MatchResult& result) {
 
   auto declaration =
       collectDeclarationData(*function, context, std::move(parameterMap));
-  _query->declaration = std::move(declaration);
-  _query->call = std::move(callData);
+  _query.declaration = std::move(declaration);
+  _query.call = std::move(callData);
 
   if (function->hasBody()) {
     auto definition =
-        Routines::collectDefinitionData(*function, context, *_query);
-    _query->definition = std::move(definition);
+        Routines::collectDefinitionData(*function, context, _query);
+    _query.definition = std::move(definition);
   }
 }
 

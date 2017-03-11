@@ -1,8 +1,9 @@
 // Project includes
 #include "clang-expand/common/definition-rewriter.hpp"
 #include "clang-expand/common/assignee-data.hpp"
+#include "clang-expand/common/declaration-data.hpp"
 #include "clang-expand/common/call-data.hpp"
-#include "clang-expand/common/data.hpp"
+
 #include "clang-expand/common/routines.hpp"
 
 // Clang includes

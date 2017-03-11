@@ -1,9 +1,10 @@
 // Project includes
 #include "clang-expand/search.hpp"
-#include "clang-expand/common/data.hpp"
+
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/definition-search/tool-factory.hpp"
+#include "clang-expand/result.hpp"
 #include "clang-expand/symbol-search/tool-factory.hpp"
 
 // Clang includes
@@ -17,12 +18,6 @@
 #include <vector>
 
 namespace ClangExpand {
-Search::Result::Result(const Query& query)
-: callExtent(query.call->extent)
-// , declarationLocation(query->declaration.location)
-, definition(*query.definition) {
-}
-
 Search::Search(const std::string& file,
                unsigned line,
                unsigned column,
@@ -31,9 +26,8 @@ Search::Search(const std::string& file,
 , _shouldRewrite(shouldRewrite) {
 }
 
-Search::Result
-Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
-            const SourceVector& sources) {
+Result Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
+                   const SourceVector& sources) {
   Query query(_shouldRewrite);
 
   _symbolSearch(compilationDatabase, query);
@@ -50,7 +44,7 @@ Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
     Routines::error("Could not find definition");
   }
 
-  return Result(query);
+  return Result(std::move(query));
 }
 
 void Search::_symbolSearch(CompilationDatabase& compilationDatabase,
@@ -59,7 +53,7 @@ void Search::_symbolSearch(CompilationDatabase& compilationDatabase,
                                          {_location.filename});
 
   const auto error = SymbolSearch.run(
-      new ClangExpand::SymbolSearch::ToolFactory(_location, &query));
+      new ClangExpand::SymbolSearch::ToolFactory(_location, query));
   if (error) std::exit(error);
 }
 
@@ -70,7 +64,7 @@ void Search::_definitionSearch(CompilationDatabase& compilationDatabase,
 
   const auto error = DefinitionSearch.run(
       new ClangExpand::DefinitionSearch::ToolFactory(_location.filename,
-                                                     &query));
+                                                     query));
   if (error) std::exit(error);
 }
 

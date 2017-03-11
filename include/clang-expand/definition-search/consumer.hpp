@@ -19,12 +19,12 @@ namespace ClangExpand::DefinitionSearch {
 
 class Consumer : public clang::ASTConsumer {
  public:
-  explicit Consumer(Query* query);
+  explicit Consumer(Query& query);
 
   void HandleTranslationUnit(clang::ASTContext& context) override;
 
  private:
-  Query* _query;
+  Query& _query;
   MatchHandler _matchHandler;
 };
 

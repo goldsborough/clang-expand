@@ -9,6 +9,8 @@
 
 namespace ClangExpand {
 struct DefinitionData {
+  std::string toJSON() const { return ""; }
+
   Location location;
   std::string original;
   std::string rewritten;

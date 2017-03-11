@@ -1,6 +1,6 @@
 // Project includes
 #include "clang-expand/common/routines.hpp"
-#include "clang-expand/common/data.hpp"
+
 #include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/definition-rewriter.hpp"
 #include "clang-expand/common/query.hpp"

@@ -1,6 +1,6 @@
 // Project includes
 #include "clang-expand/definition-search/match-handler.hpp"
-#include "clang-expand/common/data.hpp"
+
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
 
@@ -33,14 +33,14 @@ bool contextMatches(const Context& context,
 }
 }  // namespace
 
-MatchHandler::MatchHandler(Query* query) : _query(query) {
+MatchHandler::MatchHandler(Query& query) : _query(query) {
 }
 
 void MatchHandler::run(const MatchResult& result) {
   const auto* function = result.Nodes.getNodeAs<clang::FunctionDecl>("fn");
   assert(function != nullptr && "Got null function node in match handler");
 
-  const auto& parameterTypes = _query->declaration->parameterTypes;
+  const auto& parameterTypes = _query.declaration->parameterTypes;
 
   if (function->getNumParams() != parameterTypes.size()) return;
 
@@ -51,8 +51,8 @@ void MatchHandler::run(const MatchResult& result) {
   llvm::errs() << '\n';
 
   auto definition =
-      Routines::collectDefinitionData(*function, *result.Context, *_query);
-  _query->definition = std::move(definition);
+      Routines::collectDefinitionData(*function, *result.Context, _query);
+  _query.definition = std::move(definition);
 }
 
 bool MatchHandler::_matchParameters(const clang::ASTContext& context,
@@ -60,7 +60,7 @@ bool MatchHandler::_matchParameters(const clang::ASTContext& context,
     noexcept {
   const auto& policy = context.getPrintingPolicy();
 
-  auto expectedType = _query->declaration->parameterTypes.begin();
+  auto expectedType = _query.declaration->parameterTypes.begin();
   for (const auto* parameter : function.parameters()) {
     const auto type = parameter->getOriginalType().getCanonicalType();
     if (*expectedType != type.getAsString(policy)) return false;
@@ -72,7 +72,7 @@ bool MatchHandler::_matchParameters(const clang::ASTContext& context,
 
 bool MatchHandler::_matchContexts(const clang::FunctionDecl& function) const
     noexcept {
-  auto expectedContext = _query->declaration->contexts.begin();
+  auto expectedContext = _query.declaration->contexts.begin();
 
   const auto* context = function.getPrimaryContext()->getParent();
   for (; context; context = context->getParent()) {

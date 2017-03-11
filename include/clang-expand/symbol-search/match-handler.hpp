@@ -18,13 +18,13 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
   using MatchResult = clang::ast_matchers::MatchFinder::MatchResult;
 
   explicit MatchHandler(const clang::SourceLocation& targetLocation,
-                        Query* query);
+                        Query& query);
 
   void run(const MatchResult& result) override;
 
  private:
   const clang::SourceLocation& _targetLocation;
-  Query* _query;
+  Query& _query;
 };
 
 }  // namespace ClangExpand::SymbolSearch

@@ -7,7 +7,7 @@
 #include <clang/Frontend/FrontendAction.h>
 
 namespace ClangExpand::SymbolSearch {
-ToolFactory::ToolFactory(const Location& targetLocation, Query* query)
+ToolFactory::ToolFactory(const Location& targetLocation, Query& query)
 : _targetLocation(targetLocation), _query(query) {
 }
 

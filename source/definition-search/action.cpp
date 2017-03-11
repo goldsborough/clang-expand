@@ -13,7 +13,7 @@
 #include <system_error>
 
 namespace ClangExpand::DefinitionSearch {
-Action::Action(const std::string& declarationFile, Query* query)
+Action::Action(const std::string& declarationFile, Query& query)
 : _declarationFile(Routines::makeAbsolute(declarationFile)), _query(query) {
 }
 

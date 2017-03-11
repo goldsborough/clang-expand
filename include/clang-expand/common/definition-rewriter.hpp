@@ -3,7 +3,6 @@
 
 // Project includes
 #include "clang-expand/common/call-data.hpp"
-#include "clang-expand/common/data.hpp"
 
 // Clang includes
 #include <clang/AST/Expr.h>
@@ -11,6 +10,11 @@
 
 // LLVM includes
 #include <llvm/ADT/SmallPtrSet.h>
+#include <llvm/ADT/StringMap.h>
+
+// Standard includes
+#include <iosfwd>
+#include <optional>
 
 namespace clang {
 class ASTContext;
@@ -23,6 +27,7 @@ class DefinitionRewriter
     : public clang::RecursiveASTVisitor<DefinitionRewriter> {
  public:
   using OptionalCall = std::optional<CallData>;
+  using ParameterMap = llvm::StringMap<std::string>;
 
   explicit DefinitionRewriter(clang::Rewriter& rewriter,
                               const ParameterMap& parameterMap,

@@ -1,6 +1,6 @@
 // Project includes
 #include "clang-expand/definition-search/consumer.hpp"
-#include "clang-expand/common/data.hpp"
+
 #include "clang-expand/common/query.hpp"
 
 // Clang includes
@@ -16,11 +16,11 @@ auto createAstMatcher(const DeclarationData& declaration) {
 }
 }  // namespace
 
-Consumer::Consumer(Query* query) : _query(query), _matchHandler(query) {
+Consumer::Consumer(Query& query) : _query(query), _matchHandler(query) {
 }
 
 void Consumer::HandleTranslationUnit(clang::ASTContext& context) {
-  const auto matcher = createAstMatcher(*_query->declaration);
+  const auto matcher = createAstMatcher(*_query.declaration);
   clang::ast_matchers::MatchFinder matchFinder;
   matchFinder.addMatcher(matcher, &_matchHandler);
   matchFinder.matchAST(context);

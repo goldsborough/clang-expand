@@ -10,7 +10,7 @@
 #include <string>
 
 namespace ClangExpand::DefinitionSearch {
-ToolFactory::ToolFactory(const std::string& declarationFile, Query* query)
+ToolFactory::ToolFactory(const std::string& declarationFile, Query& query)
 : _declarationFile(declarationFile), _query(query) {
 }
 

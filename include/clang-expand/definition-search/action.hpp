@@ -35,14 +35,14 @@ class Action : public clang::ASTFrontendAction {
   using super = clang::ASTFrontendAction;
   using ASTConsumerPointer = std::unique_ptr<clang::ASTConsumer>;
 
-  Action(const std::string& declarationFile, Query* query);
+  Action(const std::string& declarationFile, Query& query);
 
   ASTConsumerPointer CreateASTConsumer(clang::CompilerInstance& compiler,
                                        llvm::StringRef filename) override;
 
  private:
   std::string _declarationFile;
-  Query* _query;
+  Query& _query;
 };
 
 }  // namespace ClangExpand::DefinitionSearch

@@ -35,7 +35,7 @@ class Action : public clang::ASTFrontendAction {
   using super = clang::ASTFrontendAction;
   using ASTConsumerPointer = std::unique_ptr<clang::ASTConsumer>;
 
-  Action(const Location& targetLocation, Query* query);
+  Action(const Location& targetLocation, Query& query);
 
   bool BeginSourceFileAction(clang::CompilerInstance& compiler,
                              llvm::StringRef filename) override;
@@ -48,7 +48,7 @@ class Action : public clang::ASTFrontendAction {
   clang::FileID _getFileID(clang::SourceManager& sourceManager) const;
 
   std::string _spelling;
-  Query* _query;
+  Query& _query;
   clang::SourceLocation _callLocation;
   bool _alreadyFoundMacro;
   Location _targetLocation;

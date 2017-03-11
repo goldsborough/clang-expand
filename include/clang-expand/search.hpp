@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_SEARCH_HPP
 
 // Project includes
-#include "clang-expand/common/data.hpp"
+
 #include "clang-expand/common/structures.hpp"
 
 // Standard includes
@@ -18,18 +18,12 @@ class CompilationDatabase;
 
 namespace ClangExpand {
 class Query;
+struct Result;
 
 class Search {
  public:
   using CompilationDatabase = clang::tooling::CompilationDatabase;
   using SourceVector = std::vector<std::string>;
-
-  struct Result {
-    explicit Result(const Query& query);
-    Range callExtent;
-    // Location declaration;
-    DefinitionData definition;
-  };
 
   Search(const std::string& file,
          unsigned line,
