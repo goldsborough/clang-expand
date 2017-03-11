@@ -2,8 +2,9 @@
 #define CLANG_EXPAND_RESULT_HPP
 
 // Project includes
-#include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/call-data.hpp"
+#include "clang-expand/common/declaration-data.hpp"
+#include "clang-expand/common/definition-data.hpp"
 
 
 // Standard includes

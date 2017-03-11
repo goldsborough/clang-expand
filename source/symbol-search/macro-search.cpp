@@ -3,7 +3,7 @@
 
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
-#include "clang-expand/common/structures.hpp"
+#include "clang-expand/common/location.hpp"
 
 // Clang includes
 #include <clang/Basic/IdentifierTable.h>

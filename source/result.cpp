@@ -2,7 +2,7 @@
 #include "clang-expand/result.hpp"
 #include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/query.hpp"
-#include "clang-expand/common/structures.hpp"
+#include "clang-expand/common/location.hpp"
 
 // LLVM includes
 #include <llvm/Support/raw_ostream.h>

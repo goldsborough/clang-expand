@@ -3,7 +3,7 @@
 
 // Project includes
 #include "clang-expand/common/context-data.hpp"
-#include "clang-expand/common/structures.hpp"
+#include "clang-expand/common/location.hpp"
 
 // LLVM includes
 #include <llvm/ADT/SmallVector.h>

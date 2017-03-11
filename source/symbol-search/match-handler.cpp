@@ -1,10 +1,8 @@
 // Project includes
 #include "clang-expand/symbol-search/match-handler.hpp"
 #include "clang-expand/common/call-data.hpp"
-
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
-#include "clang-expand/common/structures.hpp"
 
 // Clang includes
 #include <clang/AST/ASTContext.h>

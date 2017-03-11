@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_SYMBOL_SEARCH_PREPROCESSOR_HOOKS_HPP
 
 // Project includes
-#include "clang-expand/common/structures.hpp"
+#include "clang-expand/common/location.hpp"
 
 // Clang includes
 #include <clang/Basic/SourceLocation.h>

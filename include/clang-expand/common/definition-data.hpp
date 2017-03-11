@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_COMMON_DEFINITION_DATA_HPP
 
 // Project includes
-#include "clang-expand/common/structures.hpp"
+#include "clang-expand/common/location.hpp"
 
 // Standard includes
 #include <string>

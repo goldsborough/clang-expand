@@ -5,9 +5,12 @@
 set(CLANG_EXPAND_SOURCES
   common/assignee-data.cpp
   common/call-data.cpp
+  common/canonical-location.cpp
   common/definition-rewriter.cpp
+  common/location.cpp
+  common/offset.cpp
+  common/range.cpp
   common/routines.cpp
-  common/structures.cpp
   definition-search/action.cpp
   definition-search/consumer.cpp
   definition-search/match-handler.cpp

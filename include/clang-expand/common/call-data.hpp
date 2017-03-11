@@ -3,7 +3,7 @@
 
 // Project includes
 #include "clang-expand/common/assignee-data.hpp"
-#include "clang-expand/common/structures.hpp"
+#include "clang-expand/common/range.hpp"
 
 // Standard includes
 #include <optional>
@@ -16,7 +16,9 @@ struct CallData {
 
   bool requiresDeclaration() const noexcept;
 
-  std::string toJSON() const { return ""; }
+  std::string toJSON() const {
+    return "";
+  }
 
   std::string base;
   std::optional<AssigneeData> assignee;
