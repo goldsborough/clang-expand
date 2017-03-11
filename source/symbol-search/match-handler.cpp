@@ -34,7 +34,7 @@ auto collectDeclarationData(const clang::FunctionDecl& function,
                             const clang::ASTContext& astContext,
                             ParameterMap&& parameterMap) {
   const Location location(function.getLocation(),
-                              astContext.getSourceManager());
+                          astContext.getSourceManager());
   ClangExpand::DeclarationData declaration(function.getName(), location);
   declaration.parameterMap = std::move(parameterMap);
 
@@ -369,10 +369,8 @@ void MatchHandler::run(const MatchResult& result) {
   _query->call = std::move(callData);
 
   if (function->hasBody()) {
-    auto definition = Routines::collectDefinitionData(*function,
-                                                      context,
-                                                      parameterMap,
-                                                      callData);
+    auto definition =
+        Routines::collectDefinitionData(*function, context, *_query);
     _query->definition = std::move(definition);
   }
 }

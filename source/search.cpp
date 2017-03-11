@@ -38,15 +38,15 @@ Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
 
   _symbolSearch(compilationDatabase, query);
 
-  if (!query.hasDeclaration()) {
+  if (!query.declaration) {
     Routines::error("Could not recognize token at specified location");
   }
 
-  if (!query.hasDefinition()) {
+  if (!query.definition) {
     _definitionSearch(compilationDatabase, sources, query);
   }
 
-  if (!query.hasDefinition()) {
+  if (!query.definition) {
     Routines::error("Could not find definition");
   }
 

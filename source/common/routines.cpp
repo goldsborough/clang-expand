@@ -1,7 +1,9 @@
 // Project includes
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/common/data.hpp"
+#include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/definition-rewriter.hpp"
+#include "clang-expand/common/query.hpp"
 #include "clang-expand/common/structures.hpp"
 
 // Clang includes
@@ -98,8 +100,7 @@ getSourceText(const clang::SourceRange& range, clang::ASTContext& context) {
 
 DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                      clang::ASTContext& context,
-                                     const ParameterMap& parameterMap,
-                                     const OptionalCall& call) {
+                                     const Query& query) {
   const auto& sourceManager = context.getSourceManager();
   Location location(function.getLocation(), sourceManager);
 
@@ -113,16 +114,18 @@ DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
 
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
   auto original = withoutIndentation(rewriter.getRewrittenText(range));
-  if (call && call->requiresDeclaration()) {
-    insertDeclaration(*call->assignee, afterBrace, rewriter);
+  if (query.call && query.call->requiresDeclaration()) {
+    insertDeclaration(*query.call->assignee, afterBrace, rewriter);
   }
 
-  if (body->body_empty()) return {location, "", original};
+  std::string rewritten;
+  if (query.shouldRewrite && !body->body_empty()) {
+    const auto& map = query.declaration->parameterMap;
+    DefinitionRewriter(rewriter, map, query.call, context).TraverseStmt(body);
+    rewritten = withoutIndentation(rewriter.getRewrittenText(range));
+  }
 
-  DefinitionRewriter(rewriter, parameterMap, call, context).TraverseStmt(body);
-
-  const auto replaced = withoutIndentation(rewriter.getRewrittenText(range));
-  return {std::move(location), replaced, original};
+  return {std::move(location), original, rewritten};
 }
 
 std::string makeAbsolute(const std::string& filename) {

@@ -51,10 +51,7 @@ void MatchHandler::run(const MatchResult& result) {
   llvm::errs() << '\n';
 
   auto definition =
-      Routines::collectDefinitionData(*function,
-                                      *result.Context,
-                                      _query->declaration->parameterMap,
-                                      _query->call);
+      Routines::collectDefinitionData(*function, *result.Context, *_query);
   _query->definition = std::move(definition);
 }
 

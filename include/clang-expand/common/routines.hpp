@@ -24,6 +24,7 @@ class Twine;
 
 namespace ClangExpand {
 struct DefinitionData;
+class Query;
 }
 
 namespace ClangExpand::Routines {
@@ -37,13 +38,12 @@ std::string getSourceText(const clang::SourceRange& range,
                           clang::SourceManager& sourceManager,
                           const clang::LangOptions& languageOptions);
 
-std::string getSourceText(const clang::SourceRange& range,
-                          clang::ASTContext& context);
+std::string
+getSourceText(const clang::SourceRange& range, clang::ASTContext& context);
 
 DefinitionData collectDefinitionData(const clang::FunctionDecl& function,
                                      clang::ASTContext& context,
-                                     const ParameterMap& parameterMap,
-                                     const OptionalCall& call);
+                                     const Query& query);
 
 std::string makeAbsolute(const std::string& filename);
 

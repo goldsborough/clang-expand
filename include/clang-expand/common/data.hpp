@@ -52,12 +52,6 @@ struct DeclarationData {
   ParameterMap parameterMap;
   Location location;
 };
-
-struct DefinitionData {
-  Location location;
-  std::string rewritten;
-  std::string original;
-};
 }  // namespace ClangExpand
 
 #endif  // CLANG_EXPAND_COMMON_DATA_HPP

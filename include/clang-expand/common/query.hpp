@@ -4,6 +4,7 @@
 // Project includes
 #include "clang-expand/common/call-data.hpp"
 #include "clang-expand/common/data.hpp"
+#include "clang-expand/common/definition-data.hpp"
 
 // Standard includes
 #include <functional>
@@ -12,10 +13,8 @@
 namespace ClangExpand {
 class Query {
  public:
-  explicit Query(bool shouldRewrite_);
-
-  bool hasDefinition() const noexcept;
-  bool hasDeclaration() const noexcept;
+  Query(bool shouldRewrite_) : shouldRewrite(shouldRewrite_) {
+  }
 
   std::optional<DeclarationData> declaration;
   std::optional<DefinitionData> definition;
