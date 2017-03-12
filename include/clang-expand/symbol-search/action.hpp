@@ -50,7 +50,6 @@ class Action : public clang::ASTFrontendAction {
   std::string _spelling;
   Query& _query;
   clang::SourceLocation _callLocation;
-  bool _alreadyFoundMacro;
   Location _targetLocation;
 };
 

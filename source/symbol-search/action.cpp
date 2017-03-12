@@ -73,7 +73,7 @@ bool verifyToken(bool errorOccurred, const clang::Token& token) {
 }  // namespace
 
 Action::Action(const Location& targetLocation, Query& query)
-: _query(query), _alreadyFoundMacro(false), _targetLocation(targetLocation) {
+: _query(query), _targetLocation(targetLocation) {
 }
 
 bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
@@ -129,15 +129,7 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
 
 Action::ASTConsumerPointer
 Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef) {
-  // We already have the token at this point, because BeginInvocation is
-  // guaranteed to be called before this method. We don't have the macro pointer
-  // yet (if ever), because we get it in the preprocessor hooks, which are
-  // executed after CreateASTConsumer. So we pass a function for lazy
-  // evaluation.
-  return std::make_unique<Consumer>(_callLocation,
-                                    _spelling,
-                                    [this] { return _alreadyFoundMacro; },
-                                    _query);
+  return std::make_unique<Consumer>(_callLocation, _spelling, _query);
 }
 
 clang::FileID Action::_getFileID(clang::SourceManager& sourceManager) const {

@@ -132,26 +132,25 @@ ParameterMap mapCallParameters(const CallOrConstruction& call,
 }
 
 template <typename T, typename Node>
-std::optional<const T*>
-parentIfHasType(const Node& node, clang::ASTContext& context) {
+const T* parentAs(const Node& node, clang::ASTContext& context) {
   const auto parents = context.getParents(node);
-  if (parents.empty()) return std::nullopt;
+  assert(!parents.empty() && "Orphan node?");
   return parents.begin()->template get<T>();
 }
 
 bool isNestedInsideSomeOtherStatment(const clang::VarDecl& variable,
                                      clang::ASTContext& context) {
-  // Make sure the parents are [DeclStmt[->CompoundStmt]].
-  if (auto parent = parentIfHasType<clang::DeclStmt>(variable, context)) {
-    // Found the parent and it's not what we wanted it to be.
-    if (parent.value() == nullptr) return true;
-    if (auto grandparent =
-            parentIfHasType<clang::CompoundStmt>(**parent, context)) {
-      if (grandparent.value() == nullptr) return true;
+  // Make sure the parents are [DeclStmt[->CompoundStmt]]
+  // or TranslationUnitDecl.
+  if (parentAs<clang::TranslationUnitDecl>(variable, context)) return false;
+
+  if (auto parent = parentAs<clang::DeclStmt>(variable, context)) {
+    if (auto grandparent = parentAs<clang::CompoundStmt>(*parent, context)) {
+      return false;
     }
   }
 
-  return false;
+  return true;
 }
 
 std::optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
@@ -341,10 +340,9 @@ inspectCall(const clang::FunctionDecl& function,
 }
 
 CallData collectCallData(const clang::Expr& call, clang::ASTContext& context) {
-  if (auto parent = parentIfHasType<clang::CompoundStmt>(call, context)) {
-    if (parent.value() != nullptr) {
-      return CallData({call.getSourceRange(), context.getSourceManager()});
-    }
+  if (parentAs<clang::CompoundStmt>(call, context) ||
+      parentAs<clang::TranslationUnitDecl>(call, context)) {
+    return CallData({call.getSourceRange(), context.getSourceManager()});
   }
 
   if (auto optional = collectCallDataFromContext(call, context)) {

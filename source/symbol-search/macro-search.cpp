@@ -83,7 +83,7 @@ void MacroSearch::MacroExpands(const clang::Token&,
   if (_callLocation != canonical) return;
 
   const auto* info = macro.getMacroInfo();
-  auto definition = getDefinitionText(*info, _sourceManager, _languageOptions);
+  auto original = getDefinitionText(*info, _sourceManager, _languageOptions);
 
   const auto mapping = _createParameterMapping(*info, *arguments);
   std::string text = _rewriteMacro(*info, mapping);
@@ -91,8 +91,8 @@ void MacroSearch::MacroExpands(const clang::Token&,
   Location location(info->getDefinitionLoc(), _sourceManager);
 
   _callback({std::move(location),
+             std::move(original),
              std::move(text),
-             std::move(definition),
              /*isMacro=*/true});
 }
 

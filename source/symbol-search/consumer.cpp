@@ -36,17 +36,11 @@ auto createAstMatcher(const std::string& spelling) {
 
 Consumer::Consumer(const clang::SourceLocation& invocationLocation,
                    const std::string& invocationSpelling,
-                   const LazyBoolean& alreadyFoundMacro,
                    Query& query)
-: _callSpelling(invocationSpelling)
-, _alreadyFoundMacro(alreadyFoundMacro)
-, _matchHandler(invocationLocation, query) {
+: _callSpelling(invocationSpelling), _matchHandler(invocationLocation, query) {
 }
 
 void Consumer::HandleTranslationUnit(clang::ASTContext& context) {
-  // Safe to call at this point.
-  if (_alreadyFoundMacro()) return;
-
   const auto matcher = createAstMatcher(_callSpelling);
   clang::ast_matchers::MatchFinder matchFinder;
   matchFinder.addMatcher(matcher, &_matchHandler);
