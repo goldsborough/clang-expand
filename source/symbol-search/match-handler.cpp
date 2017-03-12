@@ -371,21 +371,23 @@ void MatchHandler::run(const MatchResult& result) {
   assert(call && "Matched neither function call nor constructor invocation");
 
   auto& context = *result.Context;
-  auto callData = collectCallData(*call, context);
 
-  decorateCallDataWithMemberBase(callData, result);
-  _query.call = std::move(callData);
+  if (_query.options.wantsCall || _query.options.wantsDefinition) {
+    auto callData = collectCallData(*call, context);
+    decorateCallDataWithMemberBase(callData, result);
+    _query.call = std::move(callData);
+  }
 
   // Already found a macro definition
   if (_query.definition) return;
 
-  auto declaration =
-      collectDeclarationData(*function, context, std::move(parameterMap));
-  _query.declaration = std::move(declaration);
+  if (_query.options.wantsDeclaration || _query.options.wantsDefinition) {
+    _query.declaration =
+        collectDeclarationData(*function, context, std::move(parameterMap));
+  }
 
-  if (function->hasBody()) {
-    auto definition = DefinitionData::Collect(*function, context, _query);
-    _query.definition = std::move(definition);
+  if (_query.options.wantsDefinition && function->hasBody()) {
+    _query.definition = DefinitionData::Collect(*function, context, _query);
   }
 }
 

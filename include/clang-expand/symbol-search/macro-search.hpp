@@ -32,7 +32,7 @@ class SmallString;
 }
 
 namespace ClangExpand {
-class Query;
+struct Query;
 }  // namespace ClangExpand
 
 namespace ClangExpand::SymbolSearch {

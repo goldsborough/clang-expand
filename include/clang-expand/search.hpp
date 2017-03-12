@@ -16,21 +16,20 @@ class CompilationDatabase;
 }
 
 namespace ClangExpand {
-class Query;
+struct Query;
 struct Result;
+struct Options;
 
 class Search {
  public:
   using CompilationDatabase = clang::tooling::CompilationDatabase;
   using SourceVector = std::vector<std::string>;
 
-  Search(const std::string& file,
-         unsigned line,
-         unsigned column,
-         bool shouldRewrite);
+  Search(const std::string& file, unsigned line, unsigned column);
 
-  Result
-  run(CompilationDatabase& compilationDatabase, const SourceVector& sources);
+  Result run(CompilationDatabase& compilationDatabase,
+             const SourceVector& sources,
+             const Options& options);
 
  private:
   void _symbolSearch(CompilationDatabase& compilationDatabase, Query& query);
@@ -39,7 +38,6 @@ class Search {
                          Query& query);
 
   Location _location;
-  bool _shouldRewrite;
 };
 }  // namespace ClangExpand
 

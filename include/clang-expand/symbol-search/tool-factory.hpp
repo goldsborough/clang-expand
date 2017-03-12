@@ -6,7 +6,7 @@
 #include <clang/Tooling/Tooling.h>
 
 namespace ClangExpand {
-class Query;
+struct Query;
 struct Location;
 }
 

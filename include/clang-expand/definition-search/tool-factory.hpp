@@ -9,7 +9,7 @@
 #include <iosfwd>
 
 namespace ClangExpand {
-class Query;
+struct Query;
 }
 
 namespace ClangExpand::DefinitionSearch {

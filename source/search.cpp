@@ -20,30 +20,30 @@
 #include <type_traits>
 
 namespace ClangExpand {
-Search::Search(const std::string& file,
-               unsigned line,
-               unsigned column,
-               bool shouldRewrite)
-: _location(Routines::makeAbsolute(file), line, column)
-, _shouldRewrite(shouldRewrite) {
+Search::Search(const std::string& file, unsigned line, unsigned column)
+: _location(Routines::makeAbsolute(file), line, column) {
 }
 
 Result Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
-                   const SourceVector& sources) {
-  Query query(_shouldRewrite);
+                   const SourceVector& sources,
+                   const Options& options) {
+  Query query(options);
 
   _symbolSearch(compilationDatabase, query);
 
-  if (!query.declaration && !query.definition) {
+  if ((query.options.wantsDeclaration || query.options.wantsDefinition) &&
+      (!query.declaration && !query.definition)) {
     Routines::error("Could not recognize token at specified location");
   }
 
-  if (!query.definition) {
-    _definitionSearch(compilationDatabase, sources, query);
-  }
+  if (query.options.wantsDefinition) {
+    if (!query.definition) {
+      _definitionSearch(compilationDatabase, sources, query);
+    }
 
-  if (!query.definition) {
-    Routines::error("Could not find definition");
+    if (!query.definition) {
+      Routines::error("Could not find definition");
+    }
   }
 
   return Result(std::move(query));

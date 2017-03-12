@@ -16,7 +16,7 @@ class SourceLocation;
 }
 
 namespace ClangExpand {
-class Query;
+struct Query;
 }
 
 namespace ClangExpand::SymbolSearch {

@@ -25,7 +25,7 @@ class StringRef;
 }
 
 namespace ClangExpand {
-class Query;
+struct Query;
 }
 
 namespace ClangExpand::SymbolSearch {

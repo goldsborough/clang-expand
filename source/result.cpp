@@ -13,12 +13,17 @@
 #include <string>
 
 namespace ClangExpand {
-Result::Result(Query&& query)
-: replaceRange(std::move(query.call->extent))
-, declaration(std::move(query.declaration))
-, definition(std::move(*query.definition)) {
-  assert(query.call.has_value() && "Query result has no call data!");
-  assert(query.definition.has_value() &&
-         "Query result has no definition data!");
+Result::Result(Query&& query) {
+  if (query.options.wantsCall) {
+    assert(query.call.has_value() &&
+           "User wants call information, but no call data.");
+    replaceRange = std::move(query.call->extent);
+  }
+  if (query.options.wantsDeclaration) {
+    declaration = std::move(query.declaration);
+  }
+  if (query.options.wantsDefinition) {
+    definition = std::move(query.definition);
+  }
 }
 }  // namespace ClangExpand

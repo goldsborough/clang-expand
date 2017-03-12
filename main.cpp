@@ -1,4 +1,5 @@
 // Project includes
+#include "clang-expand/options.hpp"
 #include "clang-expand/result.hpp"
 #include "clang-expand/search.hpp"
 
@@ -42,9 +43,28 @@ llvm::cl::opt<unsigned>
                  llvm::cl::cat(clangExpandCategory));
 
 llvm::cl::opt<bool>
+    callOption("call",
+               llvm::cl::init(true),
+               llvm::cl::desc("Whether to return the source range of the call"),
+               llvm::cl::cat(clangExpandCategory));
+
+llvm::cl::opt<bool> declarationOption(
+    "declaration",
+    llvm::cl::init(true),
+    llvm::cl::desc("Whether to return the original declaration"),
+    llvm::cl::cat(clangExpandCategory));
+
+llvm::cl::opt<bool> definitionOption(
+    "definition",
+    llvm::cl::init(true),
+    llvm::cl::desc("Whether to return the original definition"),
+    llvm::cl::cat(clangExpandCategory));
+
+
+llvm::cl::opt<bool>
     rewriteOption("rewrite",
                   llvm::cl::init(true),
-                  llvm::cl::desc("Whether to also generate the rewritten "
+                  llvm::cl::desc("Whether to generate the rewritten "
                                  "definition with parameters replaced"),
                   llvm::cl::cat(clangExpandCategory));
 
@@ -63,17 +83,16 @@ auto main(int argc, const char* argv[]) -> int {
     fileOption = sources.front();
   }
 
-  ClangExpand::Search search(fileOption,
-                             lineOption,
-                             columnOption,
-                             rewriteOption);
-  auto result = search.run(db, sources);
+  // clang-format off
+  ClangExpand::Search search(fileOption, lineOption, columnOption);
+  auto result = search.run(db, sources, {
+    callOption,
+    declarationOption,
+    definitionOption,
+    rewriteOption
+  });
+  // clang-format on
 
-  llvm::yaml::Output yaml(llvm::outs(), /*context=*/nullptr, /*WrapColumn=*/0);
+  llvm::yaml::Output yaml(llvm::outs(), nullptr, 0);
   yaml << result;
 }
-
-
-// Output json consisting of validity heuristic (depending on return value)
-// range to rewrite (initializer + function call)
-// text to rewrite with (return value declaration + body)

@@ -16,7 +16,7 @@ class ASTContext;
 }
 
 namespace ClangExpand {
-class Query;
+struct Query;
 
 struct DefinitionData {
   static DefinitionData Collect(const clang::FunctionDecl& function,

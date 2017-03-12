@@ -3,6 +3,7 @@
 
 // Project includes
 #include "clang-expand/common/call-data.hpp"
+#include "clang-expand/options.hpp"
 
 #include "clang-expand/common/declaration-data.hpp"
 #include "clang-expand/common/definition-data.hpp"
@@ -12,15 +13,14 @@
 #include <optional>
 
 namespace ClangExpand {
-class Query {
- public:
-  Query(bool shouldRewrite_) : shouldRewrite(shouldRewrite_) {
+struct Query {
+  explicit Query(Options options_) : options(options_) {
   }
 
   std::optional<DeclarationData> declaration;
   std::optional<DefinitionData> definition;
   std::optional<CallData> call;
-  const bool shouldRewrite;
+  const Options options;
 };
 
 using QueryCallback = std::function<void(Query&&)>;

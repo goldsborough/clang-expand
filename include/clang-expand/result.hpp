@@ -15,13 +15,13 @@
 #include <optional>
 
 namespace ClangExpand {
-class Query;
+struct Query;
 
 struct Result {
   explicit Result(Query&& query);
-  Range replaceRange;
+  std::optional<Range> replaceRange;
   std::optional<DeclarationData> declaration;
-  DefinitionData definition;
+  std::optional<DefinitionData> definition;
 };
 
 llvm::raw_ostream& operator<<(llvm::raw_ostream& stream, const Result& result);
@@ -31,11 +31,15 @@ namespace llvm::yaml {
 template <>
 struct MappingTraits<ClangExpand::Result> {
   static void mapping(llvm::yaml::IO& io, ClangExpand::Result& result) {
-    io.mapRequired("replace-range", result.replaceRange);
+    if (result.replaceRange) {
+      io.mapRequired("replace-range", *result.replaceRange);
+    }
     if (result.declaration) {
       io.mapRequired("declaration", *result.declaration);
     }
-    io.mapRequired("definition", result.definition);
+    if (result.definition) {
+      io.mapRequired("definition", *result.definition);
+    }
   }
 };
 }  // namespace llvm::yaml

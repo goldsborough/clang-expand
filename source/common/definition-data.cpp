@@ -101,7 +101,7 @@ DefinitionData DefinitionData::Collect(const clang::FunctionDecl& function,
   }
 
   std::string rewritten;
-  if (query.shouldRewrite && !body->body_empty()) {
+  if (query.options.wantsRewritten && !body->body_empty()) {
     const auto& map = query.declaration->parameterMap;
     DefinitionRewriter(rewriter, map, query.call, context).TraverseStmt(body);
     rewritten = withoutIndentation(rewriter.getRewrittenText(range));
