@@ -33,7 +33,8 @@ template <>
 struct MappingTraits<ClangExpand::Location> {
   static void mapping(llvm::yaml::IO& io, ClangExpand::Location& location) {
     io.mapRequired("file", location.filename);
-    io.mapRequired("offset", location.offset);
+    io.mapRequired("line", location.offset.line);
+    io.mapRequired("column", location.offset.column);
   }
 };
 }  // namespace llvm::yaml
