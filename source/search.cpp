@@ -34,7 +34,7 @@ Result Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
 
   _symbolSearch(compilationDatabase, query);
 
-  if (!query.declaration) {
+  if (!query.declaration && !query.definition) {
     Routines::error("Could not recognize token at specified location");
   }
 

@@ -1,8 +1,7 @@
 // Project includes
 #include "clang-expand/definition-search/match-handler.hpp"
-
+#include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/query.hpp"
-#include "clang-expand/common/routines.hpp"
 
 // Clang includes
 #include <clang/AST/ASTContext.h>
@@ -20,7 +19,6 @@
 // Standard includes
 #include <cassert>
 #include <string>
-#include <type_traits>
 
 namespace ClangExpand::DefinitionSearch {
 namespace {
@@ -50,8 +48,7 @@ void MatchHandler::run(const MatchResult& result) {
   function->getLocation().print(llvm::errs(), *result.SourceManager);
   llvm::errs() << '\n';
 
-  auto definition =
-      Routines::collectDefinitionData(*function, *result.Context, _query);
+  auto definition = DefinitionData::Collect(*function, *result.Context, _query);
   _query.definition = std::move(definition);
 }
 

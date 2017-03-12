@@ -1,7 +1,11 @@
 // Project includes
 #include "clang-expand/symbol-search/match-handler.hpp"
+#include "clang-expand/common/assignee-data.hpp"
 #include "clang-expand/common/call-data.hpp"
+#include "clang-expand/common/declaration-data.hpp"
+#include "clang-expand/common/location.hpp"
 #include "clang-expand/common/query.hpp"
+#include "clang-expand/common/range.hpp"
 #include "clang-expand/common/routines.hpp"
 
 // Clang includes
@@ -9,18 +13,26 @@
 #include <clang/AST/ASTTypeTraits.h>
 #include <clang/AST/Decl.h>
 #include <clang/AST/DeclBase.h>
+#include <clang/AST/DeclCXX.h>
 #include <clang/AST/Expr.h>
 #include <clang/AST/ExprCXX.h>
+#include <clang/AST/Stmt.h>
+#include <clang/AST/StmtIterator.h>
 #include <clang/AST/Type.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
+#include <clang/Basic/SourceLocation.h>
+#include <clang/Basic/SourceManager.h>
 
 // LLVM includes
+#include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Twine.h>
 #include <llvm/Support/Casting.h>
 
 // Standard includes
 #include <cassert>
 #include <iterator>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -364,15 +376,17 @@ void MatchHandler::run(const MatchResult& result) {
   auto callData = collectCallData(*call, context);
 
   decorateCallDataWithMemberBase(callData, result);
+  _query.call = std::move(callData);
+
+  // Already found a macro definition
+  if (_query.definition) return;
 
   auto declaration =
       collectDeclarationData(*function, context, std::move(parameterMap));
   _query.declaration = std::move(declaration);
-  _query.call = std::move(callData);
 
   if (function->hasBody()) {
-    auto definition =
-        Routines::collectDefinitionData(*function, context, _query);
+    auto definition = DefinitionData::Collect(*function, context, _query);
     _query.definition = std::move(definition);
   }
 }

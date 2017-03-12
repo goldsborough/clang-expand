@@ -89,7 +89,11 @@ void MacroSearch::MacroExpands(const clang::Token&,
   std::string text = _rewriteMacro(*info, mapping);
 
   Location location(info->getDefinitionLoc(), _sourceManager);
-  _callback({std::move(location), std::move(text), std::move(definition)});
+
+  _callback({std::move(location),
+             std::move(text),
+             std::move(definition),
+             /*isMacro=*/true});
 }
 
 std::string MacroSearch::_rewriteMacro(const clang::MacroInfo& info,

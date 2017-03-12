@@ -6,6 +6,7 @@ set(CLANG_EXPAND_SOURCES
   common/assignee-data.cpp
   common/call-data.cpp
   common/canonical-location.cpp
+  common/definition-data.cpp
   common/definition-rewriter.cpp
   common/location.cpp
   common/offset.cpp
