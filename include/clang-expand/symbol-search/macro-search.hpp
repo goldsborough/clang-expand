@@ -32,7 +32,7 @@ class SmallString;
 }
 
 namespace ClangExpand {
-struct DefinitionData;
+class Query;
 }  // namespace ClangExpand
 
 namespace ClangExpand::SymbolSearch {
@@ -40,11 +40,9 @@ namespace ClangExpand::SymbolSearch {
 
 struct MacroSearch : public clang::PPCallbacks {
  public:
-  using MatchCallback = std::function<void(DefinitionData&&)>;
-
   MacroSearch(clang::CompilerInstance& compiler,
               const clang::SourceLocation& location,
-              const MatchCallback& callback);
+              Query& query);
 
   void MacroExpands(const clang::Token& macroNameToken,
                     const clang::MacroDefinition& macroDefinition,
@@ -66,7 +64,7 @@ struct MacroSearch : public clang::PPCallbacks {
   const clang::LangOptions& _languageOptions;
   clang::Preprocessor& _preprocessor;
   const CanonicalLocation _callLocation;
-  const MatchCallback _callback;
+  Query& _query;
 };
 
 }  // namespace ClangExpand::SymbolSearch

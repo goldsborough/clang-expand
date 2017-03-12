@@ -12,14 +12,15 @@
 
 // Standard includes
 #include <iosfwd>
+#include <optional>
 
 namespace ClangExpand {
 class Query;
 
 struct Result {
   explicit Result(Query&& query);
-  Range callExtent;
-  DeclarationData declaration;
+  Range replaceRange;
+  std::optional<DeclarationData> declaration;
   DefinitionData definition;
 };
 
@@ -30,8 +31,10 @@ namespace llvm::yaml {
 template <>
 struct MappingTraits<ClangExpand::Result> {
   static void mapping(llvm::yaml::IO& io, ClangExpand::Result& result) {
-    io.mapRequired("call", result.callExtent);
-    io.mapRequired("declaration", result.declaration);
+    io.mapRequired("replace-range", result.replaceRange);
+    if (result.declaration) {
+      io.mapRequired("declaration", *result.declaration);
+    }
     io.mapRequired("definition", result.definition);
   }
 };

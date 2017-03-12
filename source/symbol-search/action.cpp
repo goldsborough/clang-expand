@@ -115,13 +115,7 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
 
   if (isOperator) _spelling = "operator" + _spelling;
 
-  // clang-format off
-  auto hooks = std::make_unique<MacroSearch>(
-    compiler, _callLocation,
-    [this](auto&& definition) {
-      _query.definition = std::move(definition);
-    });
-  // clang-format on
+  auto hooks = std::make_unique<MacroSearch>(compiler, _callLocation, _query);
   compiler.getPreprocessor().addPPCallbacks(std::move(hooks));
 
   return true;

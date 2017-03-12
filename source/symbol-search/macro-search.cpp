@@ -2,6 +2,7 @@
 #include "clang-expand/symbol-search/macro-search.hpp"
 #include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/location.hpp"
+#include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
 
 // Clang includes
@@ -25,6 +26,7 @@
 // System includes
 #include <cassert>
 #include <iterator>
+#include <optional>
 #include <string>
 #include <type_traits>
 
@@ -66,16 +68,15 @@ void rewriteSimpleMacroArgument(clang::Rewriter& rewriter,
 
 MacroSearch::MacroSearch(clang::CompilerInstance& compiler,
                          const clang::SourceLocation& location,
-                         const MatchCallback& callback)
+                         Query& query)
 : _sourceManager(compiler.getSourceManager())
 , _languageOptions(compiler.getLangOpts())
 , _preprocessor(compiler.getPreprocessor())
 , _callLocation(location, _sourceManager)
-, _callback(callback) {
-  assert(callback != nullptr);
+, _query(query) {
 }
 
-void MacroSearch::MacroExpands(const clang::Token&,
+void MacroSearch::MacroExpands(const clang::Token& token,
                                const clang::MacroDefinition& macro,
                                clang::SourceRange range,
                                const clang::MacroArgs* arguments) {
@@ -89,11 +90,12 @@ void MacroSearch::MacroExpands(const clang::Token&,
   std::string text = _rewriteMacro(*info, mapping);
 
   Location location(info->getDefinitionLoc(), _sourceManager);
-
-  _callback({std::move(location),
-             std::move(original),
-             std::move(text),
-             /*isMacro=*/true});
+  
+  _query.call.emplace(Range{range, _sourceManager});
+  _query.definition = DefinitionData{std::move(location),
+                                     std::move(original),
+                                     std::move(text),
+                                     /*isMacro=*/true};
 }
 
 std::string MacroSearch::_rewriteMacro(const clang::MacroInfo& info,
