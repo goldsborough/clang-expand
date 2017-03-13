@@ -31,12 +31,11 @@ Result Search::run(clang::tooling::CompilationDatabase& compilationDatabase,
 
   _symbolSearch(compilationDatabase, query);
 
-  if ((query.options.wantsDeclaration || query.options.wantsDefinition) &&
-      (!query.declaration && !query.definition)) {
+  if (query.foundNothing()) {
     Routines::error("Could not recognize token at specified location");
   }
 
-  if (query.options.wantsDefinition) {
+  if (query.requiresDefinition()) {
     if (!query.definition) {
       _definitionSearch(compilationDatabase, sources, query);
     }

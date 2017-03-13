@@ -78,6 +78,21 @@ std::string withoutIndentation(std::string text) {
   // RVO
   return text;
 }
+
+std::string getRewrittenText(clang::Stmt* body,
+                             const Query& query,
+                             const clang::SourceLocation& afterBrace,
+                             clang::ASTContext& context,
+                             clang::Rewriter& rewriter) {
+  const auto& map = query.declaration->parameterMap;
+
+  DefinitionRewriter(rewriter, map, query.call, context).TraverseStmt(body);
+
+  const auto beforeBrace = body->getLocEnd().getLocWithOffset(-1);
+  const clang::SourceRange range(afterBrace, beforeBrace);
+
+  return withoutIndentation(rewriter.getRewrittenText(range));
+}
 }  // namespace
 
 DefinitionData DefinitionData::Collect(const clang::FunctionDecl& function,
@@ -90,23 +105,20 @@ DefinitionData DefinitionData::Collect(const clang::FunctionDecl& function,
          "Function should have a body to collect definition");
   auto* body = llvm::cast<clang::CompoundStmt>(function.getBody());
 
-  const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
-  const auto beforeBrace = body->getLocEnd().getLocWithOffset(-1);
-  const clang::SourceRange range(afterBrace, beforeBrace);
-
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
-  auto original = withoutIndentation(rewriter.getRewrittenText(range));
+  auto original =
+      withoutIndentation(rewriter.getRewrittenText(function.getSourceRange()));
+
+  const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
   if (query.call && query.call->requiresDeclaration()) {
     insertDeclaration(*query.call->assignee, afterBrace, rewriter);
   }
 
   std::string rewritten;
   if (query.options.wantsRewritten && !body->body_empty()) {
-    const auto& map = query.declaration->parameterMap;
-    DefinitionRewriter(rewriter, map, query.call, context).TraverseStmt(body);
-    rewritten = withoutIndentation(rewriter.getRewrittenText(range));
+    rewritten = getRewrittenText(body, query, afterBrace, context, rewriter);
   }
 
-  return {std::move(location), original, rewritten};
+  return {std::move(location), std::move(original), std::move(rewritten)};
 }
 }  // namespace ClangExpand

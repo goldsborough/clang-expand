@@ -17,6 +17,18 @@ struct Query {
   explicit Query(Options options_) : options(options_) {
   }
 
+  bool requiresDeclaration() const noexcept {
+    return options.wantsDeclaration || requiresDefinition();
+  }
+
+  bool requiresDefinition() const noexcept {
+    return options.wantsDefinition || options.wantsRewritten;
+  }
+
+  bool foundNothing() const noexcept {
+    return requiresDeclaration() && (!declaration && !definition);
+  }
+
   std::optional<DeclarationData> declaration;
   std::optional<DefinitionData> definition;
   std::optional<CallData> call;

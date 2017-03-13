@@ -372,7 +372,7 @@ void MatchHandler::run(const MatchResult& result) {
 
   auto& context = *result.Context;
 
-  if (_query.options.wantsCall || _query.options.wantsDefinition) {
+  if (_query.options.wantsCall || _query.options.wantsRewritten) {
     auto callData = collectCallData(*call, context);
     decorateCallDataWithMemberBase(callData, result);
     _query.call = std::move(callData);
@@ -381,12 +381,12 @@ void MatchHandler::run(const MatchResult& result) {
   // Already found a macro definition
   if (_query.definition) return;
 
-  if (_query.options.wantsDeclaration || _query.options.wantsDefinition) {
+  if (_query.requiresDeclaration()) {
     _query.declaration =
         collectDeclarationData(*function, context, std::move(parameterMap));
   }
 
-  if (_query.options.wantsDefinition && function->hasBody()) {
+  if (_query.requiresDefinition() && function->hasBody()) {
     _query.definition = DefinitionData::Collect(*function, context, _query);
   }
 }
