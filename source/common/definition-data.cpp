@@ -105,9 +105,15 @@ DefinitionData DefinitionData::Collect(const clang::FunctionDecl& function,
          "Function should have a body to collect definition");
   auto* body = llvm::cast<clang::CompoundStmt>(function.getBody());
 
+  if (body->body_empty()) return {location, "", ""};
+
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
-  auto original =
-      withoutIndentation(rewriter.getRewrittenText(function.getSourceRange()));
+  
+  std::string original;
+  if (query.options.wantsDefinition) {
+    const clang::SourceRange entireFunction(function.getSourceRange());
+    original = withoutIndentation(rewriter.getRewrittenText(entireFunction));
+  }
 
   const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
   if (query.call && query.call->requiresDeclaration()) {
@@ -115,7 +121,7 @@ DefinitionData DefinitionData::Collect(const clang::FunctionDecl& function,
   }
 
   std::string rewritten;
-  if (query.options.wantsRewritten && !body->body_empty()) {
+  if (query.options.wantsRewritten) {
     rewritten = getRewrittenText(body, query, afterBrace, context, rewriter);
   }
 

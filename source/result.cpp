@@ -22,7 +22,7 @@ Result::Result(Query&& query) {
   if (query.options.wantsDeclaration) {
     declaration = std::move(query.declaration);
   }
-  if (query.options.wantsDefinition) {
+  if (query.requiresDefinition()) {
     definition = std::move(query.definition);
   }
 }

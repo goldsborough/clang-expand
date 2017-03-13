@@ -36,7 +36,9 @@ struct MappingTraits<ClangExpand::DefinitionData> {
   mapping(llvm::yaml::IO& io, ClangExpand::DefinitionData& definition) {
     io.mapRequired("location", definition.location);
     io.mapRequired("isMacro", definition.isMacro);
-    io.mapRequired("text", definition.original);
+    if (!definition.original.empty()) {
+      io.mapRequired("text", definition.original);
+    }
     if (!definition.rewritten.empty()) {
       io.mapOptional("rewritten", definition.rewritten);
     }
