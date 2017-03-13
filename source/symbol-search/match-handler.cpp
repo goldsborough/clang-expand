@@ -22,6 +22,7 @@
 #include <clang/ASTMatchers/ASTMatchers.h>
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Basic/SourceManager.h>
+#include <clang/Lex/Lexer.h>
 
 // LLVM includes
 #include <llvm/ADT/SmallVector.h>
@@ -41,16 +42,35 @@ namespace ClangExpand::SymbolSearch {
 namespace {
 using ParameterMap = DeclarationData::ParameterMap;
 
+Range cleanRange(const clang::Expr& expression,
+                 const clang::SourceRange& range,
+                 const clang::ASTContext& context) {
+  // For a normal call expression with parentheses, we have to add +1
+  // because the call expression does not include the final semicolon.
+  unsigned extraOffset = +1;
+  if (const auto* op = llvm::dyn_cast<clang::CXXOperatorCallExpr>(&expression)) {
+    // For an operator expression, the end of the call range is the first character of the right
+    // operand (for binary operators) or only operand (for unary operators), for some reason. So we
+    // have to skip the whole token and are then already at the semicolon (so no +1).
+    extraOffset = clang::Lexer::MeasureTokenLength(op->getLocEnd(),
+                                                   context.getSourceManager(),
+                                                   context.getLangOpts());
+  }
+
+  const auto begin = range.getBegin();
+  const auto end = range.getEnd().getLocWithOffset(+extraOffset);
+
+  return {{begin, end}, context.getSourceManager()};
+}
+
 auto collectDeclarationData(const clang::FunctionDecl& function,
                             clang::ASTContext& astContext,
                             ParameterMap&& parameterMap) {
-  const Location location(function.getLocation(),
-                          astContext.getSourceManager());
-  ClangExpand::DeclarationData declaration(function.getName(), location);
+  const Location location(function.getLocation(), astContext.getSourceManager());
+  ClangExpand::DeclarationData declaration(function.getNameAsString(), location);
 
   declaration.parameterMap = std::move(parameterMap);
-  const auto text =
-      Routines::getSourceText(function.getSourceRange(), astContext);
+  const auto text = Routines::getSourceText(function.getSourceRange(), astContext);
   declaration.text = (std::move(text) + llvm::Twine(";")).str();
 
   const auto& policy = astContext.getPrintingPolicy();
@@ -121,8 +141,7 @@ ParameterMap mapCallParameters(const CallOrConstruction& call,
     // We only want to map argument that were actually passed in the call
     if (llvm::isa<clang::CXXDefaultArgExpr>(argument)) continue;
 
-    assert(parameter != function.param_end() &&
-           "Function has more parameters than arguments?");
+    assert(parameter != function.param_end() && "Function has more parameters than arguments?");
     insertParameterMapping(parameters, **parameter, *argument, context);
 
     ++parameter;
@@ -138,8 +157,7 @@ const T* parentAs(const Node& node, clang::ASTContext& context) {
   return parents.begin()->template get<T>();
 }
 
-bool isNestedInsideSomeOtherStatment(const clang::VarDecl& variable,
-                                     clang::ASTContext& context) {
+bool isNestedInsideSomeOtherStatment(const clang::VarDecl& variable, clang::ASTContext& context) {
   // Make sure the parents are [DeclStmt[->CompoundStmt]]
   // or TranslationUnitDecl.
   if (parentAs<clang::TranslationUnitDecl>(variable, context)) return false;
@@ -154,7 +172,8 @@ bool isNestedInsideSomeOtherStatment(const clang::VarDecl& variable,
 }
 
 std::optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
-                                             clang::ASTContext& context) {
+                                             clang::ASTContext& context,
+                                             const clang::Expr& expression) {
   // Could be an IfStmt, a WhileStmt, a CallExpr etc. etc.
   if (isNestedInsideSomeOtherStatment(variable, context)) {
     return std::nullopt;
@@ -177,15 +196,14 @@ std::optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
     }
   }
 
-  Range range(variable.getSourceRange(), context.getSourceManager());
+  auto range = cleanRange(expression, variable.getSourceRange(), context);
   return CallData(std::move(assignee), std::move(range));
 }
 
-CallData
-handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
-                            clang::ASTContext& context) {
-  if (!binaryOperator.isAssignmentOp() &&
-      !binaryOperator.isCompoundAssignmentOp() &&
+CallData handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
+                                     clang::ASTContext& context,
+                                     const clang::Expr& expression) {
+  if (!binaryOperator.isAssignmentOp() && !binaryOperator.isCompoundAssignmentOp() &&
       !binaryOperator.isShiftAssignOp()) {
     Routines::error("Cannot expand call as operand of " +
                     llvm::Twine(binaryOperator.getOpcodeStr()));
@@ -205,31 +223,26 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
     Routines::error("Cannot expand call because assignee is not recognized");
   }
 
-  auto assignee = AssigneeData::Builder()
-                      .name(name)
-                      .op(binaryOperator.getOpcodeStr())
-                      .build();
+  auto assignee = AssigneeData::Builder().name(name).op(binaryOperator.getOpcodeStr()).build();
 
-  Range range(binaryOperator.getSourceRange(), context.getSourceManager());
-
+  auto range = cleanRange(expression, binaryOperator.getSourceRange(), context);
   return {std::move(assignee), std::move(range)};
 }
 
-std::optional<CallData>
-collectCallDataFromContext(const clang::Expr& expression,
-                           clang::ASTContext& context,
-                           unsigned depth = 8) {
+std::optional<CallData> collectCallDataFromContext(const clang::Expr& expression,
+                                                   clang::ASTContext& context,
+                                                   unsigned depth = 8) {
   // Not checking the base case is generally bad for the first call, but we
   // don't actually want this to be called with depth = 0 the first time.
   assert(depth > 0 && "Reached invalid depth while walking up call expression");
 
   for (const auto parent : context.getParents(expression)) {
     if (const auto* node = parent.get<clang::ReturnStmt>()) {
-      return CallData({node->getSourceRange(), context.getSourceManager()});
+      return CallData(cleanRange(expression, node->getSourceRange(), context));
     } else if (const auto* node = parent.get<clang::VarDecl>()) {
-      return handleCallForVarDecl(*node, context);
+      return handleCallForVarDecl(*node, context, expression);
     } else if (const auto* node = parent.get<clang::BinaryOperator>()) {
-      return handleCallForBinaryOperator(*node, context);
+      return handleCallForBinaryOperator(*node, context, expression);
     }
   }
 
@@ -255,8 +268,7 @@ clang::SourceLocation getCallLocation(const MatchHandler::MatchResult& result) {
     return ref->getLocation();
   }
 
-  if (const auto* memberCall =
-          result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("call")) {
+  if (const auto* memberCall = result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("call")) {
     if (memberCall->getMethodDecl()->isOverloadedOperator()) {
       // Since we only lex one token in the action (we have very primitive tools
       // down there), non-infix operator calls have to be recognized by the
@@ -270,8 +282,7 @@ clang::SourceLocation getCallLocation(const MatchHandler::MatchResult& result) {
     return member->getMemberLoc();
   }
 
-  const auto* constructor =
-      result.Nodes.getNodeAs<clang::CXXConstructExpr>("construct");
+  const auto* constructor = result.Nodes.getNodeAs<clang::CXXConstructExpr>("construct");
   assert(constructor && "Found no callable in match result");
 
   return constructor->getLocation();
@@ -281,13 +292,11 @@ bool callLocationMatches(const MatchHandler::MatchResult& result,
                          const clang::SourceLocation& targetLocation) {
   const auto& sourceManager = *result.SourceManager;
   const auto callLocation = getCallLocation(result);
-  return Routines::locationsAreEqual(callLocation,
-                                     targetLocation,
-                                     sourceManager);
+  return Routines::locationsAreEqual(callLocation, targetLocation, sourceManager);
 }
 
-const char* bufferPointerAt(const clang::SourceLocation& location,
-                            const MatchHandler::MatchResult& result) {
+const char*
+bufferPointerAt(const clang::SourceLocation& location, const MatchHandler::MatchResult& result) {
   bool error;
   const char* data = result.SourceManager->getCharacterData(location, &error);
   assert(!error && "Error getting character data pointer");
@@ -295,13 +304,11 @@ const char* bufferPointerAt(const clang::SourceLocation& location,
   return data;
 }
 
-void decorateCallDataWithMemberBase(CallData& callData,
-                                    const MatchHandler::MatchResult& result) {
+void decorateCallDataWithMemberBase(CallData& callData, const MatchHandler::MatchResult& result) {
   if (auto* call = result.Nodes.getNodeAs<clang::CallExpr>("call")) {
     if (isMemberOperatorOverloadCall(*call)) {
       const auto lhs = *(call->arg_begin());
-      callData.base =
-          Routines::getSourceText(lhs->getSourceRange(), *result.Context);
+      callData.base = Routines::getSourceText(lhs->getSourceRange(), *result.Context);
       callData.base += ".";
       return;
     }
@@ -317,23 +324,20 @@ void decorateCallDataWithMemberBase(CallData& callData,
     }
   }
 
-  const auto* constructor =
-      result.Nodes.getNodeAs<clang::CXXConstructorDecl>("fn");
+  const auto* constructor = result.Nodes.getNodeAs<clang::CXXConstructorDecl>("fn");
   if (constructor && callData.assignee.has_value()) {
     callData.base = callData.assignee->name + ".";
   }
 }
 
 std::pair<const clang::Expr*, ParameterMap>
-inspectCall(const clang::FunctionDecl& function,
-            const MatchHandler::MatchResult& result) {
+inspectCall(const clang::FunctionDecl& function, const MatchHandler::MatchResult& result) {
   auto& context = *result.Context;
   if (auto* functionCall = result.Nodes.getNodeAs<clang::CallExpr>("call")) {
     auto parameterMap = mapCallParameters(*functionCall, function, context);
     return {functionCall, std::move(parameterMap)};
   }
-  const auto* constructor =
-      result.Nodes.getNodeAs<clang::CXXConstructExpr>("construct");
+  const auto* constructor = result.Nodes.getNodeAs<clang::CXXConstructExpr>("construct");
   auto parameterMap = mapCallParameters(*constructor, function, context);
 
   return {constructor, std::move(parameterMap)};
@@ -342,20 +346,18 @@ inspectCall(const clang::FunctionDecl& function,
 CallData collectCallData(const clang::Expr& call, clang::ASTContext& context) {
   if (parentAs<clang::CompoundStmt>(call, context) ||
       parentAs<clang::TranslationUnitDecl>(call, context)) {
-    return CallData({call.getSourceRange(), context.getSourceManager()});
+    return CallData(cleanRange(call, call.getSourceRange(), context));
   }
 
   if (auto optional = collectCallDataFromContext(call, context)) {
-    return optional.value();
+    return *optional;
   }
 
   Routines::error("Refuse or unable to expand at given location");
 }
-
 }  // namespace
 
-MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
-                           Query& query)
+MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation, Query& query)
 : _targetLocation(targetLocation), _query(query) {
 }
 
@@ -366,14 +368,14 @@ void MatchHandler::run(const MatchResult& result) {
   const auto* function = result.Nodes.getNodeAs<clang::FunctionDecl>("fn");
   assert(function && "Did not match required function declaration");
 
-  auto[call, parameterMap] = inspectCall(*function, result);
+  auto[callExpression, parameterMap] = inspectCall(*function, result);
 
-  assert(call && "Matched neither function call nor constructor invocation");
+  assert(callExpression && "Matched neither function call nor constructor invocation");
 
   auto& context = *result.Context;
 
   if (_query.options.wantsCall || _query.options.wantsRewritten) {
-    auto callData = collectCallData(*call, context);
+    auto callData = collectCallData(*callExpression, context);
     decorateCallDataWithMemberBase(callData, result);
     _query.call = std::move(callData);
   }
@@ -382,8 +384,7 @@ void MatchHandler::run(const MatchResult& result) {
   if (_query.definition) return;
 
   if (_query.requiresDeclaration()) {
-    _query.declaration =
-        collectDeclarationData(*function, context, std::move(parameterMap));
+    _query.declaration = collectDeclarationData(*function, context, std::move(parameterMap));
   }
 
   if (_query.requiresDefinition() && function->hasBody()) {

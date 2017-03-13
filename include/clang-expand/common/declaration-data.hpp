@@ -8,7 +8,6 @@
 // LLVM includes
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringMap.h>
-#include <llvm/ADT/StringRef.h>
 #include <llvm/Support/YAMLTraits.h>
 
 // Standard includes
@@ -18,9 +17,9 @@ namespace ClangExpand {
 struct DeclarationData {
   using ParameterMap = llvm::StringMap<std::string>;
 
-  explicit DeclarationData(const llvm::StringRef& name_,
+  explicit DeclarationData(const std::string& name_,
                            const Location& location_)
-  : name(name_.str()), location(location_) {
+  : name(name_), location(location_) {
   }
 
   std::string name;

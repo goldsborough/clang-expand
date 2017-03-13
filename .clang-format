@@ -15,6 +15,7 @@ AlignConsecutiveAssignments: false
 BinPackArguments: false
 BinPackParameters: false
 BreakConstructorInitializersBeforeComma: true
+ColumnLimit: 100
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 0
 ContinuationIndentWidth: 4

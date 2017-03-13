@@ -32,7 +32,7 @@ template <>
 struct MappingTraits<ClangExpand::Result> {
   static void mapping(llvm::yaml::IO& io, ClangExpand::Result& result) {
     if (result.replaceRange) {
-      io.mapRequired("replace-range", *result.replaceRange);
+      io.mapRequired("call", *result.replaceRange);
     }
     if (result.declaration) {
       io.mapRequired("declaration", *result.declaration);

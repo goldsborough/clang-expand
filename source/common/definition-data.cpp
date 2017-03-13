@@ -108,11 +108,11 @@ DefinitionData DefinitionData::Collect(const clang::FunctionDecl& function,
   if (body->body_empty()) return {location, "", ""};
 
   clang::Rewriter rewriter(context.getSourceManager(), context.getLangOpts());
-  
+
   std::string original;
   if (query.options.wantsDefinition) {
     const clang::SourceRange entireFunction(function.getSourceRange());
-    original = withoutIndentation(rewriter.getRewrittenText(entireFunction));
+    original = rewriter.getRewrittenText(entireFunction);
   }
 
   const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
