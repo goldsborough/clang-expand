@@ -169,17 +169,17 @@ const T* parentAs(const Node& node, clang::ASTContext& context) {
     return wantedType;
   }
 
-  // clang-format off
-  if constexpr(std::is_base_of_v<clang::Stmt, Node>) {
-    const auto* parentStatement = parent->template get<clang::Stmt>();
-    // Else, this may be an implicit expression like ExprWithCleanups or implicit casts. If that is
-    // the case, we recurse below and look one level up. If not, then this expression is some other
-    // kind, meaning the parent just simply is not of type T.
-    if (isImplicitExpression(node, *parentStatement)) {
-      return parentAs<T>(*parentStatement, context);
+  // Else, this may be an implicit expression like ExprWithCleanups or an ImplicitCastExpr. If that
+  // is the case, we recurse below and look one level up. If not, then the parent is some other kind
+  // and simply is not of type T. Note that the parent can only be an implicit expression if the
+  // node it wraps (i.e. the child) is an Expr, so we can SFINAE this right here.
+  if constexpr(std::is_base_of_v<clang::Expr, Node>) {
+    if (const auto* parentStatement = parent->template get<clang::Expr>()) {
+      if (isImplicitExpression(node, *parentStatement)) {
+        return parentAs<T>(*parentStatement, context);
+      }
     }
   }
-  // clang-format on
 
   // Parent is not the right type.
   return nullptr;
