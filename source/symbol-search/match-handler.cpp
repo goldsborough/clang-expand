@@ -150,14 +150,42 @@ ParameterMap mapCallParameters(const CallOrConstruction& call,
   return parameters;
 }
 
-template <typename T, typename Node>
-const T* parentAs(const Node& node, clang::ASTContext& context) {
-  const auto parents = context.getParents(node);
-  assert(!parents.empty() && "Orphan node?");
-  return parents.begin()->template get<T>();
+bool isImplicitExpression(const clang::Stmt& child, const clang::Stmt& parent) {
+  // If we ignore all implicit types on the way from the parent to the child node
+  // and we are back at the child node, then the parent must have been an implicit type.
+  return parent.IgnoreImplicit() == &child;
 }
 
-bool isNestedInsideSomeOtherStatment(const clang::VarDecl& variable, clang::ASTContext& context) {
+template <typename T, typename Node>
+const T* parentAs(const Node& node, clang::ASTContext& context) {
+  // Only the TranslationUnitDecl would have no parents, and we
+  // should never deal with a TranslationUnitDecl directly.
+  const auto parents = context.getParents(node);
+  assert(!parents.empty() && "Orphan node?");
+
+  // First check if the parent is the wanted type.
+  const auto parent = parents.begin();
+  if (const auto* wantedType = parent->template get<T>()) {
+    return wantedType;
+  }
+
+  // clang-format off
+  if constexpr(std::is_base_of_v<clang::Stmt, Node>) {
+    const auto* parentStatement = parent->template get<clang::Stmt>();
+    // Else, this may be an implicit expression like ExprWithCleanups or implicit casts. If that is
+    // the case, we recurse below and look one level up. If not, then this expression is some other
+    // kind, meaning the parent just simply is not of type T.
+    if (isImplicitExpression(node, *parentStatement)) {
+      return parentAs<T>(*parentStatement, context);
+    }
+  }
+  // clang-format on
+
+  // Parent is not the right type.
+  return nullptr;
+}
+
+bool isNestedInsideSomeOtherStatement(const clang::VarDecl& variable, clang::ASTContext& context) {
   // Make sure the parents are [DeclStmt[->CompoundStmt]]
   // or TranslationUnitDecl.
   if (parentAs<clang::TranslationUnitDecl>(variable, context)) return false;
@@ -175,7 +203,7 @@ std::optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
                                              clang::ASTContext& context,
                                              const clang::Expr& expression) {
   // Could be an IfStmt, a WhileStmt, a CallExpr etc. etc.
-  if (isNestedInsideSomeOtherStatment(variable, context)) {
+  if (isNestedInsideSomeOtherStatement(variable, context)) {
     return std::nullopt;
   }
 
