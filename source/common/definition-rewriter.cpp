@@ -56,7 +56,7 @@ DefinitionRewriter::DefinitionRewriter(clang::Rewriter& rewriter,
 }
 
 bool DefinitionRewriter::VisitStmt(clang::Stmt* statement) {
-  if (_call && llvm::isa<clang::ReturnStmt>(statement)) {
+  if (llvm::isa<clang::ReturnStmt>(statement) && _call) {
     if (auto* rtn = llvm::dyn_cast<clang::ReturnStmt>(statement)) {
       _rewriteReturn(*rtn, *_call);
       return true;
