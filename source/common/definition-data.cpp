@@ -35,23 +35,13 @@
 
 namespace ClangExpand {
 namespace {
-void insertDeclaration(const AssigneeData& assignee,
-                       const clang::SourceLocation& location,
-                       clang::Rewriter& rewriter) {
-  const auto text =
-      (llvm::Twine(assignee.type->name) + " " + assignee.name + ";\n").str();
-  const auto error = rewriter.InsertTextAfter(location, text);
-  assert(!error && "Error inserting declaration at start of body");
-}
-
 std::string withoutIndentation(std::string text) {
   auto start = text.begin();
   int offset = -1;
   while (true) {
     // Find the first character after the newline that is not space
-    auto end = std::find_if(start, text.end(), [](char character) {
-      return !::isspace(character);
-    });
+    auto end =
+        std::find_if(start, text.end(), [](char character) { return !::isspace(character); });
 
     if (start != end) {
       if (start == text.begin()) {
@@ -81,13 +71,18 @@ std::string withoutIndentation(std::string text) {
 
 std::string getRewrittenText(clang::Stmt* body,
                              const Query& query,
-                             const clang::SourceLocation& afterBrace,
                              clang::ASTContext& context,
                              clang::Rewriter& rewriter) {
   const auto& map = query.declaration->parameterMap;
 
-  DefinitionRewriter(rewriter, map, query.call, context).TraverseStmt(body);
+  DefinitionRewriter definitionRewriter(rewriter, map, query.call, context);
+  definitionRewriter.TraverseStmt(body);
 
+  if (query.call->assignee) {
+    definitionRewriter.rewriteReturnsToAssignments(*body);
+  }
+
+  const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
   const auto beforeBrace = body->getLocEnd().getLocWithOffset(-1);
   const clang::SourceRange range(afterBrace, beforeBrace);
 
@@ -101,8 +96,7 @@ DefinitionData DefinitionData::Collect(const clang::FunctionDecl& function,
   const auto& sourceManager = context.getSourceManager();
   Location location(function.getLocation(), sourceManager);
 
-  assert(function.hasBody() &&
-         "Function should have a body to collect definition");
+  assert(function.hasBody() && "Function should have a body to collect definition");
   auto* body = llvm::cast<clang::CompoundStmt>(function.getBody());
 
   if (body->body_empty()) return {location, "", ""};
@@ -115,14 +109,9 @@ DefinitionData DefinitionData::Collect(const clang::FunctionDecl& function,
     original = rewriter.getRewrittenText(entireFunction);
   }
 
-  const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
-  if (query.call && query.call->requiresDeclaration()) {
-    insertDeclaration(*query.call->assignee, afterBrace, rewriter);
-  }
-
   std::string rewritten;
   if (query.options.wantsRewritten) {
-    rewritten = getRewrittenText(body, query, afterBrace, context, rewriter);
+    rewritten = getRewrittenText(body, query, context, rewriter);
   }
 
   return {std::move(location), std::move(original), std::move(rewritten)};

@@ -70,6 +70,8 @@ class AssigneeData {
   /// If only the last return statement is given, this expression is valid, however.
   bool isDefaultConstructible() const noexcept;
 
+  std::string toString(bool withType = true) const;
+
   /// The operator used in the assignment (`=`, `+=`, `<<=` etc.).
   OperatorString op;
 

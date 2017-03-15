@@ -45,9 +45,6 @@ void MatchHandler::run(const MatchResult& result) {
   if (!_matchParameters(*result.Context, *function)) return;
   if (!_matchContexts(*function)) return;
 
-  function->getLocation().print(llvm::errs(), *result.SourceManager);
-  llvm::errs() << '\n';
-
   auto definition = DefinitionData::Collect(*function, *result.Context, _query);
   _query.definition = std::move(definition);
 }

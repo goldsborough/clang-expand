@@ -1,8 +1,8 @@
 // Project includes
 #include "clang-expand/common/definition-rewriter.hpp"
 #include "clang-expand/common/assignee-data.hpp"
-#include "clang-expand/common/declaration-data.hpp"
 #include "clang-expand/common/call-data.hpp"
+#include "clang-expand/common/declaration-data.hpp"
 
 #include "clang-expand/common/routines.hpp"
 
@@ -23,24 +23,35 @@
 
 namespace ClangExpand {
 namespace {
+[[noreturn]] void dieBecauseNotDefaultConstructible() {
+  Routines::error(
+      "Could not expand function because "
+      "assignee is not default-constructible");
+}
+
 template <typename T, typename Node>
-const T* getIfParentHasType(clang::ASTContext& context, const Node& node) {
+const T* lookAtParentOfReturn(clang::ASTContext& context, const Node& node) {
   if (const auto* parent = context.getParents(node).begin()) {
     if (const auto* asType = parent->template get<T>()) {
       return asType;
     }
   }
 
-  Routines::error(
-      "Could not expand function because "
-      "assignee is not default-constructible");
+  dieBecauseNotDefaultConstructible();
 }
 
 void ensureDefaultConstructible(clang::ASTContext& context,
                                 const clang::ReturnStmt& returnStatement) {
-  const auto* compound =
-      getIfParentHasType<clang::CompoundStmt>(context, returnStatement);
-  getIfParentHasType<clang::FunctionDecl>(context, *compound);
+  const auto* compound = lookAtParentOfReturn<clang::CompoundStmt>(context, returnStatement);
+  lookAtParentOfReturn<clang::FunctionDecl>(context, *compound);
+}
+
+void insertDeclaration(const AssigneeData& assignee,
+                       const clang::SourceLocation& location,
+                       clang::Rewriter& rewriter) {
+  const auto text = (llvm::Twine(assignee.type->name) + " " + assignee.name + ";\n").str();
+  const auto error = rewriter.InsertTextAfter(location, text);
+  assert(!error && "Error inserting declaration at start of body");
 }
 
 }  // namespace
@@ -49,16 +60,13 @@ DefinitionRewriter::DefinitionRewriter(clang::Rewriter& rewriter,
                                        const ParameterMap& parameterMap,
                                        const OptionalCall& call,
                                        clang::ASTContext& context)
-: _rewriter(rewriter)
-, _parameterMap(parameterMap)
-, _call(call)
-, _context(context) {
+: _rewriter(rewriter), _parameterMap(parameterMap), _call(call), _context(context) {
 }
 
 bool DefinitionRewriter::VisitStmt(clang::Stmt* statement) {
   if (llvm::isa<clang::ReturnStmt>(statement) && _call) {
     if (auto* rtn = llvm::dyn_cast<clang::ReturnStmt>(statement)) {
-      _rewriteReturn(*rtn, *_call);
+      _recordReturn(*rtn, *_call);
       return true;
     }
   }
@@ -72,8 +80,7 @@ bool DefinitionRewriter::VisitStmt(clang::Stmt* statement) {
   const auto* reference = llvm::dyn_cast<clang::DeclRefExpr>(statement);
   if (!reference) return true;
 
-  const auto* declaration =
-      llvm::dyn_cast<clang::ParmVarDecl>(reference->getDecl());
+  const auto* declaration = llvm::dyn_cast<clang::ParmVarDecl>(reference->getDecl());
   if (!declaration) return true;
 
   const auto name = declaration->getName();
@@ -88,33 +95,60 @@ bool DefinitionRewriter::VisitStmt(clang::Stmt* statement) {
   return true;
 }
 
-void DefinitionRewriter::_rewriteReturn(
-    const clang::ReturnStmt& returnStatement, const CallData& call) {
+void DefinitionRewriter::rewriteReturnsToAssignments(const clang::Stmt& body) {
+  assert(_call.has_value() && "Cannot rewrite return statements without call data");
+  assert(_call->assignee.has_value() &&
+         "Cannot rewrite returns to assignments without an assignee");
+  assert(!_returnLocations.empty() && "Assigning to a function call that doesn't return?");
+
+  if (_returnLocations.size() == 1) {
+    _rewriteReturn(_returnLocations.front(), _call->assignee->toString());
+    return;
+  }
+
+  assert(_call->assignee->isDefaultConstructible());
+
+  // We have more than one return statement, so definitely need to first declare and then assign to
+  // each return value.
+  if (_call->requiresDeclaration()) {
+    const auto afterBrace = body.getLocStart().getLocWithOffset(+1);
+    insertDeclaration(*_call->assignee, afterBrace, _rewriter);
+  }
+
+  for (const auto& location : _returnLocations) {
+    _rewriteReturn(location, _call->assignee->toString(/*withType=*/false));
+  }
+}
+
+void DefinitionRewriter::_recordReturn(const clang::ReturnStmt& returnStatement,
+                                       const CallData& call) {
+  if (!call.assignee.has_value()) return;
+  if (!call.assignee->isDefaultConstructible()) {
+    // If we already found a return statement on the top level of the function, then die. This is a
+    // super-duper edge case when the code has two return statements on the top function level
+    // (making everything underneath the first return dead code).
+    if (_returnLocations.empty()) {
+      ensureDefaultConstructible(_context, returnStatement);
+    } else {
+      dieBecauseNotDefaultConstructible();
+    }
+  }
+
+  auto location = returnStatement.getSourceRange().getBegin();
+  _returnLocations.emplace_back(std::move(location));
+}
+
+void DefinitionRewriter::_rewriteReturn(const clang::SourceLocation& begin,
+                                        const std::string& replacement) {
   static constexpr auto lengthOfTheWordReturn = 6;
 
-  if (!call.assignee) return;
-  if (!call.assignee->isDefaultConstructible()) {
-    ensureDefaultConstructible(_context, returnStatement);
-  }
-
-  std::string operation;
-  if (call.assignee->name.back() == ' ') {
-    operation = (call.assignee->name + call.assignee->op).str();
-  } else {
-    operation = (call.assignee->name + " " + call.assignee->op).str();
-  }
-
-  const auto begin = returnStatement.getSourceRange().getBegin();
   const auto end = begin.getLocWithOffset(lengthOfTheWordReturn);
-
-  bool error = _rewriter.ReplaceText({begin, end}, operation);
+  bool error = _rewriter.ReplaceText({begin, end}, replacement);
   assert(!error && "Error replacing return statement in definition");
 }
 
-void DefinitionRewriter::_rewriteMemberExpression(
-    const clang::MemberExpr& member) {
-  assert(_call.has_value() &&
-         "Found member expression we'd like to replace, but no call data");
+void DefinitionRewriter::_rewriteMemberExpression(const clang::MemberExpr& member) {
+  assert(_call.has_value() && "Found member expression we'd like to replace, but no call data");
   // If the base is empty, this means (should mean) that this function was an
   // implicit access, e.g. calling `f()` inside the class that declares `f()`.
   // Therefore all member expressions will already be valid and don't need any
