@@ -18,13 +18,24 @@ class ASTContext;
 namespace ClangExpand {
 struct Query;
 
+/// Stores data about the definition of a function.
 struct DefinitionData {
+  /// Collects the entire `DefinitionData` for the function. The `query` passed
+  /// should already have been through symbol search and must store `CallData`
+  /// and `DeclarationData`.
   static DefinitionData Collect(const clang::FunctionDecl& function,
                                 clang::ASTContext& context,
                                 const Query& query);
+  /// The `Location` of the definition in the source.
   Location location;
+
+  /// The original, untouched source text of the definition.
   std::string original;
+
+  /// The rewritten (expanded) source text of the definition.
   std::string rewritten;
+
+  /// Whether this definition is from a macro or a real function.
   bool isMacro{false};
 };
 }  // namespace ClangExpand

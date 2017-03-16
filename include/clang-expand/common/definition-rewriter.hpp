@@ -25,33 +25,83 @@ class SourceLocation;
 }
 
 namespace ClangExpand {
-class DefinitionRewriter : public clang::RecursiveASTVisitor<DefinitionRewriter> {
+
+/// Class to rewrite a function body for expansion purposes.
+///
+/// This class performs the heavy lifting in terms of rewriting a function body.
+/// It rewrites `return` statements to assignments (under certain
+/// circumstances), prefixes member expressions with their base objects and most
+/// importantly replaces parameter references with the passed argument
+/// expressions.
+///
+/// This class only stores references to the objects it is constructed with. It
+/// should therefore not be stored, but used just like a function call with all
+/// arguments stored on the stack.
+class DefinitionRewriter
+    : public clang::RecursiveASTVisitor<DefinitionRewriter> {
  public:
-  using OptionalCall = std::optional<CallData>;
   using ParameterMap = llvm::StringMap<std::string>;
 
+  /// Constructor.
   explicit DefinitionRewriter(clang::Rewriter& rewriter,
                               const ParameterMap& parameterMap,
-                              const OptionalCall& call,
+                              const CallData& call,
                               clang::ASTContext& context);
 
-  bool VisitStmt(clang::Stmt* statement);
+  /// Traverses the body of a function to rewrite.
+  bool VisitStmt(clang::Stmt* body);
 
+  /// Rewrites all `return` statements to assignments, according to the stored
+  /// `CallData`. `return` statement locations are stored during the traversal
+  /// in `VisitStmt`. After this is done, this method can be called to actually
+  /// replace each `return <something>` statement to `<variable> = <something>`.
+  ///
+  /// There are two required preconditions to calling this method:
+  ///
+  /// 1. The `assignee` member of the `CallData` must not be nullopt`.
+  /// 2. There must be at least one return statement in the body of
+  /// the function. This invariant *should* follow from (1), since there
+  /// *should* be no assignee if there is no return statement.
   void rewriteReturnsToAssignments(const clang::Stmt& body);
 
  private:
-  void _recordReturn(const clang::ReturnStmt& returnStatement, const CallData& call);
+  /// Stores the location of a return statement for later use. Once all return
+  /// locations have been collected like this, `rewriteReturnsToAssignments` can
+  /// later be called to perform the actual replacements.
+  void
+  _recordReturn(const clang::ReturnStmt& returnStatement, const CallData& call);
 
-  void _rewriteReturn(const clang::SourceLocation& begin, const std::string& replacement);
+  /// Replaces a single return location with the given text. The location should
+  /// probably come out of `_returnLocations`.
+  void _rewriteReturn(const clang::SourceLocation& begin,
+                      const std::string& replacement);
 
+  /// Handles rewriting a member expression. This is needed when the function
+  /// being rewritten is a method. In that case we need to prefix every
+  /// reference to a field or method with the base of the function (e.g. the 'x'
+  /// in `x.foo()`).
   void _rewriteMemberExpression(const clang::MemberExpr& member);
 
+  /// A rewriter to mess with the source text.
   clang::Rewriter& _rewriter;
+
+  /// A reference to a parameter map, for replacing parameter uses with argument
+  /// expressions.
   const ParameterMap& _parameterMap;
-  const OptionalCall& _call;
+
+  /// A reference to a `CallData` structure.
+  const CallData& _call;
+
+  /// The current `clang::ASTContext`.
   clang::ASTContext& _context;
+
+  /// Stores members we have rewritten, because sometimes they are encountered
+  /// twice inside `VisitStmt` (dunno why).
   llvm::SmallPtrSet<const clang::MemberExpr*, 16> _rewrittenMembers;
-  llvm::SmallVector<clang::SourceLocation, 4> _returnLocations;
+
+  /// Stores the locations of return statements (at the 'r') so we can later
+  /// rewrite them.
+  llvm::SmallVector<clang::SourceLocation, 8> _returnLocations;
 };
 }  // namespace ClangExpand
 

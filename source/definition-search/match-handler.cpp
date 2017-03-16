@@ -22,6 +22,8 @@
 
 namespace ClangExpand::DefinitionSearch {
 namespace {
+/// Compares a kind of `Context` with an expected `ContextData`. Their kind
+/// (namespace, class etc.) and name must match.
 template <typename Context>
 bool contextMatches(const Context& context,
                     const ContextData& expectedContext) {
