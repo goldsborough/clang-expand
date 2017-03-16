@@ -16,8 +16,8 @@ namespace ClangExpand {
 Result::Result(Query&& query) {
   if (query.options.wantsCall) {
     assert(query.call.has_value() &&
-           "User wants call information, but no call data.");
-    replaceRange = std::move(query.call->extent);
+           "User wants call information, but have no call data.");
+    callRange = std::move(query.call->extent);
   }
   if (query.options.wantsDeclaration) {
     declaration = std::move(query.declaration);
