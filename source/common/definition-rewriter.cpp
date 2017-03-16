@@ -2,24 +2,28 @@
 #include "clang-expand/common/definition-rewriter.hpp"
 #include "clang-expand/common/assignee-data.hpp"
 #include "clang-expand/common/call-data.hpp"
-#include "clang-expand/common/declaration-data.hpp"
-
 #include "clang-expand/common/routines.hpp"
 
 // Clang includes
-#include <clang/AST/ASTContext.h>
 #include <clang/AST/Decl.h>
 #include <clang/AST/Expr.h>
+#include <clang/AST/ExprCXX.h>
 #include <clang/AST/Stmt.h>
+#include <clang/Basic/SourceLocation.h>
 #include <clang/Rewrite/Core/Rewriter.h>
 
 // LLVM includes
 #include <llvm/ADT/StringMap.h>
 #include <llvm/Support/Casting.h>
+#include <llvm/ADT/SmallPtrSet.h>
+#include <llvm/ADT/SmallVector.h>
+#include <llvm/ADT/Twine.h>
 
 // Standard includes
 #include <cassert>
+#include <optional>
 #include <string>
+#include <type_traits>
 
 namespace ClangExpand {
 namespace {
@@ -32,7 +36,8 @@ namespace {
       "assignee is not default-constructible");
 }
 
-/// Tries to get the parent of a node as the given type `T`, or else errors and
+/// Tries to get the parent of a node as the given type `T`, or else errors
+/// and
 /// dies.
 template <typename T, typename Node>
 const T* tryToGetParentOrDie(clang::ASTContext& context, const Node& node) {
@@ -45,7 +50,8 @@ const T* tryToGetParentOrDie(clang::ASTContext& context, const Node& node) {
   dieBecauseNotDefaultConstructible();
 }
 
-/// Ensures that a `ReturnStmt` would allow default construction of a variable.
+/// Ensures that a `ReturnStmt` would allow default construction of a
+/// variable.
 /// This is the case if this is a top-level `return`, i.e. whose parent is the
 /// `CompoundStmt` of a function.
 void ensureReturnAllowsDefaultConstruction(
@@ -55,7 +61,8 @@ void ensureReturnAllowsDefaultConstruction(
   tryToGetParentOrDie<clang::FunctionDecl>(context, *compound);
 }
 
-/// Inserts the declaration of an assignee at the beginning of a function body.
+/// Inserts the declaration of an assignee at the beginning of a function
+/// body.
 void insertDeclaration(const AssigneeData& assignee,
                        const clang::Stmt& body,
                        clang::Rewriter& rewriter) {
@@ -124,7 +131,8 @@ void DefinitionRewriter::rewriteReturnsToAssignments(const clang::Stmt& body) {
 
   assert(_call.assignee->isDefaultConstructible());
 
-  // We have more than one return statement, so definitely need to first declare
+  // We have more than one return statement, so definitely need to first
+  // declare
   // and then assign to
   // each return value.
   if (_call.requiresDeclaration()) {
@@ -140,9 +148,11 @@ void DefinitionRewriter::_recordReturn(const clang::ReturnStmt& returnStatement,
                                        const CallData& call) {
   if (!call.assignee.has_value()) return;
   if (!call.assignee->isDefaultConstructible()) {
-    // If we already found a return statement on the top level of the function,
+    // If we already found a return statement on the top level of the
+    // function,
     // then die. This is a
-    // super-duper edge case when the code has two return statements on the top
+    // super-duper edge case when the code has two return statements on the
+    // top
     // function level
     // (making everything underneath the first return dead code).
     if (_returnLocations.empty()) {
@@ -186,7 +196,7 @@ void DefinitionRewriter::_rewriteMemberExpression(
   }
 
   // I've encountered cases where the exact same member will match twice,
-  // for mysterious reasons.
+
   _rewrittenMembers.insert(&member);
 }
 

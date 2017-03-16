@@ -1,9 +1,6 @@
 #ifndef CLANG_EXPAND_COMMON_OFFSET_HPP
 #define CLANG_EXPAND_COMMON_OFFSET_HPP
 
-// Standard includes
-#include <string>
-
 // LLVM includes
 #include <llvm/Support/YAMLTraits.h>
 
@@ -13,11 +10,12 @@ class SourceManager;
 }
 
 namespace ClangExpand {
-/// An offset into a file, represented by a `(line, column)` pair. Both the line and the column
-/// start are 1-indexed, as they are in clang.
+/// An offset into a file, represented by a `(line, column)` pair. Both the line
+/// and the column start are 1-indexed, as they are in clang.
 struct Offset {
   /// Constructs an `Offset` by converting a `clang::SourceLocation`.
-  Offset(const clang::SourceLocation& location, const clang::SourceManager& sourceManager);
+  Offset(const clang::SourceLocation& location,
+         const clang::SourceManager& sourceManager);
 
   /// Constructor.
   Offset(unsigned line_, unsigned column_);

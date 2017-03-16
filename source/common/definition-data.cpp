@@ -1,12 +1,9 @@
 // Project includes
 #include "clang-expand/common/definition-data.hpp"
-#include "clang-expand/common/assignee-data.hpp"
-#include "clang-expand/common/canonical-location.hpp"
 #include "clang-expand/common/declaration-data.hpp"
 #include "clang-expand/common/definition-rewriter.hpp"
 #include "clang-expand/common/location.hpp"
 #include "clang-expand/common/query.hpp"
-#include "clang-expand/common/routines.hpp"
 
 // Clang includes
 #include <clang/AST/ASTContext.h>
@@ -14,23 +11,18 @@
 #include <clang/AST/Stmt.h>
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Rewrite/Core/Rewriter.h>
+#include "clang-expand/common/call-data.hpp"
+#include "clang-expand/options.hpp"
 
 // LLVM includes
-#include <llvm/ADT/SmallString.h>
-#include <llvm/ADT/StringRef.h>
-#include <llvm/ADT/Twine.h>
 #include <llvm/Support/Casting.h>
-#include <llvm/Support/FileSystem.h>
-#include <llvm/Support/Path.h>
-#include <llvm/Support/raw_ostream.h>
 
 // Standard includes
 #include <algorithm>
 #include <cassert>
 #include <cctype>
-#include <cstdlib>
+#include <optional>
 #include <string>
-#include <system_error>
 #include <type_traits>
 
 namespace ClangExpand {

@@ -1,12 +1,6 @@
 #ifndef CLANG_EXPAND_COMMON_CANONICAL_LOCATION_HPP
 #define CLANG_EXPAND_COMMON_CANONICAL_LOCATION_HPP
 
-// LLVM includes
-#include <llvm/ADT/StringRef.h>
-
-// Standard includes
-#include <string>
-
 namespace clang {
 class FileEntry;
 class SourceLocation;

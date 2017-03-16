@@ -3,7 +3,7 @@
 
 // Standard includes
 #include <optional>
-#include <string>
+#include <type_traits>
 
 namespace ClangExpand {
 CallData::CallData(AssigneeData&& assignee, Range&& extent_)

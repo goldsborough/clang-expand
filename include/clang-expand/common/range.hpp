@@ -5,11 +5,7 @@
 #include "clang-expand/common/offset.hpp"
 
 // LLVM includes
-#include <llvm/ADT/StringRef.h>
 #include <llvm/Support/YAMLTraits.h>
-
-// Standard includes
-#include <string>
 
 namespace clang {
 class SourceManager;

@@ -14,7 +14,7 @@
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Casting.h>
-#include "llvm/Support/raw_ostream.h"
+#include <llvm/Support/raw_ostream.h>
 
 // Standard includes
 #include <cassert>

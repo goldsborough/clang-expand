@@ -1,11 +1,7 @@
 #ifndef CLANG_EXPAND_COMMON_DEFINITION_REWRITER_HPP
 #define CLANG_EXPAND_COMMON_DEFINITION_REWRITER_HPP
 
-// Project includes
-#include "clang-expand/common/call-data.hpp"
-
 // Clang includes
-#include <clang/AST/Expr.h>
 #include <clang/AST/RecursiveASTVisitor.h>
 
 // LLVM includes
@@ -15,16 +11,18 @@
 
 // Standard includes
 #include <iosfwd>
-#include <optional>
 
 namespace clang {
 class ASTContext;
 class Rewriter;
 class Stmt;
 class SourceLocation;
+class MemberExpr;
+class ReturnStmt;
 }
 
 namespace ClangExpand {
+struct CallData;
 
 /// Class to rewrite a function body for expansion purposes.
 ///
