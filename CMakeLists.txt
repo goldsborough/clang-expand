@@ -8,6 +8,27 @@ project(clang-expand)
 set(CMAKE_BUILD_TYPE Debug)
 
 ###########################################################
+## DOCUMENTATION
+###########################################################
+
+# Add a target to generate documentation with Doxygen.
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+  # Replace all variables of the form @<var>@ inside the Doxyfile
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile
+    ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY
+  )
+  add_custom_target(
+    docs
+    ${DOXYGEN_EXECUTABLE}
+    ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs
+    COMMENT "Generating API documentation with Doxygen" VERBATIM
+  )
+endif()
+
+###########################################################
 ## DEPENDENCIES
 ###########################################################
 
@@ -56,9 +77,11 @@ function(set_llvm_variable variable flags)
   endif()
 endfunction()
 
+message(STATUS $ENV{LLVM_PATH}/build/bin)
+
 find_program(LLVM_CONFIG
     NAMES llvm-config
-    HINTS $ENV{LLVM_PATH} $ENV{LLVM_PATH}/build/bin
+    HINTS $ENV{LLVM_PATH}/build/bin $ENV{LLVM_PATH}
     DOC "Path to llvm-config tool")
 if (LLVM_CONFIG)
   message(STATUS "Found llvm-config at ${LLVM_CONFIG}")
