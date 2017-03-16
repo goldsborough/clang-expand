@@ -13,6 +13,10 @@
 
 namespace ClangExpand::DefinitionSearch {
 namespace {
+
+/// Creates an ASTMatcher expression matching on functions that have a
+/// definition and the same name as the function whose declaration we serialized
+/// into the `DeclarationData` object.
 auto createAstMatcher(const DeclarationData& declaration) {
   using namespace clang::ast_matchers;  // NOLINT(build/namespaces)
   return functionDecl(isDefinition(), hasName(declaration.name)).bind("fn");

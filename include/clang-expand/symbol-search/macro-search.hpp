@@ -37,7 +37,7 @@ struct Query;
 
 namespace ClangExpand::SymbolSearch {
 
-
+/// 
 struct MacroSearch : public clang::PPCallbacks {
  public:
   MacroSearch(clang::CompilerInstance& compiler,

@@ -3,10 +3,12 @@
 #include "clang-expand/common/assignee-data.hpp"
 #include "clang-expand/common/call-data.hpp"
 #include "clang-expand/common/declaration-data.hpp"
+#include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/location.hpp"
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/range.hpp"
 #include "clang-expand/common/routines.hpp"
+#include "clang-expand/options.hpp"
 
 // Clang includes
 #include <clang/AST/ASTContext.h>
@@ -32,6 +34,7 @@
 
 // Standard includes
 #include <cassert>
+#include <iosfwd>
 #include <iterator>
 #include <optional>
 #include <string>
@@ -42,7 +45,8 @@ namespace ClangExpand::SymbolSearch {
 namespace {
 using ParameterMap = DeclarationData::ParameterMap;
 
-/// Performs some necessary preprocessing on call ranges before we can plug them into the `CallData`
+/// Performs some necessary preprocessing on call ranges before we can plug them
+/// into the `CallData`
 /// object returned from the match handler.
 Range cleanCallRange(const clang::Expr& expression,
                      const clang::SourceRange& range,
@@ -50,10 +54,14 @@ Range cleanCallRange(const clang::Expr& expression,
   // For a normal call expression with parentheses, we have to add +1
   // because the call expression does not include the final semicolon.
   unsigned extraOffset = +1;
-  if (const auto* op = llvm::dyn_cast<clang::CXXOperatorCallExpr>(&expression)) {
-    // For an operator expression, the end of the call range is the first character of the right
-    // operand (for binary operators) or only operand (for unary operators), for some reason. So we
-    // have to skip the whole token and are then already at the semicolon (so no +1).
+  if (const auto* op =
+          llvm::dyn_cast<clang::CXXOperatorCallExpr>(&expression)) {
+    // For an operator expression, the end of the call range is the first
+    // character of the right
+    // operand (for binary operators) or only operand (for unary operators), for
+    // some reason. So we
+    // have to skip the whole token and are then already at the semicolon (so no
+    // +1).
     extraOffset = clang::Lexer::MeasureTokenLength(op->getLocEnd(),
                                                    context.getSourceManager(),
                                                    context.getLangOpts());
@@ -65,15 +73,19 @@ Range cleanCallRange(const clang::Expr& expression,
   return {{begin, end}, context.getSourceManager()};
 }
 
-/// Collects a `DeclarationData` object containing the declaration's location, context and text.
+/// Collects a `DeclarationData` object containing the declaration's location,
+/// context and text.
 auto collectDeclarationData(const clang::FunctionDecl& function,
                             clang::ASTContext& astContext,
                             ParameterMap&& parameterMap) {
-  const Location location(function.getLocation(), astContext.getSourceManager());
-  ClangExpand::DeclarationData declaration(function.getNameAsString(), location);
+  const Location location(function.getLocation(),
+                          astContext.getSourceManager());
+  ClangExpand::DeclarationData declaration(function.getNameAsString(),
+                                           location);
 
   declaration.parameterMap = std::move(parameterMap);
-  const auto text = Routines::getSourceText(function.getSourceRange(), astContext);
+  const auto text =
+      Routines::getSourceText(function.getSourceRange(), astContext);
   declaration.text = (std::move(text) + llvm::Twine(";")).str();
 
   const auto& policy = astContext.getPrintingPolicy();
@@ -97,7 +109,8 @@ auto collectDeclarationData(const clang::FunctionDecl& function,
   return declaration;
 }
 
-/// Inserts an entry into a parameter map, given the parameter declaration and the Expr object of
+/// Inserts an entry into a parameter map, given the parameter declaration and
+/// the Expr object of
 /// the matching function call argument.
 void addParameterMapping(ParameterMap& parameters,
                          const clang::ParmVarDecl& parameter,
@@ -110,16 +123,21 @@ void addParameterMapping(ParameterMap& parameters,
   parameters.insert({originalName, callName});
 }
 
-/// Tests the two required properties for a call expression to be a member operator overload call:
-/// (1) the call is an operator call expression and (2) the operator is a method.
+/// Tests the two required properties for a call expression to be a member
+/// operator overload call:
+/// (1) the call is an operator call expression and (2) the operator is a
+/// method.
 bool isMemberOperatorOverloadCall(const clang::CallExpr& call) {
   return llvm::isa<clang::CXXOperatorCallExpr>(call) &&
          llvm::isa<clang::CXXMethodDecl>(call.getDirectCallee());
 }
 
-/// Attempts to perform the parameter mapping for member operator overloads, which are particularly
-/// tricky as they have fewer call arguments than function parameters. Returns a null optinal if
-/// the call is not an operator overload, else the correct parameter map for the unary of binary
+/// Attempts to perform the parameter mapping for member operator overloads,
+/// which are particularly
+/// tricky as they have fewer call arguments than function parameters. Returns a
+/// null optinal if
+/// the call is not an operator overload, else the correct parameter map for the
+/// unary of binary
 /// operator overload.
 std::optional<ParameterMap>
 tryMapParametersForOperatorOverloads(const clang::CallExpr& call,
@@ -141,8 +159,10 @@ tryMapParametersForOperatorOverloads(const clang::CallExpr& call,
   return parameters;
 }
 
-/// Returns a `ParameterMap`, mapping function parameter names (the variables in the declaration) to
-/// function call arguments (the expressions passed). The call can have either CallExpr or
+/// Returns a `ParameterMap`, mapping function parameter names (the variables in
+/// the declaration) to
+/// function call arguments (the expressions passed). The call can have either
+/// CallExpr or
 /// CXXConstructExpr type.
 template <typename CallOrConstruction>
 ParameterMap mapCallParameters(const CallOrConstruction& call,
@@ -164,7 +184,8 @@ ParameterMap mapCallParameters(const CallOrConstruction& call,
     // We only want to map argument that were actually passed in the call
     if (llvm::isa<clang::CXXDefaultArgExpr>(argument)) continue;
 
-    assert(parameter != function.param_end() && "Function has more parameters than arguments?");
+    assert(parameter != function.param_end() &&
+           "Function has more parameters than arguments?");
     addParameterMapping(parameters, **parameter, *argument, context);
 
     ++parameter;
@@ -173,14 +194,18 @@ ParameterMap mapCallParameters(const CallOrConstruction& call,
   return parameters;
 }
 
-/// Tests if the parent of a node is an implicit expression that should be ignored.
+/// Tests if the parent of a node is an implicit expression that should be
+/// ignored.
 bool isImplicitExpression(const clang::Stmt& child, const clang::Stmt& parent) {
-  // If we ignore all implicit types on the way from the parent to the child node
-  // and we are back at the child node, then the parent must have been an implicit type.
+  // If we ignore all implicit types on the way from the parent to the child
+  // node
+  // and we are back at the child node, then the parent must have been an
+  // implicit type.
   return parent.IgnoreImplicit() == &child;
 }
 
-/// Attempts to retrieve the parent of a node as the given type. It tries to ignore implicit nodes
+/// Attempts to retrieve the parent of a node as the given type. It tries to
+/// ignore implicit nodes
 /// that may hide th actual parent, e.g. ImplicitCastExprs.
 template <typename T, typename Node>
 const T* parentAs(const Node& node, clang::ASTContext& context) {
@@ -195,10 +220,14 @@ const T* parentAs(const Node& node, clang::ASTContext& context) {
     return wantedType;
   }
 
-  // Else, this may be an implicit expression like ExprWithCleanups or an ImplicitCastExpr. If that
-  // is the case, we recurse below and look one level up. If not, then the parent is some other kind
-  // and simply is not of type T. Note that the parent can only be an implicit expression if the
-  // node it wraps (i.e. the child) is an Expr, so we can SFINAE this right here.
+  // Else, this may be an implicit expression like ExprWithCleanups or an
+  // ImplicitCastExpr. If that
+  // is the case, we recurse below and look one level up. If not, then the
+  // parent is some other kind
+  // and simply is not of type T. Note that the parent can only be an implicit
+  // expression if the
+  // node it wraps (i.e. the child) is an Expr, so we can SFINAE this right
+  // here.
   if
     constexpr(std::is_base_of_v<clang::Expr, Node>) {
       if (const auto* parentStatement = parent->template get<clang::Expr>()) {
@@ -212,12 +241,17 @@ const T* parentAs(const Node& node, clang::ASTContext& context) {
   return nullptr;
 }
 
-/// Finds out if a variable declaration is nested inside some statement where we don't want to
-/// expand the initializing function call. This it the case for if clauses (`if (int x = f())`) or
-/// for loop initializers, for example. Note that this function actually attempts to determine the
-/// opposite, i.e. it returns false if the variable is global or in a compound statement and true in
+/// Finds out if a variable declaration is nested inside some statement where we
+/// don't want to
+/// expand the initializing function call. This it the case for if clauses (`if
+/// (int x = f())`) or
+/// for loop initializers, for example. Note that this function actually
+/// attempts to determine the
+/// opposite, i.e. it returns false if the variable is global or in a compound
+/// statement and true in
 /// all other cases.
-bool isNestedInsideSomeOtherStatement(const clang::VarDecl& variable, clang::ASTContext& context) {
+bool isNestedInsideSomeOtherStatement(const clang::VarDecl& variable,
+                                      clang::ASTContext& context) {
   // Make sure the parents are [DeclStmt[->CompoundStmt]]
   // or TranslationUnitDecl.
   if (parentAs<clang::TranslationUnitDecl>(variable, context)) return false;
@@ -231,11 +265,16 @@ bool isNestedInsideSomeOtherStatement(const clang::VarDecl& variable, clang::AST
   return true;
 }
 
-/// For the case that the surrounding context of the function call is a variable declaration (e.g.
-/// in `int x = f(5);`), this function handles such a call. It makes sure this declaration is not in
-/// some bad location, e.g. inside an `if` clause. It also figures out if the assigned variable's
-/// type is default-constructible, which is important in the case that the function being called has
-/// at least one return statement that is not on the top level of the function (in which case an
+/// For the case that the surrounding context of the function call is a variable
+/// declaration (e.g.
+/// in `int x = f(5);`), this function handles such a call. It makes sure this
+/// declaration is not in
+/// some bad location, e.g. inside an `if` clause. It also figures out if the
+/// assigned variable's
+/// type is default-constructible, which is important in the case that the
+/// function being called has
+/// at least one return statement that is not on the top level of the function
+/// (in which case an
 /// assignment for an expansion would be invalid).
 std::optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
                                              clang::ASTContext& context,
@@ -266,13 +305,17 @@ std::optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
   return CallData(std::move(assignee), std::move(range));
 }
 
-/// If we determined that the surrounding context of the function call has a binary operator (like
-/// an assignment or compound operation, e.g. +=), then this function takes care of handling that
+/// If we determined that the surrounding context of the function call has a
+/// binary operator (like
+/// an assignment or compound operation, e.g. +=), then this function takes care
+/// of handling that
 /// call and collecting relevant data.
-CallData handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
-                                     clang::ASTContext& context,
-                                     const clang::Expr& expression) {
-  if (!binaryOperator.isAssignmentOp() && !binaryOperator.isCompoundAssignmentOp() &&
+CallData
+handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
+                            clang::ASTContext& context,
+                            const clang::Expr& expression) {
+  if (!binaryOperator.isAssignmentOp() &&
+      !binaryOperator.isCompoundAssignmentOp() &&
       !binaryOperator.isShiftAssignOp()) {
     Routines::error("Cannot expand call as operand of " +
                     llvm::Twine(binaryOperator.getOpcodeStr()));
@@ -292,26 +335,35 @@ CallData handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator
     Routines::error("Cannot expand call because assignee is not recognized");
   }
 
-  auto assignee = AssigneeData::Builder().name(name).op(binaryOperator.getOpcodeStr()).build();
+  auto assignee = AssigneeData::Builder()
+                      .name(name)
+                      .op(binaryOperator.getOpcodeStr())
+                      .build();
 
-  auto range = cleanCallRange(expression, binaryOperator.getSourceRange(), context);
+  auto range =
+      cleanCallRange(expression, binaryOperator.getSourceRange(), context);
   return {std::move(assignee), std::move(range)};
 }
 
-/// Attempts to obtain `CallData` from the surroundings (context) of an expression by walking up the
-/// AST a certain number of levels until it finds something we can handle (like a return statement
-/// or a variable declaration). If the maximum recursion ("walking-up") depth is reached, the
+/// Attempts to obtain `CallData` from the surroundings (context) of an
+/// expression by walking up the
+/// AST a certain number of levels until it finds something we can handle (like
+/// a return statement
+/// or a variable declaration). If the maximum recursion ("walking-up") depth is
+/// reached, the
 /// operation fails. The depth value passed must initially not be zero.
-std::optional<CallData> collectCallDataFromContext(const clang::Expr& expression,
-                                                   clang::ASTContext& context,
-                                                   unsigned depth = 8) {
+std::optional<CallData>
+collectCallDataFromContext(const clang::Expr& expression,
+                           clang::ASTContext& context,
+                           unsigned depth = 8) {
   // Not checking the base case is generally bad for the first call, but we
   // don't actually want this to be called with depth = 0 the first time.
   assert(depth > 0 && "Reached invalid depth while walking up call expression");
 
   for (const auto parent : context.getParents(expression)) {
     if (const auto* node = parent.get<clang::ReturnStmt>()) {
-      return CallData(cleanCallRange(expression, node->getSourceRange(), context));
+      return CallData(
+          cleanCallRange(expression, node->getSourceRange(), context));
     } else if (const auto* node = parent.get<clang::VarDecl>()) {
       return handleCallForVarDecl(*node, context, expression);
     } else if (const auto* node = parent.get<clang::BinaryOperator>()) {
@@ -336,14 +388,16 @@ std::optional<CallData> collectCallDataFromContext(const clang::Expr& expression
   return {};
 }
 
-/// Obtains the most accurate location of the function/method/constructor invocation depending on
+/// Obtains the most accurate location of the function/method/constructor
+/// invocation depending on
 /// what exactly we matched.
 clang::SourceLocation getCallLocation(const MatchHandler::MatchResult& result) {
   if (auto* ref = result.Nodes.getNodeAs<clang::DeclRefExpr>("ref")) {
     return ref->getLocation();
   }
 
-  if (const auto* memberCall = result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("call")) {
+  if (const auto* memberCall =
+          result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("call")) {
     if (memberCall->getMethodDecl()->isOverloadedOperator()) {
       // Since we only lex one token in the action (we have very primitive tools
       // down there), non-infix operator calls have to be recognized by the
@@ -357,18 +411,22 @@ clang::SourceLocation getCallLocation(const MatchHandler::MatchResult& result) {
     return member->getMemberLoc();
   }
 
-  const auto* constructor = result.Nodes.getNodeAs<clang::CXXConstructExpr>("construct");
+  const auto* constructor =
+      result.Nodes.getNodeAs<clang::CXXConstructExpr>("construct");
   assert(constructor && "Found no callable in match result");
 
   return constructor->getLocation();
 }
 
-/// Returns a pointer into the raw character-level source buffer at the given location, using the
-/// result's source manager. This is an alternative way of getting at the raw source text next to
-/// Routines::getSourceText. It doesn't always work, but happens to work here, and should be more
+/// Returns a pointer into the raw character-level source buffer at the given
+/// location, using the
+/// result's source manager. This is an alternative way of getting at the raw
+/// source text next to
+/// Routines::getSourceText. It doesn't always work, but happens to work here,
+/// and should be more
 /// efficient.
-const char*
-bufferPointerAt(const clang::SourceLocation& location, const MatchHandler::MatchResult& result) {
+const char* bufferPointerAt(const clang::SourceLocation& location,
+                            const MatchHandler::MatchResult& result) {
   bool error;
   const char* data = result.SourceManager->getCharacterData(location, &error);
   assert(!error && "Error getting character data pointer");
@@ -376,14 +434,18 @@ bufferPointerAt(const clang::SourceLocation& location, const MatchHandler::Match
   return data;
 }
 
-/// Collects information w.r.t. any member whose method is begin called. For example, if the
-/// function expanded is `x.f()`, then we'll want to store the *base* `x` so that we can prefix all
+/// Collects information w.r.t. any member whose method is begin called. For
+/// example, if the
+/// function expanded is `x.f()`, then we'll want to store the *base* `x` so
+/// that we can prefix all
 /// member expressions inside the function with this name.
-void decorateCallDataWithMemberBase(CallData& callData, const MatchHandler::MatchResult& result) {
+void decorateCallDataWithMemberBase(CallData& callData,
+                                    const MatchHandler::MatchResult& result) {
   if (auto* call = result.Nodes.getNodeAs<clang::CallExpr>("call")) {
     if (isMemberOperatorOverloadCall(*call)) {
       const auto lhs = *(call->arg_begin());
-      callData.base = Routines::getSourceText(lhs->getSourceRange(), *result.Context);
+      callData.base =
+          Routines::getSourceText(lhs->getSourceRange(), *result.Context);
       callData.base += ".";
       return;
     }
@@ -399,7 +461,8 @@ void decorateCallDataWithMemberBase(CallData& callData, const MatchHandler::Matc
     }
   }
 
-  const auto* constructor = result.Nodes.getNodeAs<clang::CXXConstructorDecl>("fn");
+  const auto* constructor =
+      result.Nodes.getNodeAs<clang::CXXConstructorDecl>("fn");
   if (constructor && callData.assignee.has_value()) {
     callData.base = callData.assignee->name + ".";
   }
@@ -407,24 +470,30 @@ void decorateCallDataWithMemberBase(CallData& callData, const MatchHandler::Matc
 
 /// Collects the call expression and the parameter map for a function call.
 std::pair<const clang::Expr*, ParameterMap>
-inspectCall(const clang::FunctionDecl& function, const MatchHandler::MatchResult& result) {
+inspectCall(const clang::FunctionDecl& function,
+            const MatchHandler::MatchResult& result) {
   auto& context = *result.Context;
   if (auto* functionCall = result.Nodes.getNodeAs<clang::CallExpr>("call")) {
     auto parameterMap = mapCallParameters(*functionCall, function, context);
     return {functionCall, std::move(parameterMap)};
   }
-  const auto* constructor = result.Nodes.getNodeAs<clang::CXXConstructExpr>("construct");
+  const auto* constructor =
+      result.Nodes.getNodeAs<clang::CXXConstructExpr>("construct");
   auto parameterMap = mapCallParameters(*constructor, function, context);
 
   return {constructor, std::move(parameterMap)};
 }
 
-/// Obtains information about the function call circumstances. This includes the range of the entire
-/// function call (including any variables that are assigned the return value of the function), any
-/// base (object whose method is called, when the function is a method) as well as data about any
+/// Obtains information about the function call circumstances. This includes the
+/// range of the entire
+/// function call (including any variables that are assigned the return value of
+/// the function), any
+/// base (object whose method is called, when the function is a method) as well
+/// as data about any
 /// assignee.
 CallData collectCallData(const clang::Expr& call, clang::ASTContext& context) {
-  // If the parent is a compound statement or a translation unit (for globals), this is a plain
+  // If the parent is a compound statement or a translation unit (for globals),
+  // this is a plain
   // function call (i.e. simply `^f(x);$`), so only need the range.
   if (parentAs<clang::CompoundStmt>(call, context) ||
       parentAs<clang::TranslationUnitDecl>(call, context)) {
@@ -435,24 +504,32 @@ CallData collectCallData(const clang::Expr& call, clang::ASTContext& context) {
     return *optional;
   }
 
-  // We only match for what we know are OK expressions, because the set of bad expressions is much
-  // greater. For example, we don't want to expand function calls inside other function calls,
-  // inside `if` conditions, inside for loop declarations or any other locations where we're not
-  // safely expanding into a compound statment that allows more than one statment instead of the
+  // We only match for what we know are OK expressions, because the set of bad
+  // expressions is much
+  // greater. For example, we don't want to expand function calls inside other
+  // function calls,
+  // inside `if` conditions, inside for loop declarations or any other locations
+  // where we're not
+  // safely expanding into a compound statment that allows more than one
+  // statment instead of the
   // original expression.
   Routines::error("Refuse or unable to expand at given location");
 }
 
-/// Checks if the call location obtained through the match result matches the target location.
+/// Checks if the call location obtained through the match result matches the
+/// target location.
 bool callLocationMatches(const MatchHandler::MatchResult& result,
                          const clang::SourceLocation& targetLocation) {
   const auto& sourceManager = *result.SourceManager;
   const auto callLocation = getCallLocation(result);
-  return Routines::locationsAreEqual(callLocation, targetLocation, sourceManager);
+  return Routines::locationsAreEqual(callLocation,
+                                     targetLocation,
+                                     sourceManager);
 }
 }  // namespace
 
-MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation, Query& query)
+MatchHandler::MatchHandler(const clang::SourceLocation& targetLocation,
+                           Query& query)
 : _targetLocation(targetLocation), _query(query) {
 }
 
@@ -465,7 +542,8 @@ void MatchHandler::run(const MatchResult& result) {
 
   auto[callExpression, parameterMap] = inspectCall(*function, result);
 
-  assert(callExpression && "Matched neither function call nor constructor invocation");
+  assert(callExpression &&
+         "Matched neither function call nor constructor invocation");
 
   auto& context = *result.Context;
 
@@ -479,7 +557,8 @@ void MatchHandler::run(const MatchResult& result) {
   if (_query.definition) return;
 
   if (_query.requiresDeclaration()) {
-    _query.declaration = collectDeclarationData(*function, context, std::move(parameterMap));
+    _query.declaration =
+        collectDeclarationData(*function, context, std::move(parameterMap));
   }
 
   if (_query.requiresDefinition() && function->hasBody()) {

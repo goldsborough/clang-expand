@@ -35,9 +35,9 @@ auto createAstMatcher(const std::string& spelling) {
 }  // namespace
 
 Consumer::Consumer(const clang::SourceLocation& invocationLocation,
-                   const std::string& invocationSpelling,
+                   const std::string& callSpelling,
                    Query& query)
-: _callSpelling(invocationSpelling), _matchHandler(invocationLocation, query) {
+: _callSpelling(callSpelling), _matchHandler(invocationLocation, query) {
 }
 
 void Consumer::HandleTranslationUnit(clang::ASTContext& context) {

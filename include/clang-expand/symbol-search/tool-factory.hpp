@@ -11,14 +11,26 @@ struct Location;
 }
 
 namespace ClangExpand::SymbolSearch {
+
+/// Simple factory class to create a parameterized `SymbolSearch` tool.
+///
+/// This class is required because the standard `newFrontendAction` function
+/// does not allow passing parameters to an action.
 class ToolFactory : public clang::tooling::FrontendActionFactory {
  public:
+  /// Constructor, taking the location the user invoked clang-expand with and
+  /// the fresh `Query` object.
   explicit ToolFactory(const Location& _targetLocation, Query& query);
 
+  /// Creates the action of the symbol search phase.
+  /// \returns A `SymbolSearch::Action`.
   clang::FrontendAction* create() override;
 
  private:
+  /// The location at which the user invoked clang-expand.
   const Location& _targetLocation;
+
+  /// The newly created `Query` object.
   Query& _query;
 };
 }  // namespace ClangExpand::SymbolSearch
