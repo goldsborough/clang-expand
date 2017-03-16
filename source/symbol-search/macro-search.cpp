@@ -36,6 +36,8 @@ class LangOptions;
 
 namespace ClangExpand::SymbolSearch {
 namespace {
+
+/// Gets the raw source text of a macro definition.
 std::string getDefinitionText(const clang::MacroInfo& info,
                               clang::SourceManager& sourceManager,
                               const clang::LangOptions& languageOptions) {
@@ -46,6 +48,9 @@ std::string getDefinitionText(const clang::MacroInfo& info,
   return Routines::getSourceText({start, end}, sourceManager, languageOptions);
 }
 
+/// Rewrites a macro argument use inside a macro in case the parameter it maps
+/// to was found to be preceded with a `#` stringification operator. It
+/// basically quotes it.
 void rewriteStringifiedMacroArgument(clang::Rewriter& rewriter,
                                      const clang::Token& token,
                                      const llvm::StringRef& mappedParameter) {
@@ -55,6 +60,8 @@ void rewriteStringifiedMacroArgument(clang::Rewriter& rewriter,
   rewriter.ReplaceText(range, std::move(replacement));
 }
 
+/// Rewrites a macro argument use inside a macro when it is just a simple use
+/// and not stringified.
 void rewriteSimpleMacroArgument(clang::Rewriter& rewriter,
                                 const clang::Token& token,
                                 const llvm::StringRef& mappedParameter,
@@ -72,7 +79,7 @@ MacroSearch::MacroSearch(clang::CompilerInstance& compiler,
 : _sourceManager(compiler.getSourceManager())
 , _languageOptions(compiler.getLangOpts())
 , _preprocessor(compiler.getPreprocessor())
-, _callLocation(location, _sourceManager)
+, _targetLocation(location, _sourceManager)
 , _query(query) {
 }
 
@@ -81,16 +88,16 @@ void MacroSearch::MacroExpands(const clang::Token& token,
                                clang::SourceRange range,
                                const clang::MacroArgs* arguments) {
   CanonicalLocation canonical(range.getBegin(), _sourceManager);
-  if (_callLocation != canonical) return;
+  if (_targetLocation != canonical) return;
 
   const auto* info = macro.getMacroInfo();
   auto original = getDefinitionText(*info, _sourceManager, _languageOptions);
 
-  const auto mapping = _createParameterMapping(*info, *arguments);
+  const auto mapping = _createParameterMap(*info, *arguments);
   std::string text = _rewriteMacro(*info, mapping);
 
   Location location(info->getDefinitionLoc(), _sourceManager);
-  
+
   _query.call.emplace(Range{range, _sourceManager});
   _query.definition = DefinitionData{std::move(location),
                                      std::move(original),
@@ -99,9 +106,17 @@ void MacroSearch::MacroExpands(const clang::Token& token,
 }
 
 std::string MacroSearch::_rewriteMacro(const clang::MacroInfo& info,
-                                       const ParameterMapping& mapping) {
+                                       const ParameterMap& mapping) {
   clang::Rewriter rewriter(_sourceManager, _languageOptions);
 
+  // Anytime we encounter a hash, we add 1 to this count. Once we are at an
+  // identifier, we see how many hashes were right before it. If there are no
+  // hashes, we just replace the identifier with the appropriate argument. If
+  // there is one hash, we quote the argument. If there are two hashes (the
+  // concatenation operator), we do the same thing as when there are no hashes,
+  // since the concatenation is implicit for textual replacement. I.e. for
+  // `foo_##arg_bar` where `arg` maps to `12` we can just replace this with
+  // `foo_12_bar`.
   unsigned hashCount = 0;
   for (const auto& token : info.tokens()) {
     if (token.getKind() == clang::tok::identifier) {
@@ -131,10 +146,10 @@ std::string MacroSearch::_rewriteMacro(const clang::MacroInfo& info,
   return rewriter.getRewrittenText({start, end});
 }
 
-MacroSearch::ParameterMapping
-MacroSearch::_createParameterMapping(const clang::MacroInfo& info,
-                                     const clang::MacroArgs& arguments) {
-  ParameterMapping mapping;
+MacroSearch::ParameterMap
+MacroSearch::_createParameterMap(const clang::MacroInfo& info,
+                                 const clang::MacroArgs& arguments) {
+  ParameterMap mapping;
   if (info.getNumArgs() == 0) return mapping;
 
   unsigned number = 0;
