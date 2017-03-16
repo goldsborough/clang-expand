@@ -11,6 +11,8 @@
 
 namespace ClangExpand::SymbolSearch {
 namespace {
+/// Creates an ASTMatcher matching function or method call expressions as well
+/// as constructor invocations.
 auto createAstMatcher(const std::string& spelling) {
   using namespace clang::ast_matchers;  // NOLINT(build/namespaces)
   // clang-format off

@@ -30,6 +30,8 @@ struct Query;
 
 namespace ClangExpand::SymbolSearch {
 
+/// \ingroup SymbolSearch
+///
 /// The `SymbolSearch::Action` class has a major responsibility at the very
 /// beginning of the entire `clang-expand` tool.
 ///

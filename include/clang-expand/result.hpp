@@ -44,6 +44,7 @@ llvm::raw_ostream& operator<<(llvm::raw_ostream& stream, const Result& result);
 }  // namespace ClangExpand
 
 namespace llvm::yaml {
+/// Serialization traits for YAML output.
 template <>
 struct MappingTraits<ClangExpand::Result> {
   static void mapping(llvm::yaml::IO& io, ClangExpand::Result& result) {

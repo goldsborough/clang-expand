@@ -21,8 +21,8 @@ llvm::cl::OptionCategory clangExpandCategory("clang-expand options");
 
 llvm::cl::extrahelp clangExpandCategoryHelp(R"(
 Retrieves function, method, operator or macro definitions and optionally
-performs automatic parameter replacement. Allows for happy refactoring while
-solving the "I don't want to jump around all the time" problem.
+performs automatic parameter replacement. Allows for happy refactoring without
+source file gymnastics.
 )");
 
 llvm::cl::opt<std::string>
@@ -59,7 +59,6 @@ llvm::cl::opt<bool> definitionOption(
     llvm::cl::init(true),
     llvm::cl::desc("Whether to return the original definition"),
     llvm::cl::cat(clangExpandCategory));
-
 
 llvm::cl::opt<bool>
     rewriteOption("rewrite",

@@ -24,6 +24,8 @@ struct Query;
 
 namespace ClangExpand::DefinitionSearch {
 
+/// \ingroup DefinitionSearch
+///
 /// The first entry point into the definition search phase.
 ///
 /// The only real responsibility of this class is to return a `nullptr` when

@@ -41,6 +41,7 @@ struct DefinitionData {
 }  // namespace ClangExpand
 
 namespace llvm::yaml {
+/// Serialization traits for YAML output.
 template <>
 struct MappingTraits<ClangExpand::DefinitionData> {
   static void

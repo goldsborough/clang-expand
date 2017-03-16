@@ -23,8 +23,7 @@ struct DeclarationData {
   using ParameterMap = llvm::StringMap<std::string>;
 
   /// Constructor.
-  explicit DeclarationData(const std::string& name_,
-                           const Location& location_)
+  explicit DeclarationData(const std::string& name_, const Location& location_)
   : name(name_), location(location_) {
   }
 
@@ -88,6 +87,7 @@ struct DeclarationData {
 }  // namespace ClangExpand
 
 namespace llvm::yaml {
+/// Serialization traits for YAML output.
 template <>
 struct MappingTraits<ClangExpand::DeclarationData> {
   static void

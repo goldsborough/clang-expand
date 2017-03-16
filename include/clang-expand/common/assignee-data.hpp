@@ -33,10 +33,14 @@ class AssigneeData {
     bool isDefaultConstructible;
   };
 
-  /// Returns true if the assignee's type is default-constructible or if there is no type
-  /// information at all. There is no type information if the call is as assignment rather than a
-  /// construction. If this function returns false, it is not safe to expand a function with at
-  /// least one return statement that is not the last statement of the function. For example, in:
+  /// Returns true if the assignee's type is default-constructible or if there
+  /// is no type
+  /// information at all. There is no type information if the call is as
+  /// assignment rather than a
+  /// construction. If this function returns false, it is not safe to expand a
+  /// function with at
+  /// least one return statement that is not the last statement of the function.
+  /// For example, in:
   ///
   /// ```.cpp
   /// int& f(int& x) {
@@ -55,7 +59,8 @@ class AssigneeData {
   /// int& y = f(x);
   /// ```
   ///
-  /// As this would translate to an expansion where the reference can not be bound immediately (or
+  /// As this would translate to an expansion where the reference can not be
+  /// bound immediately (or
   /// the type default-constructed):
   ///
   /// ```.cpp
@@ -67,9 +72,15 @@ class AssigneeData {
   /// y = x;
   /// ```
   ///
-  /// If only the last return statement is given, this expression is valid, however.
+  /// If only the last return statement is given, this expression is valid,
+  /// however.
   bool isDefaultConstructible() const noexcept;
 
+  /// Converts the `AssigneeData` to a string like `"int x ="`. If `withType` is
+  /// true, the type (like `int` in the example) will be included (this if for
+  /// *declarations*). Else, the type is omitted (for *assignments*). Note that
+  /// the assignee is not always assigned with `=`, but sometimes also any other
+  /// operator like `+=` or `<<=` (compound operators).
   std::string toString(bool withType = true) const;
 
   /// The operator used in the assignment (`=`, `+=`, `<<=` etc.).
@@ -78,9 +89,12 @@ class AssigneeData {
   /// The name of the variable being assigned to.
   std::string name;
 
-  /// If the assignment is a variable declaration and not just an assignment, the type of the
-  /// variable being declared. The type is further split into the name (string representation) of
-  /// the type and a boolean flag indicating whethert the type is default constructible.
+  /// If the assignment is a variable declaration and not just an assignment,
+  /// the type of the
+  /// variable being declared. The type is further split into the name (string
+  /// representation) of
+  /// the type and a boolean flag indicating whethert the type is default
+  /// constructible.
   std::optional<Type> type;
 };
 
@@ -96,7 +110,8 @@ class AssigneeData::Builder {
   Builder& name(const llvm::StringRef& name);
 
   /// Sets the type information of the assignee.
-  Builder& type(const llvm::StringRef& name, bool isDefaultConstructible = true);
+  Builder&
+  type(const llvm::StringRef& name, bool isDefaultConstructible = true);
 
   /// Sets the operator information of the assignee.
   Builder& op(const llvm::StringRef& op);

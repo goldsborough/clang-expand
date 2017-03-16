@@ -20,7 +20,9 @@ struct Query;
 }
 
 namespace ClangExpand::SymbolSearch {
-
+  
+/// \ingroup SymbolSearch
+///
 /// The `SymbolSearch::Consumer` is responsible for creating an appropriate
 /// `ASTMatchers` expression and dispatching an AST visitor using clang's
 /// ASTMatcher's library. For any match, our `SymbolSearch::MatchHandler` will

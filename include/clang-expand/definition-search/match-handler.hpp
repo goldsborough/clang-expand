@@ -15,6 +15,8 @@ struct Query;
 
 namespace ClangExpand::DefinitionSearch {
 
+/// \ingroup DefinitionSearch
+///
 /// The match handler of the definition search phase.
 ///
 /// This class is used to match on functions, check that they are the kind we

@@ -16,6 +16,9 @@ struct Query;
 }
 
 namespace ClangExpand::DefinitionSearch {
+
+/// \ingroup DefinitionSearch
+///
 /// This `clang::ASTConsumer` is a very simple class that receives the ongoing
 /// `Query` instance with information collected during symbol search and matches
 /// on all functions with the same *name* (only) as the one whose declaration we

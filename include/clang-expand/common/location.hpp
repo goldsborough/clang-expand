@@ -46,6 +46,7 @@ struct Location {
 }  // namespace ClangExpand
 
 namespace llvm::yaml {
+/// Serialization traits for YAML output.
 template <>
 struct MappingTraits<ClangExpand::Location> {
   static void mapping(llvm::yaml::IO& io, ClangExpand::Location& location) {

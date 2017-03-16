@@ -14,6 +14,8 @@ struct Query;
 
 namespace ClangExpand::SymbolSearch {
 
+/// \ingroup SymbolSearch
+///
 /// Handles candidate functions in the source.
 ///
 /// This class does the heaviest lifting of any components inside clang-expand

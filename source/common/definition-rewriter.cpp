@@ -23,6 +23,9 @@
 
 namespace ClangExpand {
 namespace {
+
+/// Dies with an error message warning that the function could not be expanded
+/// because the assigned type is not default constructible (like `int&`).
 [[noreturn]] void dieBecauseNotDefaultConstructible() {
   Routines::error(
       "Could not expand function because "

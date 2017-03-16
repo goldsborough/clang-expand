@@ -14,6 +14,8 @@ struct Query;
 
 namespace ClangExpand::DefinitionSearch {
 
+/// \ingroup DefinitionSearch
+///
 /// Simple factory class to create a parameterized `DefinitionSearch` tool.
 ///
 /// This class is required because the standard `newFrontendAction` function

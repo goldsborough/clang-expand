@@ -12,6 +12,8 @@ struct Location;
 
 namespace ClangExpand::SymbolSearch {
 
+/// \ingroup SymbolSearch
+///
 /// Simple factory class to create a parameterized `SymbolSearch` tool.
 ///
 /// This class is required because the standard `newFrontendAction` function

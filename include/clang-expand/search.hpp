@@ -1,8 +1,10 @@
 #ifndef CLANG_EXPAND_SEARCH_HPP
 #define CLANG_EXPAND_SEARCH_HPP
 
-// Project includes
+/// \defgroup SymbolSearch
+/// \defgroup DefinitionSearch
 
+// Project includes
 #include "clang-expand/common/location.hpp"
 
 // Standard includes
