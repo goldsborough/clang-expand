@@ -13,9 +13,9 @@
 
 namespace ClangExpand {
 
-AssigneeData::Type::Type(const std::string& name_,
+AssigneeData::Type::Type(std::string name_,
                          bool isDefaultConstructible_) noexcept
-: name(name_), isDefaultConstructible(isDefaultConstructible_) {
+: name(std::move(name_)), isDefaultConstructible(isDefaultConstructible_) {
 }
 
 AssigneeData::Builder::Builder(AssigneeData&& assignee)
@@ -29,9 +29,9 @@ AssigneeData::Builder::name(const llvm::StringRef& name) {
 }
 
 AssigneeData::Builder&
-AssigneeData::Builder::type(const llvm::StringRef& type,
+AssigneeData::Builder::type(const llvm::StringRef& name,
                             bool isDefaultConstructible) {
-  _assignee.type.emplace(type, isDefaultConstructible);
+  _assignee.type.emplace(name, isDefaultConstructible);
   return *this;
 }
 

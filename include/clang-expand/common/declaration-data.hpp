@@ -14,7 +14,6 @@
 
 // Standard includes
 #include <string>
-#include <utility>
 
 namespace ClangExpand {
 /// Stores information about a function declaration.

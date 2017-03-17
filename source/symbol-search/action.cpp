@@ -9,7 +9,6 @@
 #include <clang/Basic/SourceManager.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Lex/Lexer.h>
-#include <clang/Lex/MacroInfo.h>
 #include <clang/Lex/PPCallbacks.h>
 #include <clang/Lex/Preprocessor.h>
 #include <clang/Lex/Token.h>
@@ -19,8 +18,6 @@
 #include <llvm/ADT/Twine.h>
 
 // Standard includes
-#include <cstdlib>
-#include <initializer_list>
 #include <memory>
 #include <string>
 

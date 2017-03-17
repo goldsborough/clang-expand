@@ -13,17 +13,16 @@
 #include <clang/Rewrite/Core/Rewriter.h>
 
 // LLVM includes
-#include <llvm/ADT/StringMap.h>
-#include <llvm/Support/Casting.h>
 #include <llvm/ADT/SmallPtrSet.h>
 #include <llvm/ADT/SmallVector.h>
+#include <llvm/ADT/StringMap.h>
 #include <llvm/ADT/Twine.h>
+#include <llvm/Support/Casting.h>
 
 // Standard includes
 #include <cassert>
 #include <optional>
 #include <string>
-#include <type_traits>
 
 namespace ClangExpand {
 namespace {
@@ -163,7 +162,7 @@ void DefinitionRewriter::_recordReturn(const clang::ReturnStmt& returnStatement,
   }
 
   auto location = returnStatement.getSourceRange().getBegin();
-  _returnLocations.emplace_back(std::move(location));
+  _returnLocations.emplace_back(location);  // trivially-copyable
 }
 
 void DefinitionRewriter::_rewriteReturn(const clang::SourceLocation& begin,

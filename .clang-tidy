@@ -8,6 +8,7 @@ Checks: '
   ,-readability-braces-around-statements
   ,-readability-implicit-bool-cast
   ,-cppcoreguidelines-pro-bounds-array-to-pointer-decay
+  ,-llvm-include-order
   ' # End Checks
 
 WarningsAsErrors: ''

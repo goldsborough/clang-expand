@@ -23,7 +23,7 @@ class AssigneeData {
   /// Stores information about the type of the assignee.
   struct Type {
     /// Constructor.
-    explicit Type(const std::string& name_ = std::string(),
+    explicit Type(std::string name_ = std::string(),
                   bool isDefaultConstructible_ = true) noexcept;
 
     /// A string representation of the type.

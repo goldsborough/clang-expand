@@ -37,7 +37,7 @@ struct Location {
            const clang::SourceManager& sourceManager);
 
   /// Constructs a `Location` from a filename and `(line, column)` pair.
-  Location(const llvm::StringRef& filename, unsigned line, unsigned column);
+  Location(const llvm::StringRef& filename_, unsigned line, unsigned column);
 
   /// Converts the `Location` to JSON.
   nlohmann::json toJson() const;

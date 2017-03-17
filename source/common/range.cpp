@@ -5,6 +5,7 @@
 #include <third-party/json.hpp>
 
 // Clang includes
+#include <clang/Basic/SourceLocation.h>
 #include <clang/Basic/SourceManager.h>
 
 namespace ClangExpand {

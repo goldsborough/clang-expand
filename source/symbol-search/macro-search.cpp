@@ -3,6 +3,7 @@
 #include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/location.hpp"
 #include "clang-expand/common/query.hpp"
+#include "clang-expand/common/range.hpp"
 #include "clang-expand/common/routines.hpp"
 
 // Clang includes

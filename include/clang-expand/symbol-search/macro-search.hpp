@@ -12,7 +12,6 @@
 #include <llvm/ADT/StringMap.h>
 
 // Standard includes
-#include <functional>
 #include <iosfwd>
 
 namespace clang {

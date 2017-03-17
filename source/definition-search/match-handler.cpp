@@ -9,12 +9,10 @@
 #include <clang/AST/DeclBase.h>
 #include <clang/AST/Type.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
-#include <clang/Basic/SourceLocation.h>
 
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Casting.h>
-#include <llvm/Support/raw_ostream.h>
 
 // Standard includes
 #include <cassert>

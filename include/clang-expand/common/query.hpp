@@ -9,7 +9,6 @@
 #include "clang-expand/common/definition-data.hpp"
 
 // Standard includes
-#include <functional>
 #include <optional>
 
 namespace ClangExpand {

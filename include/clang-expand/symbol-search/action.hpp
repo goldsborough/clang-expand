@@ -7,17 +7,14 @@
 // Clang includes
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Frontend/FrontendAction.h>
-#include <clang/Lex/Token.h>
 
 // Standard includes
-#include <functional>
 #include <memory>
 #include <string>
 
 namespace clang {
 class CompilerInstance;
-class FileID;
-class SourceManager;
+class ASTConsumer;
 }
 
 namespace llvm {

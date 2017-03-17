@@ -36,11 +36,7 @@ namespace {
 /// without any extra padding on the left, as it would normally have at least
 /// one level of indenting if simply cut out of a real function.
 ///
-/// This "algoithm" will "normalize" indentation by replacing the outermost
-/// amount of indentation from each line. It does this by looking at the first
-/// line (that is not pure whitespace) and recording how much whitespace it has.
-/// It then removes that amount of whitespace from each subsequent line. For
-/// example, given this function that we want to rewrite:
+/// For example, given this function that we want to rewrite:
 ///
 /// ```.cpp
 /// bool f(int x) {
@@ -92,7 +88,9 @@ std::string withoutIndentation(std::string text) {
   // one yet, should be in C++17), so we need to hack.
   const std::regex excessPattern("\\n" + excess, std::regex::optimize);
 
+  llvm::outs() << text << '\n';
   const auto trimmed = llvm::StringRef(text).trim().str();
+  llvm::outs() << trimmed << '\n';
   return std::regex_replace(trimmed, excessPattern, "\n");
 }
 
