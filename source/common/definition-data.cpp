@@ -25,6 +25,7 @@
 #include <cassert>
 #include <cctype>
 #include <optional>
+#include <regex>
 #include <string>
 #include <type_traits>
 
@@ -74,38 +75,25 @@ namespace {
 /// maintained as expected.
 ///
 std::string withoutIndentation(std::string text) {
-  auto start = text.begin();
-  int offset = -1;
-  while (true) {
-    // Find the first character after the newline that is not space
-    auto end = std::find_if(start, text.end(), [](char character) {
-      return !::isspace(character);
-    });
+  // clang-format off
+  static const std::regex whitespacePattern(
+    "^\\s+\\n(\\s+)\\S|(\\s+)", std::regex::ECMAScript | std::regex::optimize);
+  // clang-format on
 
-    if (start != end) {
-      if (start == text.begin()) {
-        end = text.erase(start, end);
-      } else {
-        // Skip the newline, unless this is extra whitespace going until the end
-        // of the string. Then we want to get rid of it (like rstrip-ing).
-        if (end != text.end()) ++start;
-
-        // If this is the first time we find whitespaace,
-        // take this as the reference offset.
-        if (offset == -1) offset = end - start;
-
-        // Now erase only as much whitespace as we encountered the first time
-        end = text.erase(start, std::min(start + offset, end));
-      }
-    }
-
-    // Find the next newline
-    start = std::find(end, text.end(), '\n');
-    if (start == text.end()) break;
+  std::smatch match;
+  if (!std::regex_search(text, match, whitespacePattern)) {
+    return text;
   }
 
-  // RVO
-  return text;
+  assert(match[1].matched || match[2].matched);
+  const std::string excess = match[1].matched ? match.str(1) : match.str(2);
+
+  // C++ regex doesn't have a multiline option (or at least clang doesn't have
+  // one yet, should be in C++17), so we need to hack.
+  const std::regex excessPattern("\\n" + excess, std::regex::optimize);
+
+  const auto trimmed = llvm::StringRef(text).trim().str();
+  return std::regex_replace(trimmed, excessPattern, "\n");
 }
 
 /// Returns the fully processed rewritten text of a function body.
