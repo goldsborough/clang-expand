@@ -73,7 +73,7 @@ namespace {
 std::string withoutIndentation(std::string text) {
   // clang-format off
   static const std::regex whitespacePattern(
-    R"(^\s+\n(\s+)\S|(\s+))", std::regex::ECMAScript | std::regex::optimize);
+    R"(^\s*\n(\s+)\S|(\s+))", std::regex::ECMAScript | std::regex::optimize);
   // clang-format on
 
   std::smatch match;
@@ -88,9 +88,7 @@ std::string withoutIndentation(std::string text) {
   // one yet, should be in C++17), so we need to hack.
   const std::regex excessPattern("\\n" + excess, std::regex::optimize);
 
-  llvm::outs() << text << '\n';
   const auto trimmed = llvm::StringRef(text).trim().str();
-  llvm::outs() << trimmed << '\n';
   return std::regex_replace(trimmed, excessPattern, "\n");
 }
 

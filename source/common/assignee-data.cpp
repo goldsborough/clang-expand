@@ -60,7 +60,7 @@ std::string AssigneeData::toAssignment(bool withType) const {
 std::string AssigneeData::toDeclaration() const {
   assert(type.has_value() &&
          "Requested assignee declaration, but have no type");
-  return (llvm::Twine(type->name) + " " + name + ";\n").str();
+  return (llvm::Twine(type->name) + " " + name + ";").str();
 }
 
 }  // namespace ClangExpand
