@@ -21,9 +21,7 @@
 #include <llvm/Support/Casting.h>
 
 // Standard includes
-#include <algorithm>
 #include <cassert>
-#include <cctype>
 #include <optional>
 #include <regex>
 #include <string>
