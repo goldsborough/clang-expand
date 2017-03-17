@@ -5,6 +5,9 @@
 #include "clang-expand/common/location.hpp"
 #include "clang-expand/common/query.hpp"
 
+// Third party includes
+#include <third-party/json.hpp>
+
 // Clang includes
 #include <clang/AST/ASTContext.h>
 #include <clang/AST/Decl.h>
@@ -156,4 +159,24 @@ DefinitionData DefinitionData::Collect(const clang::FunctionDecl& function,
 
   return {std::move(location), std::move(original), std::move(rewritten)};
 }
+
+nlohmann::json DefinitionData::toJson() const {
+  // clang-format off
+  nlohmann::json json = {
+    {"location", location.toJson()},
+    {"macro", isMacro}
+  };
+  // clang-format on
+
+  if (!original.empty()) {
+    json["text"] = original;
+  }
+
+  if (!rewritten.empty()) {
+    json["rewritten"] = rewritten;
+  }
+
+  return json;
+}
+
 }  // namespace ClangExpand

@@ -4,9 +4,11 @@
 // Project includes
 #include "clang-expand/common/offset.hpp"
 
+// Third party includes
+#include <third-party/json.hpp>
+
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
-#include <llvm/Support/YAMLTraits.h>
 
 // Standard includes
 #include <string>
@@ -37,6 +39,9 @@ struct Location {
   /// Constructs a `Location` from a filename and `(line, column)` pair.
   Location(const llvm::StringRef& filename, unsigned line, unsigned column);
 
+  /// Converts the `Location` to JSON.
+  nlohmann::json toJson() const;
+
   /// The name of the file this location is from.
   std::string filename;
 
@@ -44,17 +49,5 @@ struct Location {
   Offset offset;
 };
 }  // namespace ClangExpand
-
-namespace llvm::yaml {
-/// Serialization traits for YAML output.
-template <>
-struct MappingTraits<ClangExpand::Location> {
-  static void mapping(llvm::yaml::IO& io, ClangExpand::Location& location) {
-    io.mapRequired("file", location.filename);
-    io.mapRequired("line", location.offset.line);
-    io.mapRequired("column", location.offset.column);
-  }
-};
-}  // namespace llvm::yaml
 
 #endif  // CLANG_EXPAND_COMMON_LOCATION_HPP

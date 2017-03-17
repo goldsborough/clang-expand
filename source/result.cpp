@@ -4,6 +4,9 @@
 #include "clang-expand/common/location.hpp"
 #include "clang-expand/common/query.hpp"
 
+// Third party includes
+#include <third-party/json.hpp>
+
 // LLVM includes
 #include <llvm/Support/raw_ostream.h>
 
@@ -17,7 +20,7 @@ Result::Result(Query&& query) {
   if (query.options.wantsCall) {
     assert(query.call.has_value() &&
            "User wants call information, but have no call data.");
-    callRange = std::move(query.call->extent);
+    callRange = query.call->extent;
   }
   if (query.options.wantsDeclaration) {
     declaration = std::move(query.declaration);
@@ -26,4 +29,23 @@ Result::Result(Query&& query) {
     definition = std::move(query.definition);
   }
 }
+
+nlohmann::json Result::toJson() const {
+  nlohmann::json json;
+
+  if (callRange.has_value()) {
+    json["call"] = callRange->toJson();
+  }
+
+  if (declaration.has_value()) {
+    json["declaration"] = declaration->toJson();
+  }
+
+  if (definition.has_value()) {
+    json["definition"] = definition->toJson();
+  }
+
+  return json.is_null() ? "" : json;
+}
+
 }  // namespace ClangExpand

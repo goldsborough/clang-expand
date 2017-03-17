@@ -5,13 +5,16 @@
 #include "clang-expand/common/context-data.hpp"
 #include "clang-expand/common/location.hpp"
 
+// Third party includes
+#include <third-party/json.hpp>
+
 // LLVM includes
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringMap.h>
-#include <llvm/Support/YAMLTraits.h>
 
 // Standard includes
 #include <string>
+#include <utility>
 
 namespace ClangExpand {
 /// Stores information about a function declaration.
@@ -23,9 +26,10 @@ struct DeclarationData {
   using ParameterMap = llvm::StringMap<std::string>;
 
   /// Constructor.
-  explicit DeclarationData(const std::string& name_, const Location& location_)
-  : name(name_), location(location_) {
-  }
+  explicit DeclarationData(std::string name_, Location location_);
+
+  /// Converts the `DeclarationData` to JSON.
+  nlohmann::json toJson() const;
 
   /// The name of the function (or operator).
   std::string name;
@@ -85,18 +89,5 @@ struct DeclarationData {
   Location location;
 };
 }  // namespace ClangExpand
-
-namespace llvm::yaml {
-/// Serialization traits for YAML output.
-template <>
-struct MappingTraits<ClangExpand::DeclarationData> {
-  static void
-  mapping(llvm::yaml::IO& io, ClangExpand::DeclarationData& declaration) {
-    io.mapRequired("location", declaration.location);
-    io.mapRequired("name", declaration.name);
-    io.mapRequired("text", declaration.text);
-  }
-};
-}  // namespace llvm::yaml
 
 #endif  // CLANG_EXPAND_COMMON_DECLARATION_DATA_HPP

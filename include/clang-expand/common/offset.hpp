@@ -1,8 +1,8 @@
 #ifndef CLANG_EXPAND_COMMON_OFFSET_HPP
 #define CLANG_EXPAND_COMMON_OFFSET_HPP
 
-// LLVM includes
-#include <llvm/Support/YAMLTraits.h>
+// Third party includes
+#include <third-party/json.hpp>
 
 namespace clang {
 class SourceLocation;
@@ -20,6 +20,9 @@ struct Offset {
   /// Constructor.
   Offset(unsigned line_, unsigned column_);
 
+  /// Converts the `Offset` to JSON.
+  nlohmann::json toJson() const;
+
   /// The 1-indexed line (row) of the location.
   unsigned line;
 
@@ -27,17 +30,5 @@ struct Offset {
   unsigned column;
 };
 }  // namespace ClangExpand
-
-namespace llvm::yaml {
-/// Serialization traits for YAML output.
-template <>
-struct MappingTraits<ClangExpand::Offset> {
-  static void mapping(llvm::yaml::IO& io, ClangExpand::Offset& offset) {
-    io.mapRequired("line", offset.line);
-    io.mapRequired("column", offset.column);
-  }
-};
-}  // namespace llvm::yaml
-
 
 #endif  // CLANG_EXPAND_COMMON_OFFSET_HPP

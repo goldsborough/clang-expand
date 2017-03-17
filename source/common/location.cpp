@@ -1,6 +1,9 @@
 // Project includes
 #include "clang-expand/common/location.hpp"
 
+// Third party includes
+#include <third-party/json.hpp>
+
 // Clang includes
 #include <clang/Basic/SourceManager.h>
 
@@ -19,4 +22,14 @@ Location::Location(const llvm::StringRef& filename_,
                    unsigned column)
 : filename(filename_), offset{line, column} {
 }
+
+nlohmann::json Location::toJson() const {
+  // clang-format off
+  return {
+    {"filename", filename},
+    {"offset", offset.toJson()}
+  };
+  // clang-format on
+}
+
 }  // namespace ClangExpand

@@ -4,8 +4,8 @@
 // Project includes
 #include "clang-expand/common/offset.hpp"
 
-// LLVM includes
-#include <llvm/Support/YAMLTraits.h>
+// Third party includes
+#include <third-party/json.hpp>
 
 namespace clang {
 class SourceManager;
@@ -22,6 +22,9 @@ struct Range {
   /// Constructor.
   Range(Offset begin_, Offset end_);
 
+  /// Converts the `Range` to JSON.
+  nlohmann::json toJson() const;
+
   /// The starting offset.
   Offset begin;
 
@@ -29,16 +32,5 @@ struct Range {
   Offset end;
 };
 }  // namespace ClangExpand
-
-namespace llvm::yaml {
-/// Serialization traits for YAML output.
-template <>
-struct MappingTraits<ClangExpand::Range> {
-  static void mapping(llvm::yaml::IO& io, ClangExpand::Range& range) {
-    io.mapRequired("begin", range.begin);
-    io.mapRequired("end", range.end);
-  }
-};
-}  // namespace llvm::yaml
 
 #endif  // CLANG_EXPAND_COMMON_RANGE_HPP

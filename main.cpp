@@ -9,7 +9,6 @@
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/CommandLine.h>
-#include <llvm/Support/YAMLTraits.h>
 #include <llvm/Support/raw_ostream.h>
 
 // Standard includes
@@ -92,6 +91,5 @@ auto main(int argc, const char* argv[]) -> int {
   });
   // clang-format on
 
-  llvm::yaml::Output yaml(llvm::outs(), nullptr, 0);
-  yaml << result;
+  llvm::outs() << result.toJson().dump(2) << '\n';
 }

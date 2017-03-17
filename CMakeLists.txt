@@ -119,6 +119,9 @@ include_directories(SYSTEM ${CLANG_INCLUDE_DIRS})
 # Also contains clang libraries
 link_directories(${LLVM_LIBRARY_DIRS})
 
+# Third Party
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR})
+
 ###########################################################
 ## COMPILER FLAGS
 ###########################################################
@@ -133,7 +136,7 @@ set(WARNINGS
 list(REMOVE_ITEM LLVM_CXX_FLAGS "-std=c++11" "-std=c++14" "-std=c++1z")
 list(REMOVE_ITEM LLVM_CXX_FLAGS "-DNDEBUG")
 
-set(EXTRA_FLAGS -g -Os -O2 -std=c++1z)
+set(EXTRA_FLAGS -g -Os -O2 -std=c++1z -DJSON_NOEXCEPTION)
 set(ALL_FLAGS ${WARNINGS} ${LLVM_CXX_FLAGS} ${EXTRA_FLAGS})
 
 add_compile_options(${ALL_FLAGS})
