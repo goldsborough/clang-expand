@@ -48,13 +48,19 @@ bool AssigneeData::isDefaultConstructible() const noexcept {
   return !type.has_value() || type->isDefaultConstructible;
 }
 
-std::string AssigneeData::toString(bool withType) const {
+std::string AssigneeData::toAssignment(bool withType) const {
   if (withType) {
     assert(type.has_value() &&
            "Requested assignee string with type, but have no type");
     return (llvm::Twine(type->name) + " " + name + " " + op).str();
   }
   return (llvm::Twine(name) + " " + op).str();
+}
+
+std::string AssigneeData::toDeclaration() const {
+  assert(type.has_value() &&
+         "Requested assignee declaration, but have no type");
+  return (llvm::Twine(type->name) + " " + name + ";\n").str();
 }
 
 }  // namespace ClangExpand

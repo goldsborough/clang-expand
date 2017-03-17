@@ -60,7 +60,11 @@ class DefinitionRewriter
   /// 2. There must be at least one return statement in the body of
   /// the function. This invariant *should* follow from (1), since there
   /// *should* be no assignee if there is no return statement.
-  void rewriteReturnsToAssignments(const clang::Stmt& body);
+  ///
+  /// \returns True if it is necessary to prepend a declaration of the assignee
+  /// to the function body (depending on the number of return statements), else
+  /// false.
+  bool rewriteReturnsToAssignments(const clang::Stmt& body);
 
  private:
   /// Stores the location of a return statement for later use. Once all return

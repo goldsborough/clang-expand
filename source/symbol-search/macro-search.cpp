@@ -84,7 +84,7 @@ MacroSearch::MacroSearch(clang::CompilerInstance& compiler,
 , _query(query) {
 }
 
-void MacroSearch::MacroExpands(const clang::Token& token,
+void MacroSearch::MacroExpands(const clang::Token&,
                                const clang::MacroDefinition& macro,
                                clang::SourceRange range,
                                const clang::MacroArgs* arguments) {

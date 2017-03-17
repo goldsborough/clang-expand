@@ -84,8 +84,7 @@ auto collectDeclarationData(const clang::FunctionDecl& function,
                                            location);
 
   declaration.parameterMap = std::move(parameterMap);
-  const auto text =
-      Routines::getSourceText(function.getSourceRange(), astContext);
+  auto text = Routines::getSourceText(function.getSourceRange(), astContext);
   declaration.text = (std::move(text) + llvm::Twine(";")).str();
 
   const auto& policy = astContext.getPrintingPolicy();

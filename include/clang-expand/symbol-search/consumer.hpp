@@ -20,7 +20,7 @@ struct Query;
 }
 
 namespace ClangExpand::SymbolSearch {
-  
+
 /// \ingroup SymbolSearch
 ///
 /// The `SymbolSearch::Consumer` is responsible for creating an appropriate
@@ -56,7 +56,7 @@ class Consumer : public clang::ASTConsumer {
  public:
   /// Constructor.
   Consumer(const clang::SourceLocation& invocationLocation,
-           const std::string& callSpelling,
+           std::string callSpelling,
            Query& query);
 
   /// Creates an appropriate match expression and dispatches the

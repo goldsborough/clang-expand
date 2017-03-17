@@ -51,7 +51,7 @@ class Action : public clang::ASTFrontendAction {
 
   /// Constructor, taking the location at which to look for a function call and
   /// the ongoing `Query` object.
-  Action(const Location& targetLocation, Query& query);
+  Action(Location targetLocation, Query& query);
 
   /// Attempts to translate the `targetLocation` to a `clang::SourceLocation`
   /// and install preprocessor hooks for macros.

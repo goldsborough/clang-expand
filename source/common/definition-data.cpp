@@ -73,7 +73,7 @@ namespace {
 std::string withoutIndentation(std::string text) {
   // clang-format off
   static const std::regex whitespacePattern(
-    "^\\s+\\n(\\s+)\\S|(\\s+)", std::regex::ECMAScript | std::regex::optimize);
+    R"(^\s+\n(\s+)\S|(\s+))", std::regex::ECMAScript | std::regex::optimize);
   // clang-format on
 
   std::smatch match;
@@ -106,15 +106,23 @@ std::string getRewrittenText(clang::Stmt* body,
   DefinitionRewriter definitionRewriter(rewriter, map, *query.call, context);
   definitionRewriter.TraverseStmt(body);
 
+  bool shouldDeclare = false;
   if (query.call->assignee) {
-    definitionRewriter.rewriteReturnsToAssignments(*body);
+    shouldDeclare = definitionRewriter.rewriteReturnsToAssignments(*body);
   }
 
   const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
   const auto beforeBrace = body->getLocEnd().getLocWithOffset(-1);
   const clang::SourceRange range(afterBrace, beforeBrace);
 
-  return withoutIndentation(rewriter.getRewrittenText(range));
+  auto text = withoutIndentation(rewriter.getRewrittenText(range));
+
+  if (shouldDeclare) {
+    const std::string declaration = query.call->assignee->toDeclaration();
+    return (declaration + llvm::Twine("\n") + text).str();
+  }
+
+  return text;
 }
 }  // namespace
 

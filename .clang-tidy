@@ -9,6 +9,7 @@ Checks: '
   ,-readability-implicit-bool-cast
   ,-cppcoreguidelines-pro-bounds-array-to-pointer-decay
   ,-llvm-include-order
+  ,-readability-named-parameter
   ' # End Checks
 
 WarningsAsErrors: ''

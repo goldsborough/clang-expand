@@ -59,19 +59,6 @@ void ensureReturnAllowsDefaultConstruction(
       tryToGetParentOrDie<clang::CompoundStmt>(context, returnStatement);
   tryToGetParentOrDie<clang::FunctionDecl>(context, *compound);
 }
-
-/// Inserts the declaration of an assignee at the beginning of a function
-/// body.
-void insertDeclaration(const AssigneeData& assignee,
-                       const clang::Stmt& body,
-                       clang::Rewriter& rewriter) {
-  const auto afterBrace = body.getLocStart().getLocWithOffset(+1);
-  const auto text =
-      (llvm::Twine(assignee.type->name) + " " + assignee.name + ";\n").str();
-  const auto error = rewriter.InsertTextAfter(afterBrace, text);
-  assert(!error && "Error inserting declaration at start of body");
-}
-
 }  // namespace
 
 DefinitionRewriter::DefinitionRewriter(clang::Rewriter& rewriter,
@@ -117,30 +104,24 @@ bool DefinitionRewriter::VisitStmt(clang::Stmt* statement) {
   return true;
 }
 
-void DefinitionRewriter::rewriteReturnsToAssignments(const clang::Stmt& body) {
+bool DefinitionRewriter::rewriteReturnsToAssignments(const clang::Stmt& body) {
   assert(_call.assignee.has_value() &&
          "Cannot rewrite returns to assignments without an assignee");
   assert(!_returnLocations.empty() &&
          "Assigning to a function call that doesn't return?");
 
   if (_returnLocations.size() == 1) {
-    _rewriteReturn(_returnLocations.front(), _call.assignee->toString());
-    return;
+    _rewriteReturn(_returnLocations.front(), _call.assignee->toAssignment());
+    return false;
   }
 
   assert(_call.assignee->isDefaultConstructible());
 
-  // We have more than one return statement, so definitely need to first
-  // declare
-  // and then assign to
-  // each return value.
-  if (_call.requiresDeclaration()) {
-    insertDeclaration(*_call.assignee, body, _rewriter);
+  for (const auto& location : _returnLocations) {
+    _rewriteReturn(location, _call.assignee->toAssignment(/*withType=*/false));
   }
 
-  for (const auto& location : _returnLocations) {
-    _rewriteReturn(location, _call.assignee->toString(/*withType=*/false));
-  }
+  return _call.requiresDeclaration();
 }
 
 void DefinitionRewriter::_recordReturn(const clang::ReturnStmt& returnStatement,

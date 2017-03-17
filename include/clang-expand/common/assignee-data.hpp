@@ -81,7 +81,11 @@ class AssigneeData {
   /// *declarations*). Else, the type is omitted (for *assignments*). Note that
   /// the assignee is not always assigned with `=`, but sometimes also any other
   /// operator like `+=` or `<<=` (compound operators).
-  std::string toString(bool withType = true) const;
+  std::string toAssignment(bool withType = true) const;
+
+  /// Converts the `AssigneeData` to a string like `int x;` that would declare
+  /// the assignee (i.e. the type and name, followed by a semicolon).
+  std::string toDeclaration() const;
 
   /// The operator used in the assignment (`=`, `+=`, `<<=` etc.).
   OperatorString op;

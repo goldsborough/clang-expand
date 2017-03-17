@@ -144,8 +144,8 @@ clang::Token lex(const clang::SourceLocation& startLocation,
 }
 }  // namespace
 
-Action::Action(const Location& targetLocation, Query& query)
-: _query(query), _targetLocation(targetLocation) {
+Action::Action(Location targetLocation, Query& query)
+: _query(query), _targetLocation(std::move(targetLocation)) {
 }
 
 bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
