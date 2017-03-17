@@ -3,6 +3,9 @@
 #include "clang-expand/result.hpp"
 #include "clang-expand/search.hpp"
 
+// Third-party includes
+#include <third-party/json.hpp>
+
 // Clang includes
 #include <clang/Tooling/CommonOptionsParser.h>
 

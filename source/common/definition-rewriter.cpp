@@ -16,7 +16,6 @@
 #include <llvm/ADT/SmallPtrSet.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringMap.h>
-#include <llvm/ADT/Twine.h>
 #include <llvm/Support/Casting.h>
 
 // Standard includes
