@@ -1,4 +1,4 @@
-# clang-expand
+# clang-expand :dragon:
 
 ![Here be picture](demo.gif)
 
@@ -120,7 +120,7 @@ my_vec.emplace_back(42);
 </pre></sub></td>
 <td><sub><pre lang="cpp">
 std::vector<int> my_vec;
-if (my_vec.__end_ < my_vec.__end_cap())
+if (my_vec.__end_ < my_vec.end_cap())
 {
     __RAII_IncreaseAnnotator __annotator(*this);
     __alloc_traits::construct(my_vec.__alloc(),
@@ -164,3 +164,19 @@ return first.circuit == other.circuit;
 </pre></sub></td>
 </tr>
 </table>
+
+## Usage
+
+## Limitations
+
+## Building
+
+## Documentation
+
+Documentation for the project
+
+## License
+
+## Authors
+
+[Peter Goldsborough](http://goldsborough.me) + [cat](https://goo.gl/IpUmJn) :heart:
