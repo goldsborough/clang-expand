@@ -47,9 +47,11 @@ function(set_llvm_variable variable flags)
   endif()
 endfunction()
 
+message(STATUS "LLVM_PATH is ${LLVM_PATH}")
+
 find_program(LLVM_CONFIG
     NAMES llvm-config
-    HINTS $ENV{LLVM_PATH}/build/bin $ENV{LLVM_PATH}
+    HINTS "${LLVM_PATH}/build/bin" "${LLVM_PATH}"
     DOC "Path to llvm-config tool")
 if (LLVM_CONFIG)
   message(STATUS "Found llvm-config at ${LLVM_CONFIG}")
