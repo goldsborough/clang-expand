@@ -1,4 +1,4 @@
-# clang-expand
+# clang-expand :dragon:
 
 ![Here be picture](demo.gif)
 
@@ -22,22 +22,24 @@ actually understands C++ and knows what occurrences of `x` are parameter
 references and what aren't.
 
 <p align="center">
-<table>
+<table align="center">
 <tr><th colspan="2">Given</th></tr>
 <tr valign="top"><td colspan="2"><sub><pre lang="cpp">
-void magic(std::vector<int>& v) {
-  auto iterator = std::find(v.begin(), v.end(), 42);
-  if (iterator != v.end()) {
+template&lt;typename Range&gt;
+void magic(Range& range) {
+  auto iterator = std::find(range.begin(), range.end(), 42);
+  if (iterator != range.end()) {
+    range.erase(iterator);
     std::cout << "Successfully erased all meaning of life\n";
-    v.erase(iterator);
   }
 }
 </pre></sub></td></tr>
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-std::vector<int> v = {1, 42, 3};
+std::vector<int> v = {1, 42, 3};                                       &nbsp;
 magic(v);
+^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
 std::vector<int> v = {1, 42, 3};
@@ -51,6 +53,11 @@ if (iterator != v.end()) {
 </table>
 </p>
 
+As you can see, clang-expand actually instantiated the template function during
+the expansion. This is because on the level that it operates on within the clang
+AST, semantic analysis, including template type deduction, are already complete.
+This means that calling templates is not a problem for clang-expand.
+
 2. If you're assigning the return value of a function you expand to a
 variable, clang-expand will replace every `return` statement inside the function
 with an assignment. It attempts to do this in a reasonably intelligent way,
@@ -59,7 +66,6 @@ constructing the variable with the return value directly if there is only one
 only works if the type of the variable is default-constructible and clang-expand
 will refuse to expand otherwise.
 
-<p align="center">
 <table>
 <tr><th colspan="2">Given</th></tr>
 <tr valign="top"><td colspan="2"><sub><pre lang="cpp">
@@ -89,7 +95,7 @@ std::string kebab = "clang" + "-"s + "expand";
 <tr valign="top">
 <td><sub><pre lang="cpp">
 auto maybeCamel = concat("clang", "expand", flipCoin());
-             ^
+                  ^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
 std::string maybeCamel;
@@ -101,21 +107,19 @@ if (flipCoin()) {
 </pre></sub></td>
 </tr>
 </table>
-</p>
 
 3. If you're calling a method, clang-expand will prepend the base to every method or member of referenced inside:
 
-<p align="center">
 <table>
 <tr><th>Unexpanded</th><th>Expanded<sup><a href="#fn1">1</a></sup></th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-std::vector<int> my_vec;
+std::vector<int> my_vec;                                     &nbsp;
 my_vec.emplace_back(42);
        ^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
-std::vector<int> my_vec;
+std::vector<int> my_vec;                                     &nbsp;
 if (my_vec.__end_ < my_vec.__end_cap())
 {
     __RAII_IncreaseAnnotator __annotator(*this);
@@ -130,6 +134,49 @@ else
 </pre></sub></td>
 </tr>
 </table>
-</p>
 
 <a name="fn1">1</a>: This is the implementation on my system, of course.
+
+4. If the function you're expanding is an operator, clang-expand can handle that in just the same way:
+
+<table>
+<tr><th colspan="2">Given</th></tr>
+<tr valign="top"><td colspan="2"><sub><pre lang="cpp">
+struct by_lightning {
+  bool operator==(const by_lightning& other) const noexcept {
+    return this->circuit == other.circuit;
+  }
+  short circuit;
+};
+</pre></sub></td></tr>
+<tr><th>Unexpanded</th><th>Expanded</th></tr>
+<tr valign="top">
+<td><sub><pre lang="cpp">
+by_lightning first{1};                                       &nbsp;
+by_lightning second{2};
+return first == second;
+             ^
+</pre></sub></td>
+<td><sub><pre lang="cpp">
+by_lightning first{1};                                       &nbsp;
+by_lightning second{2};
+return first.circuit == other.circuit;
+</pre></sub></td>
+</tr>
+</table>
+
+## Usage
+
+## Limitations
+
+## Building
+
+## Documentation
+
+Documentation for the project
+
+## License
+
+## Authors
+
+[Peter Goldsborough](http://goldsborough.me) + [cat](https://goo.gl/IpUmJn) :heart:
