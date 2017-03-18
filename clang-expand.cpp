@@ -31,18 +31,27 @@ llvm::cl::opt<std::string>
     fileOption("file",
                llvm::cl::desc("The source file of the function to expand"),
                llvm::cl::cat(clangExpandCategory));
+llvm::cl::alias fileShortOption("f",
+                                llvm::cl::desc("Alias for -file"),
+                                llvm::cl::aliasopt(fileOption));
 
 llvm::cl::opt<unsigned>
     lineOption("line",
                llvm::cl::Required,
                llvm::cl::desc("The line number of the function to expand"),
                llvm::cl::cat(clangExpandCategory));
+llvm::cl::alias lineShortOption("l",
+                                llvm::cl::desc("Alias for -line"),
+                                llvm::cl::aliasopt(lineOption));
 
 llvm::cl::opt<unsigned>
     columnOption("column",
                  llvm::cl::Required,
                  llvm::cl::desc("The column number of the function to expand"),
                  llvm::cl::cat(clangExpandCategory));
+llvm::cl::alias columnShortOption("c",
+                                  llvm::cl::desc("Alias for -column"),
+                                  llvm::cl::aliasopt(columnOption));
 
 llvm::cl::opt<bool>
     callOption("call",
@@ -62,12 +71,11 @@ llvm::cl::opt<bool> definitionOption(
     llvm::cl::desc("Whether to return the original definition"),
     llvm::cl::cat(clangExpandCategory));
 
-llvm::cl::opt<bool>
-    rewriteOption("rewrite",
-                  llvm::cl::init(true),
-                  llvm::cl::desc("Whether to generate the rewritten "
-                                 "definition with parameters replaced"),
-                  llvm::cl::cat(clangExpandCategory));
+llvm::cl::opt<bool> rewriteOption(
+    "rewrite",
+    llvm::cl::init(true),
+    llvm::cl::desc("Whether to generate the rewritten (expand) definition"),
+    llvm::cl::cat(clangExpandCategory));
 
 llvm::cl::extrahelp
     commonHelp(clang::tooling::CommonOptionsParser::HelpMessage);
