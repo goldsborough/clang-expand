@@ -32,7 +32,7 @@ will refuse to expand otherwise.
 <table
 <tr><th colspan="2">Given</th></tr>
 <tr>
-<td colspan="2">
+<td valign="top" colspan="2">
 <pre lang="cpp">
 std::string concat(const std::string& first, const std::string& second) {
   return first + "-" + second;
@@ -49,25 +49,25 @@ std::string concat(const std::string& first, const std::string& second, bool keb
 </tr>
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr>
-<td>
+<td valign="top">
 <pre lang="cpp">
 auto kebab = concat("clang", "expand");
              ^
 </pre>
 </td>
-<td>
+<td valign="top">
 <pre lang="cpp">
 std::string kebab = \"clang\" + \"-\" + \"expand\";
 </pre>
 </td></tr>
 <tr>
-<td>
+<td valign="top">
 <pre lang="cpp">
 auto camel = concat("clang", "expand", flipCoin());
              ^
 </pre>
 </td>
-<td>
+<td valign="top">
 <pre lang="cpp">
 std::string camel;
 if (flipCoin()) {
