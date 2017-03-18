@@ -1,6 +1,6 @@
 # clang-expand :dragon:
 
-![Here be picture](demo.gif)
+![Here be picture](extra/clang-expand.gif)
 
 A clang tool for happy refactoring without source-code gymnastics.
 
@@ -13,7 +13,11 @@ I recently overheard the following conversation on my way to work, that may seem
 > __Obi Wan Kenobi__: Use the force, Harry.  
 > __Gandalf__: He means *clang-expand* :sparkles:
 
-Inspired by Gandalf's words, I set out to find a solution to Harry's problem and built *clang-expand*. Point it at a function invocation in your source code and tell it where to look for stuff, and it will find the correct definition of that particular (template) function, method, operator overload or even constructor and "expand" it into the current scope. *Expanding* means it will:
+Inspired by Gandalf's words, I set out to find a solution to Harry's problem and
+built *clang-expand*. Point it at a function invocation in your source code and
+tell it where to look for stuff, and it will find the correct definition of that
+particular (template) function, method, operator overload or even constructor
+and "expand" it into the current scope. *Expanding* means it will:
 
 1. Replace parameters with respective argument expressions. That is, for a
 function `f(int x)` that you call with `f(5)`, clang-expand will rewrite every
@@ -395,8 +399,10 @@ compile from source (please contribute that build back here, though).
 clang-expand uses CMake to build. It makes quite extensive use of C++17 features
 like `std::optional`, `if constexpr` and structured bindings, so you'll probably
 want to upgrade your compiler (you're welcome!). You will also need the full
-[llvm]() and [clang]() source. Altogether, you'll have the least rough ride if
-you compile clang from source and then compile clang-expand with that compiler.
+[llvm](https://github.com/llvm-mirror/llvm) and
+[clang](https://github.com/llvm-mirror/clang) source. Altogether, you'll have
+the least rough ride if you compile clang from source and then compile
+clang-expand with that compiler.
 
 Once you have all that, you can build with:
 
