@@ -8,10 +8,10 @@ A clang tool for happy refactoring without source-code gymnastics.
 
 I recently overheard the following conversation on my way to work, that may seem familiar to you:
 
-> Gandalf: It is important to refactor your code and keep functions concise and coherent.
-Harry Potter: Yeah, sure, but I hate having to jump around between files to get the full picture of what my code is doing. One function = one place to look.
-Obi Wan Kenobi: Use the force, Harry.
-Gandalf: He means *clang-expand* :sparkles:
+> __Gandalf__: It is important to refactor your code and keep functions concise and coherent.  
+> __Harry Potter__: Yeah, sure, but I hate having to jump around between files to get the full picture of what my code is doing. One function = one place to look.  
+> __Obi Wan Kenobi__: Use the force, Harry.  
+> __Gandalf__: He means *clang-expand* :sparkles:
 
 Inspired by Gandalf's words, I set out to find a solution to Harry's problem and built *clang-expand*. Point it at a function invocation in your source code and tell it where to look for stuff, and it will find the correct definition of that particular (template) function, method, operator overload or even constructor and "expand" it into the current scope. *Expanding* means it will:
 
@@ -29,52 +29,42 @@ constructing the variable with the return value directly if there is only one
 only works if the type of the variable is default-constructible and clang-expand
 will refuse to expand otherwise.
 
-<table
+<table>
 <tr><th colspan="2">Given</th></tr>
-<tr>
-<td valign="top" colspan="2">
-<pre lang="cpp">
-std::string concat(const std::string& first, const std::string& second) {
+<tr valign="top"><td colspan="2"><sub><pre lang="cpp">
+std::string concat(const std::string&amp; first, const std::string&amp; second) {
   return first + "-" + second;
 }
-
-std::string concat(const std::string& first, const std::string& second, bool kebab) {
+<br>
+std::string concat(const std::string&amp; first, const std::string&amp; second, bool kebab) {
   if (kebab) {
     return first + "-" + second;
   }
   return first + std::toupper(second.front(), {}) + second.substr(1);
 }
-</pre>
-</td>
-</tr>
+</pre></sub></td></tr>
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
-<tr>
-<td valign="top">
-<pre lang="cpp">
+<tr valign="top">
+<td><sub><pre lang="cpp">
 auto kebab = concat("clang", "expand");
              ^
-</pre>
-</td>
-<td valign="top">
-<pre lang="cpp">
+</pre></sub></td>
+<td><sub><pre lang="cpp">
 std::string kebab = \"clang\" + \"-\" + \"expand\";
-</pre>
-</td></tr>
-<tr>
-<td valign="top">
-<pre lang="cpp">
+</pre></sub></td>
+</tr>
+<tr><th>Unexpanded</th><th>Expanded</th></tr>
+<tr valign="top">
+<td><sub><pre lang="cpp">
 auto camel = concat("clang", "expand", flipCoin());
              ^
-</pre>
-</td>
-<td valign="top">
-<pre lang="cpp">
+</pre></sub></td>
+<td><sub><pre lang="cpp">
 std::string camel;
 if (flipCoin()) {
   camel = "clang" + "-" + "expand";
 }
 camel = "clang" + std::toupper("expand".front(), {}) + "expand".substr(1);
-</pre>
-</td>
+</pre></sub></td>
 </tr>
 </table>
