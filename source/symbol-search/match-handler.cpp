@@ -283,11 +283,11 @@ std::optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
     return std::nullopt;
   }
 
-  const auto qualType = variable.getType().getCanonicalType();
+  const auto qualType = variable.getType();//.getCanonicalType();
   const auto* type = qualType.getTypePtr();
-  const auto& policy = context.getPrintingPolicy();
+  // const auto& policy = context.getPrintingPolicy();
   auto assignee = AssigneeData::Builder()
-                      .type(qualType.getAsString(policy))
+                      .type(qualType.getAsString())
                       .name(variable.getName())
                       .op("=")
                       .build();
