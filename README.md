@@ -25,42 +25,26 @@ references and what aren't.
 <table>
 <tr><th colspan="2">Given</th></tr>
 <tr valign="top"><td colspan="2"><sub><pre lang="cpp">
-...
-</pre></sub></td></tr>
-<tr><th>Unexpanded</th><th>Expanded</th></tr>
-<tr valign="top">
-<td><sub><pre lang="cpp">
-...
-</pre></sub></td>
-<td><sub><pre lang="cpp">
-...
-</pre></sub></td>
-</tr>
-</table>
-</p>
-
-<p align="center">
-<table>
-<tr><th colspan="2">Given</th></tr>
-<tr valign="top"><td colspan="2"><sub><pre lang="cpp">
-int max(int x, int y) {
-  if (x > y) {
-    return x;
-  } else {
-    return y;
+void magic(std::vector<int>& v) {
+  auto iterator = std::find(v.begin(), v.end(), 42);
+  if (iterator != v.end()) {
+    std::cout << "Successfully erased all meaning of life\n";
+    v.erase(iterator);
   }
 }
 </pre></sub></td></tr>
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-max(4, 2);
+std::vector<int> v = {1, 42, 3};
+magic(v);
 </pre></sub></td>
 <td><sub><pre lang="cpp">
-if (4 > 2) {
-  return 4;
-} else {
-  return 2;
+std::vector<int> v = {1, 42, 3};
+auto iterator = std::find(v.begin(), v.end(), 42);
+if (iterator != v.end()) {
+  std::cout << "Successfully erased all meaning of life\n";
+  v.erase(iterator);
 }
 </pre></sub></td>
 </tr>
@@ -123,7 +107,7 @@ if (flipCoin()) {
 
 <p align="center">
 <table>
-<tr><th>Unexpanded</th><th>Expanded<sup>[1](#fn1)</sup></th></tr>
+<tr><th>Unexpanded</th><th>Expanded<sup><a href="#fn1">1</a></sup></th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
 std::vector<int> my_vec;
@@ -131,6 +115,7 @@ my_vec.emplace_back(42);
        ^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
+std::vector<int> my_vec;
 if (my_vec.__end_ < my_vec.__end_cap())
 {
     __RAII_IncreaseAnnotator __annotator(*this);
