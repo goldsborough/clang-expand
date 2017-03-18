@@ -264,6 +264,18 @@ bool isNestedInsideSomeOtherStatement(const clang::VarDecl& variable,
   return true;
 }
 
+/// Returns a string representation of a qualified type suitable for printing
+/// (not for serialization and comparison!).
+std::string getTypeAsString(const clang::QualType& qualType,
+                            clang::ASTContext& context) {
+  auto policy = context.getPrintingPolicy();
+  policy.SuppressTagKeyword = true;
+  policy.SuppressUnwrittenScope = true;
+  policy.AnonymousTagLocations = false;
+  policy.IncludeNewlines = false;
+  return qualType.getAsString(policy);
+}
+
 /// For the case that the surrounding context of the function call is a variable
 /// declaration (e.g.
 /// in `int x = f(5);`), this function handles such a call. It makes sure this
@@ -283,15 +295,15 @@ std::optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
     return std::nullopt;
   }
 
-  const auto qualType = variable.getType();//.getCanonicalType();
-  const auto* type = qualType.getTypePtr();
-  // const auto& policy = context.getPrintingPolicy();
+  const auto qualType = variable.getType().getCanonicalType();
+  const auto typeString = getTypeAsString(qualType, context);
   auto assignee = AssigneeData::Builder()
-                      .type(qualType.getAsString())
+                      .type(typeString)
                       .name(variable.getName())
                       .op("=")
                       .build();
 
+  const auto* type = qualType.getTypePtr();
   if (qualType.isConstQualified() || type->isReferenceType()) {
     assignee.type->isDefaultConstructible = false;
   } else if (const auto* record = type->getAsCXXRecordDecl(); record) {
