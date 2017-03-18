@@ -22,7 +22,7 @@ actually understands C++ and knows what occurrences of `x` are parameter
 references and what aren't.
 
 <p align="center">
-<table>
+<table  align="center">
 <tr><th colspan="2">Given</th></tr>
 <tr valign="top"><td colspan="2"><sub><pre lang="cpp">
 template<typename Range>
@@ -37,7 +37,7 @@ void magic(Range& range) {
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-std::vector<int> v = {1, 42, 3};
+std::vector<int> v = {1, 42, 3};                                     &nbsp;
 magic(v);
 </pre></sub></td>
 <td><sub><pre lang="cpp">
