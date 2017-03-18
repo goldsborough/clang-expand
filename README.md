@@ -2,9 +2,9 @@
 
 <p align="center">
   <img src="extra/clang-expand.gif">
+  <br><br>
+  A clang tool for happy refactoring without source-code gymnastics.
 </p>
-
-A clang tool for happy refactoring without source-code gymnastics.
 
 ## Overview
 
