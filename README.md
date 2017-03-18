@@ -30,9 +30,9 @@ only works if the type of the variable is default-constructible and clang-expand
 will refuse to expand otherwise.
 
 <table
-<tr><th>Given</th></tr>
+<tr><th colspan="2">Given</th></tr>
 <tr>
-<td valign="top" colspan="2">
+<td colspan="2" align="center">
 <pre lang="cpp">
 std::string concat(const std::string& first, const std::string& second) {
   return first + "-" + second;
@@ -40,17 +40,17 @@ std::string concat(const std::string& first, const std::string& second) {
 </pre>
 </td>
 </tr>
-<tr><th><b>Unexpanded</b></th><th><b>Expanded</b></th></tr>
+<tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr>
-<td valign="top">
+<td>
 <pre lang="cpp">
 auto string = concat("clang", "expand");
               ^
 </pre>
 </td>
-<td valign="top">
+<td>
 <pre lang="cpp">
-std::__1::basic_string<char> string = \"clang\" + \"-\" + \"expand\";
+std::string string = \"clang\" + \"-\" + \"expand\";
 </pre>
 </td></tr>
 </table>
