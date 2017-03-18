@@ -29,16 +29,17 @@ template&lt;typename Range&gt;
 void magic(Range& range) {
   auto iterator = std::find(range.begin(), range.end(), 42);
   if (iterator != range.end()) {
-    std::cout << "Successfully erased all meaning of life\n";
     range.erase(iterator);
+    std::cout << "Successfully erased all meaning of life\n";
   }
 }
 </pre></sub></td></tr>
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-std::vector<int> v = {1, 42, 3};                                   &nbsp;
+std::vector<int> v = {1, 42, 3};                                       &nbsp;
 magic(v);
+^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
 std::vector<int> v = {1, 42, 3};
@@ -52,9 +53,9 @@ if (iterator != v.end()) {
 </table>
 </p>
 
-As you can see, clang-expand actually instantiated the template function during the
-expansion. This is because on the level that it operates on within the clang
-AST, semantic analysis including template type deduction are already complete.
+As you can see, clang-expand actually instantiated the template function during
+the expansion. This is because on the level that it operates on within the clang
+AST, semantic analysis, including template type deduction, are already complete.
 This means that calling templates is not a problem for clang-expand.
 
 2. If you're assigning the return value of a function you expand to a
@@ -134,9 +135,9 @@ else
 </tr>
 </table>
 
-<a name="fn1"><b>1</b></a>: This is the implementation on my system, of course.
+<a name="fn1">1</a>: This is the implementation on my system, of course.
 
-4. If the function you're expanding is an operator, clang-expand will perform parameter-replacement in just the same way:
+4. If the function you're expanding is an operator, clang-expand can handle that in just the same way:
 
 <table>
 <tr><th colspan="2">Given</th></tr>
