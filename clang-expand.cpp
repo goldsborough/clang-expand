@@ -62,12 +62,11 @@ llvm::cl::opt<bool> definitionOption(
     llvm::cl::desc("Whether to return the original definition"),
     llvm::cl::cat(clangExpandCategory));
 
-llvm::cl::opt<bool>
-    rewriteOption("rewrite",
-                  llvm::cl::init(true),
-                  llvm::cl::desc("Whether to generate the rewritten "
-                                 "definition with parameters replaced"),
-                  llvm::cl::cat(clangExpandCategory));
+llvm::cl::opt<bool> rewriteOption(
+    "rewrite",
+    llvm::cl::init(true),
+    llvm::cl::desc("Whether to generate the rewritten (expand) definition"),
+    llvm::cl::cat(clangExpandCategory));
 
 llvm::cl::extrahelp
     commonHelp(clang::tooling::CommonOptionsParser::HelpMessage);
