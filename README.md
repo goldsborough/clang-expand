@@ -21,6 +21,7 @@ occurrence of `x` inside `f` to `5`. Note that since clang-expand uses clang, it
 actually understands C++ and knows what occurrences of `x` are parameter
 references and what aren't.
 
+<p align="center">
 <table>
 <tr><th colspan="2">Given</th></tr>
 <tr valign="top"><td colspan="2"><sub><pre lang="cpp">
@@ -36,7 +37,9 @@ references and what aren't.
 </pre></sub></td>
 </tr>
 </table>
+</p>
 
+<p align="center">
 <table>
 <tr><th colspan="2">Given</th></tr>
 <tr valign="top"><td colspan="2"><sub><pre lang="cpp">
@@ -62,6 +65,7 @@ if (4 > 2) {
 </pre></sub></td>
 </tr>
 </table>
+</p>
 
 2. If you're assigning the return value of a function you expand to a
 variable, clang-expand will replace every `return` statement inside the function
@@ -71,6 +75,7 @@ constructing the variable with the return value directly if there is only one
 only works if the type of the variable is default-constructible and clang-expand
 will refuse to expand otherwise.
 
+<p align="center">
 <table>
 <tr><th colspan="2">Given</th></tr>
 <tr valign="top"><td colspan="2"><sub><pre lang="cpp">
@@ -112,9 +117,11 @@ if (flipCoin()) {
 </pre></sub></td>
 </tr>
 </table>
+</p>
 
 3. If you're calling a method, clang-expand will prepend the base to every method or member of referenced inside:
 
+<p align="center">
 <table>
 <tr><th>Unexpanded</th><th>Expanded<sup>[1](#fn1)</sup></th></tr>
 <tr valign="top">
@@ -138,5 +145,6 @@ else
 </pre></sub></td>
 </tr>
 </table>
+</p>
 
 <a name="fn1">1</a>: This is the implementation on my system, of course.
