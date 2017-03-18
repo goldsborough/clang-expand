@@ -25,11 +25,12 @@ references and what aren't.
 <table>
 <tr><th colspan="2">Given</th></tr>
 <tr valign="top"><td colspan="2"><sub><pre lang="cpp">
-void magic(std::vector<int>& v) {
-  auto iterator = std::find(v.begin(), v.end(), 42);
-  if (iterator != v.end()) {
+template<typename Range>
+void magic(Range& range) {
+  auto iterator = std::find(range.begin(), range.end(), 42);
+  if (iterator != range.end()) {
     std::cout << "Successfully erased all meaning of life\n";
-    v.erase(iterator);
+    range.erase(iterator);
   }
 }
 </pre></sub></td></tr>
@@ -50,6 +51,11 @@ if (iterator != v.end()) {
 </tr>
 </table>
 </p>
+
+Note how clang-expand actually instantiated the template function during the
+expansion. This is because on the level that it operates on within the clang
+AST, semantic analysis including template type deduction are already complete.
+This means that calling templates is not a problem for clang-expand.
 
 2. If you're assigning the return value of a function you expand to a
 variable, clang-expand will replace every `return` statement inside the function
@@ -132,4 +138,4 @@ else
 </table>
 </p>
 
-<a name="fn1">1</a>: This is the implementation on my system, of course.
+<a name="fn1"><b>1</b></a>: This is the implementation on my system, of course.

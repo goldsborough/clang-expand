@@ -317,14 +317,18 @@ std::optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
 }
 
 /// If we determined that the surrounding context of the function call has a
-/// binary operator (like
-/// an assignment or compound operation, e.g. +=), then this function takes care
-/// of handling that
-/// call and collecting relevant data.
+/// binary operator (like an assignment or compound operation, e.g. +=), then
+/// this function takes care of handling that call and collecting relevant data.
 CallData
 handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
                             clang::ASTContext& context,
                             const clang::Expr& expression) {
+  const auto* lhs = binaryOperator.getLHS();
+  if (&expression == lhs) {
+    Routines::error(
+        "Refuse to expand function that is LHS of a binary operator");
+  }
+
   if (!binaryOperator.isAssignmentOp() &&
       !binaryOperator.isCompoundAssignmentOp() &&
       !binaryOperator.isShiftAssignOp()) {
@@ -333,17 +337,13 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
   }
 
   std::string name;
-
-  const auto* lhs = binaryOperator.getLHS();
   if (const auto* declRefExpr = llvm::dyn_cast<clang::DeclRefExpr>(lhs)) {
     name = declRefExpr->getDecl()->getName();
-  } else if (const auto* member = llvm::dyn_cast<clang::MemberExpr>(lhs)) {
-    // There are so many different kinds of member expressions like x.x, x.X::x,
-    // x->x, x-> template x etc. that it's easiest to just grab the source.
-    // FIXME: if this becomes a performance issue.
-    name = Routines::getSourceText(member->getSourceRange(), context);
   } else {
-    Routines::error("Cannot expand call because assignee is not recognized");
+    // This may be a member expression, a function call or something else. But
+    // since it's not a declaration, we can be quite safe to plop this into each
+    // return statement.
+    name = Routines::getSourceText(lhs->getSourceRange(), context);
   }
 
   auto assignee = AssigneeData::Builder()
