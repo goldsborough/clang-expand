@@ -68,7 +68,7 @@ void rewriteSimpleMacroArgument(clang::Rewriter& rewriter,
                                 const llvm::StringRef& mappedParameter,
                                 unsigned hashCount) {
   const auto offset = -static_cast<int>(hashCount);
-  const clang::SourceRange range(token.getLocation(),
+  const clang::SourceRange range(token.getLocation().getLocWithOffset(-1),
                                  token.getEndLoc().getLocWithOffset(offset));
   rewriter.ReplaceText(range, mappedParameter);
 }
@@ -84,7 +84,7 @@ MacroSearch::MacroSearch(clang::CompilerInstance& compiler,
 , _query(query) {
 }
 
-void MacroSearch::MacroExpands(const clang::Token&,
+void MacroSearch::MacroExpands(const clang::Token& macroNameToken,
                                const clang::MacroDefinition& macro,
                                clang::SourceRange range,
                                const clang::MacroArgs* arguments) {
@@ -98,6 +98,12 @@ void MacroSearch::MacroExpands(const clang::Token&,
   std::string text = _rewriteMacro(*info, mapping);
 
   Location location(info->getDefinitionLoc(), _sourceManager);
+
+  if (info->isObjectLike()) {
+    // - 1 because the range is inclusive
+    const auto length = macroNameToken.getLength() - 1;
+    range.setEnd(range.getBegin().getLocWithOffset(length));
+  }
 
   _query.call.emplace(Range{range, _sourceManager});
   _query.definition = DefinitionData{std::move(location),
