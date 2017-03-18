@@ -17,11 +17,11 @@ Inspired by Gandalf's words, I set out to find a solution to Harry's problem and
 
 1. Replace parameters with respective argument expressions. That is, for a
 function `f(int x)` that you call with `f(5)`, clang-expand will rewrite every
-occurrence of `x` inside `f` to 5. Note that since clang-expand uses clang, it
+occurrence of `x` inside `f` to `5`. Note that since clang-expand uses clang, it
 actually understands C++ and knows what occurrences of `x` are parameter
 references and what aren't.
 
-2. If the you're assigning the return value of a function you expand to a
+2. If you're assigning the return value of a function you expand to a
 variable, clang-expand will replace every `return` statement inside the function
 with an assignment. It attempts to do this in a reasonably intelligent way,
 constructing the variable with the return value directly if there is only one
@@ -39,8 +39,9 @@ std::string concat(const std::string&amp; first, const std::string&amp; second) 
 std::string concat(const std::string&amp; first, const std::string&amp; second, bool kebab) {
   if (kebab) {
     return first + "-" + second;
+  } else {
+    return first + std::toupper(second.front(), {}) + second.substr(1);
   }
-  return first + std::toupper(second.front(), {}) + second.substr(1);
 }
 </pre></sub></td></tr>
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
@@ -50,7 +51,7 @@ auto kebab = concat("clang", "expand");
              ^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
-std::string kebab = \"clang\" + \"-\" + \"expand\";
+std::string kebab = "clang" + "-" + "expand";
 </pre></sub></td>
 </tr>
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
@@ -63,8 +64,9 @@ auto camel = concat("clang", "expand", flipCoin());
 std::string camel;
 if (flipCoin()) {
   camel = "clang" + "-" + "expand";
+} else {
+  camel = "clang" + std::toupper("expand".front(), {}) + "expand".substr(1);
 }
-camel = "clang" + std::toupper("expand".front(), {}) + "expand".substr(1);
 </pre></sub></td>
 </tr>
 </table>
