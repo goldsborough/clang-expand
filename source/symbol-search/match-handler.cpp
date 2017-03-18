@@ -160,9 +160,8 @@ ParameterMap mapCallParameters(const CallOrConstruction& call,
                                clang::ASTContext& context) {
   // clang-format off
   if constexpr(std::is_base_of_v<clang::CallExpr, CallOrConstruction>) {
-    if (auto map = tryMapParametersForOperatorOverloads(call, function, context)) {
-      return *map;
-    }
+    auto map = tryMapParametersForOperatorOverloads(call, function, context);
+    if (map) return *map;
   }
   // clang-format on
 
@@ -171,8 +170,9 @@ ParameterMap mapCallParameters(const CallOrConstruction& call,
   for (const auto* argument : call.arguments()) {
     argument = argument->IgnoreImplicit();
 
-    // We only want to map argument that were actually passed in the call
-    if (llvm::isa<clang::CXXDefaultArgExpr>(argument)) continue;
+    const auto* defaultArgument =
+        llvm::dyn_cast<clang::CXXDefaultArgExpr>(argument);
+    if (defaultArgument) argument = defaultArgument->getExpr();
 
     assert(parameter != function.param_end() &&
            "Function has more parameters than arguments?");

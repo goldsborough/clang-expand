@@ -389,8 +389,9 @@ like `std::optional`, `if constexpr` and structured bindings, so you'll probably
 want to upgrade your compiler (you're welcome!). You will also need the full
 [llvm](https://github.com/llvm-mirror/llvm) and
 [clang](https://github.com/llvm-mirror/clang) source. Altogether, you'll have
-the least rough ride if you compile clang from source and then compile
-clang-expand with that compiler.
+the least rough ride if you compile clang, llvm and
+[libc++]((https://github.com/llvm-mirror/libcxx) from source and then compile
+clang-expand with the resulting clang++ compiler.
 
 Once you have all that, you can build with:
 
