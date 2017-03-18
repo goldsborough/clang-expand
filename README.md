@@ -229,17 +229,17 @@ beginning). The `-file` defaults to the first source if you omit the option.
 Additionally, you have to pass any options required to compile the files at the
 end, following `--`. For example, given:
 
-`foo.h`
+`foo.h`:
 ```cpp
 int foo();
 ```
 
-`foo.cpp`
+`foo.cpp`:
 ```cpp
 int foo() { return 42; }
 ```
 
-`main.cpp`
+`main.cpp`:
 ```cpp
 #include "foo.h"
 auto main() -> int {
@@ -299,12 +299,12 @@ also return the location and full text for either (because why not). As such,
 clang-expand can also be used as a backend for
 "go-to-definition"/"show-declaration" functions inside a text editor (though an
 indexed-solution like [ctags](https://en.wikipedia.org/wiki/Ctags) is likely
-faster for that).
+faster for just that).
 
 For expanding, what's most interesting here is the `call` section and the
 `definition.rewritten` field. The former is the entire range (defined by two
 `(line, column)` pairs) in the source code that you'll want to replace with the
-expansion. The latter is the text to insert.
+expansion. The latter is the text to insert instead.
 
 Even though the overhead to grab information about the definition and
 declaration is negligible compared to the entire operation, it may still be
@@ -313,7 +313,7 @@ or you may simply not need some of the output. This is the case when you're only
 interested in expanding for example, where you only need the `call` and
 `definition` section. For this reason, the clang-expand tool takes boolean
 `-call, -declaration, -definition` and `-rewrite` options. By default, these
-flags are all set to `true`, i.e. all of these components will be included. By
+flags are all set to `true`, i.e. all of these sections will be included. By
 setting them to `-<option>=false`, you can turn them off, however. For example:
 
 ```bash
@@ -357,11 +357,60 @@ location).
 
 ## Limitations
 
+While clang-expand tries very hard to expand calls in way that produces
+syntactically correct code, this just simply is not always possible without
+impacting other features (such as readability of the expanded code). A simple
+example is when you have a function taking a parameter and you pass a variable
+called `x` as an argument. If `x` is already used for something else inside the
+function, there will be a collision. This can be detected in clang-expand, no
+problem, and solved by mangling the name somehow (e.g. appending `_expanded`).
+However, this reduces the readability of the produced expansion. This means
+clang-expand will generally not work well with recursive functions.
+
+The bottom line is that the produced code will not always be valid, but you'll
+most likely not care, since you probably just want to see what the code would
+look like "more or less". Nevertheless, this is something where clang-expand
+could be improved in the future.
+
+I have hidden/hacked another example of where the expanded code is not correct
+in one of the examples above. If we look at the example `concat` function again
+and to what it expanded:
+
+```cpp
+std::string concat(const std::string&amp; first, const std::string&amp; second) {
+  return first + "-"s + second;
+}
+
+auto string = "clang" + "-"s + "expand";
+```
+
+This will compiles because the string literal just so happens to have a sneaky  `s` appended, which just so happens to turn that literal into a string and prevents us from summing up three pointers. Your code probably does't have sneaky `s`s at the end of literals, so `"clang" + "-" + "expand"` would not be valid. This could be solved by casting the arguments to the type of their respective argument (yielding `std::string("clang")`)
+
 ## Building
+
+If you just want to use clang-expand, you can grab the executable from the
+[Release](mooh) page. If there is none that works on your system, you'll have to
+compile from source (please contribute that build back here, though).
+
+clang-expand uses CMake to build. It makes quite extensive use of C++17 features
+like `std::optional`, `if constexpr` and structured bindings, so you'll probably
+want to upgrade your compiler (you're welcome!). You will also need the full
+[llvm]() and [clang]() source. Altogether, you'll have the least rough ride if
+you compile clang from source and then compile clang-expand with that compiler.
+
+Once you have all that, you can build with:
+
+```bash
+$ mkdir build && cd build
+$ LLVM_PATH=/path/to/llvm/ cmake ..
+```
 
 ## Documentation
 
-Documentation for the project
+clang-expand has very extensive in-source documentation which can be generated
+with [Doxygen](http://www.doxygen.org). Run `make docs` inside the `build`
+folder. You don't need to compile the project for this, just run `cmake ..` and
+then `make` the `docs` target.
 
 ## License
 
