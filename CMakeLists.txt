@@ -157,7 +157,7 @@ add_subdirectory(source)
 ## TARGETS
 ###########################################################
 
-add_executable(clang-expand main.cpp)
+add_executable(clang-expand clang-expand.cpp)
 target_link_libraries(clang-expand
                       clang-expand-library
                       ${CLANG_LIBS}
