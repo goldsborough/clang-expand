@@ -57,15 +57,15 @@ std::string kebab = "clang" + "-" + "expand";
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-auto camel = concat("clang", "expand", flipCoin());
+auto maybeCamel = concat("clang", "expand", flipCoin());
              ^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
-std::string camel;
+std::string maybeCamel;
 if (flipCoin()) {
-  camel = "clang" + "-" + "expand";
+  maybeCamel = "clang" + "-" + "expand";
 } else {
-  camel = "clang" + std::toupper("expand".front(), {}) + "expand".substr(1);
+  maybeCamel = "clang" + std::toupper("expand".front(), {}) + "expand".substr(1);
 }
 </pre></sub></td>
 </tr>
