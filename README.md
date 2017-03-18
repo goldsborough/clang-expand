@@ -1,6 +1,8 @@
 # clang-expand :dragon:
 
-![Here be picture](extra/clang-expand.gif)
+<p align="center">
+  <img src="extra/clang-expand.gif">
+</p>
 
 A clang tool for happy refactoring without source-code gymnastics.
 
