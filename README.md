@@ -9,9 +9,9 @@ A clang tool for happy refactoring without source-code gymnastics.
 I recently overheard the following conversation on my way to work, that may seem familiar to you:
 
 > Gandalf: It is important to refactor your code and keep functions concise and coherent.
-> Harry Potter: Yeah, sure, but I hate having to jump around between files to get the full picture of what my code is doing. One function = one place to look.
-> Obi Wan Kenobi: Use the force, Harry.
-> Gandalf: He means *clang-expand* :sparkles:
+Harry Potter: Yeah, sure, but I hate having to jump around between files to get the full picture of what my code is doing. One function = one place to look.
+Obi Wan Kenobi: Use the force, Harry.
+Gandalf: He means *clang-expand* :sparkles:
 
 Inspired by Gandalf's words, I set out to find a solution to Harry's problem and built *clang-expand*. Point it at a function invocation in your source code and tell it where to look for stuff, and it will find the correct definition of that particular (template) function, method, operator overload or even constructor and "expand" it into the current scope. *Expanding* means it will:
 
@@ -32,10 +32,17 @@ will refuse to expand otherwise.
 <table
 <tr><th colspan="2">Given</th></tr>
 <tr>
-<td colspan="2" align="center">
+<td colspan="2">
 <pre lang="cpp">
 std::string concat(const std::string& first, const std::string& second) {
   return first + "-" + second;
+}
+
+std::string concat(const std::string& first, const std::string& second, bool kebab) {
+  if (kebab) {
+    return first + "-" + second;
+  }
+  return first + std::toupper(second.front(), {}) + second.substr(1);
 }
 </pre>
 </td>
@@ -44,13 +51,30 @@ std::string concat(const std::string& first, const std::string& second) {
 <tr>
 <td>
 <pre lang="cpp">
-auto string = concat("clang", "expand");
-              ^
+auto kebab = concat("clang", "expand");
+             ^
 </pre>
 </td>
 <td>
 <pre lang="cpp">
-std::string string = \"clang\" + \"-\" + \"expand\";
+std::string kebab = \"clang\" + \"-\" + \"expand\";
 </pre>
 </td></tr>
+<tr>
+<td>
+<pre lang="cpp">
+auto camel = concat("clang", "expand", flipCoin());
+             ^
+</pre>
+</td>
+<td>
+<pre lang="cpp">
+std::string camel;
+if (flipCoin()) {
+  camel = "clang" + "-" + "expand";
+}
+camel = "clang" + std::toupper("expand".front(), {}) + "expand".substr(1);
+</pre>
+</td>
+</tr>
 </table>
