@@ -1,4 +1,4 @@
-# clang-expand :dragon:
+# :dragon: clang-expand
 
 <p align="center">
   <img src="extra/clang-expand.gif">
@@ -184,9 +184,9 @@ without being parameterized):
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-int pi_if_a_greater_b(int a, int b) {                        &nbsp;
-  int greater = MAX(a, b);
-                ^
+double pi_if_a_greater_b(double a, double b) {                &nbsp;
+  auto greater = MAX(a, b);
+                 ^
   if (greater == a) {
     return PI;
            ^
@@ -195,8 +195,8 @@ int pi_if_a_greater_b(int a, int b) {                        &nbsp;
 }
 </pre></sub></td>
 <td><sub><pre lang="cpp">
-int pi_if_a_greater_b(int a, int b) {                        &nbsp;
-  int greater = a > b ? a : b;
+double pi_if_a_greater_b(double a, double b) {                        &nbsp;
+  auto greater = a > b ? a : b;
   if (greater == a) {
     return 3.14;
   }
@@ -256,7 +256,7 @@ auto main() -> int {
 The following command would do the job:
 
 ```bash
-$ clang-expand main.cpp foo.cpp -line 2 -column 14 -- -I/path/to/include -std=c++14
+$ clang-expand main.cpp foo.cpp -line=2 -column=14 -- -I/path/to/include -std=c++14
 ```
 
 which will output:
@@ -323,7 +323,7 @@ flags are all set to `true`, i.e. all of these sections will be included. By
 setting them to `-<option>=false`, you can turn them off, however. For example:
 
 ```bash
-$ clang-expand main.cpp foo.cpp -line 2 -column 14 -declaration=false -definition=false -rewrite=false -- -I/path/to/include -std=c++14
+$ clang-expand main.cpp foo.cpp -line=2 -column=14 -declaration=false -definition=false -rewrite=false -- -I/path/to/include -std=c++14
 ```
 
 outputs only the call range:
