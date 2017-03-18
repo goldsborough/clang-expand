@@ -34,8 +34,7 @@ namespace {
       "assignee is not default-constructible");
 }
 
-/// Tries to get the parent of a node as the given type `T`, or else errors
-/// and
+/// Tries to get the parent of a node as the given type `T`, or else errors and
 /// dies.
 template <typename T, typename Node>
 const T* tryToGetParentOrDie(clang::ASTContext& context, const Node& node) {
@@ -48,8 +47,7 @@ const T* tryToGetParentOrDie(clang::ASTContext& context, const Node& node) {
   dieBecauseNotDefaultConstructible();
 }
 
-/// Ensures that a `ReturnStmt` would allow default construction of a
-/// variable.
+/// Ensures that a `ReturnStmt` would allow default construction of a variable.
 /// This is the case if this is a top-level `return`, i.e. whose parent is the
 /// `CompoundStmt` of a function.
 void ensureReturnAllowsDefaultConstruction(
@@ -127,13 +125,10 @@ void DefinitionRewriter::_recordReturn(const clang::ReturnStmt& returnStatement,
                                        const CallData& call) {
   if (!call.assignee.has_value()) return;
   if (!call.assignee->isDefaultConstructible()) {
-    // If we already found a return statement on the top level of the
-    // function,
-    // then die. This is a
-    // super-duper edge case when the code has two return statements on the
-    // top
-    // function level
-    // (making everything underneath the first return dead code).
+    // If we already found a return statement on the top level of the function,
+    // then die. This is a super-duper edge case when the code has two return
+    // statements on the top function level (making everything underneath the
+    // first return dead code).
     if (_returnLocations.empty()) {
       ensureReturnAllowsDefaultConstruction(_context, returnStatement);
     } else {

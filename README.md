@@ -20,12 +20,11 @@ function `f(int x)` that you call with `f(5)`, clang-expand will rewrite every
 occurrence of `x` inside `f` to `5`. Note that since clang-expand uses clang, it
 actually understands C++ and knows what occurrences of `x` are parameter
 references and what aren't.
-
 <p align="center">
-<table  align="center">
+<table align="center">
 <tr><th colspan="2">Given</th></tr>
 <tr valign="top"><td colspan="2"><sub><pre lang="cpp">
-template<typename Range>
+template&lt;typename Range&gt;
 void magic(Range& range) {
   auto iterator = std::find(range.begin(), range.end(), 42);
   if (iterator != range.end()) {
@@ -37,7 +36,7 @@ void magic(Range& range) {
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-std::vector<int> v = {1, 42, 3};                                     &nbsp;
+std::vector<int> v = {1, 42, 3};                               &nbsp;
 magic(v);
 </pre></sub></td>
 <td><sub><pre lang="cpp">
@@ -51,7 +50,6 @@ if (iterator != v.end()) {
 </tr>
 </table>
 </p>
-
 Note how clang-expand actually instantiated the template function during the
 expansion. This is because on the level that it operates on within the clang
 AST, semantic analysis including template type deduction are already complete.
