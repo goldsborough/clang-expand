@@ -114,13 +114,13 @@ if (flipCoin()) {
 <tr><th>Unexpanded</th><th>Expanded<sup><a href="#fn1">1</a></sup></th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-std::vector<int> my_vec;
+std::vector<int> my_vec;                                     &nbsp;
 my_vec.emplace_back(42);
        ^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
-std::vector<int> my_vec;
-if (my_vec.__end_ < my_vec.end_cap())
+std::vector<int> my_vec;                                     &nbsp;
+if (my_vec.__end_ < my_vec.__end_cap())
 {
     __RAII_IncreaseAnnotator __annotator(*this);
     __alloc_traits::construct(my_vec.__alloc(),
@@ -152,13 +152,13 @@ struct by_lightning {
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-by_lightning first{1};
+by_lightning first{1};                                       &nbsp;
 by_lightning second{2};
 return first == second;
              ^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
-by_lightning first{1};
+by_lightning first{1};                                       &nbsp;
 by_lightning second{2};
 return first.circuit == other.circuit;
 </pre></sub></td>
