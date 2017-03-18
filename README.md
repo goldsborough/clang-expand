@@ -21,6 +21,48 @@ occurrence of `x` inside `f` to `5`. Note that since clang-expand uses clang, it
 actually understands C++ and knows what occurrences of `x` are parameter
 references and what aren't.
 
+<table>
+<tr><th colspan="2">Given</th></tr>
+<tr valign="top"><td colspan="2"><sub><pre lang="cpp">
+...
+</pre></sub></td></tr>
+<tr><th>Unexpanded</th><th>Expanded</th></tr>
+<tr valign="top">
+<td><sub><pre lang="cpp">
+...
+</pre></sub></td>
+<td><sub><pre lang="cpp">
+...
+</pre></sub></td>
+</tr>
+</table>
+
+<table>
+<tr><th colspan="2">Given</th></tr>
+<tr valign="top"><td colspan="2"><sub><pre lang="cpp">
+int max(int x, int y) {
+  if (x > y) {
+    return x;
+  } else {
+    return y;
+  }
+}
+</pre></sub></td></tr>
+<tr><th>Unexpanded</th><th>Expanded</th></tr>
+<tr valign="top">
+<td><sub><pre lang="cpp">
+max(4, 2);
+</pre></sub></td>
+<td><sub><pre lang="cpp">
+if (4 > 2) {
+  return 4;
+} else {
+  return 2;
+}
+</pre></sub></td>
+</tr>
+</table>
+
 2. If you're assigning the return value of a function you expand to a
 variable, clang-expand will replace every `return` statement inside the function
 with an assignment. It attempts to do this in a reasonably intelligent way,
@@ -33,12 +75,12 @@ will refuse to expand otherwise.
 <tr><th colspan="2">Given</th></tr>
 <tr valign="top"><td colspan="2"><sub><pre lang="cpp">
 std::string concat(const std::string&amp; first, const std::string&amp; second) {
-  return first + "-" + second;
+  return first + "-"s + second;
 }
 <br>
 std::string concat(const std::string&amp; first, const std::string&amp; second, bool kebab) {
   if (kebab) {
-    return first + "-" + second;
+    return first + "-"s + second;
   } else {
     return first + std::toupper(second.front(), {}) + second.substr(1);
   }
@@ -51,7 +93,7 @@ auto kebab = concat("clang", "expand");
              ^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
-std::string kebab = "clang" + "-" + "expand";
+std::string kebab = "clang" + "-"s + "expand";
 </pre></sub></td>
 </tr>
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
@@ -63,10 +105,38 @@ auto maybeCamel = concat("clang", "expand", flipCoin());
 <td><sub><pre lang="cpp">
 std::string maybeCamel;
 if (flipCoin()) {
-  maybeCamel = "clang" + "-" + "expand";
+  maybeCamel = "clang" + "-"s + "expand";
 } else {
   maybeCamel = "clang" + std::toupper("expand".front(), {}) + "expand".substr(1);
 }
 </pre></sub></td>
 </tr>
 </table>
+
+3. If you're calling a method, clang-expand will prepend the base to every method or member of referenced inside:
+
+<table>
+<tr><th>Unexpanded</th><th>Expanded<sup>[1](#fn1)</sup></th></tr>
+<tr valign="top">
+<td><sub><pre lang="cpp">
+std::vector<int> my_vec;
+my_vec.emplace_back(42);
+       ^
+</pre></sub></td>
+<td><sub><pre lang="cpp">
+if (my_vec.__end_ < my_vec.__end_cap())
+{
+    __RAII_IncreaseAnnotator __annotator(*this);
+    __alloc_traits::construct(my_vec.__alloc(),
+                              _VSTD::__to_raw_pointer(my_vec.__end_),
+                              _VSTD::forward<_Args>(42)...);
+    __annotator.__done();
+    ++my_vec.__end_;
+}
+else
+    my_vec.__emplace_back_slow_path(_VSTD::forward<_Args>(42)...);
+</pre></sub></td>
+</tr>
+</table>
+
+<a name="fn1">1</a>: This is the implementation on my system, of course.
