@@ -1,4 +1,4 @@
-# :dragon: clang-expand
+# clang-expand :dragon:
 
 <p align="center">
   <img src="extra/clang-expand.gif">
@@ -45,7 +45,7 @@ void magic(Range& range) {
 <td><sub><pre lang="cpp">
 std::vector<int> v = {1, 42, 3};                                       &nbsp;
 magic(v);
-^ // expanded here
+^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
 std::vector<int> v = {1, 42, 3};
@@ -141,9 +141,9 @@ else
 </tr>
 </table>
 
-<a name="fn1">1</a>: This is the implementation on my system, of course.
+<a name="fn1"><sup>1</sup></a> *This is the implementation on my system, of course.*
 
-4. If the function you're expanding is an operator, clang-expand can handle that in just the same way:
+4. If the function you're expanding is an operator, clang-expand can handle that just as well:
 
 <table>
 <tr><th colspan="2">Given</th></tr>
@@ -184,7 +184,7 @@ without being parameterized):
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-double pi_if_a_greater_b(double a, double b) {               &nbsp;
+int pi_if_a_greater_b(int a, int b) {                        &nbsp;
   int greater = MAX(a, b);
                 ^
   if (greater == a) {
@@ -256,7 +256,7 @@ auto main() -> int {
 The following command would do the job:
 
 ```bash
-$ clang-expand main.cpp foo.cpp -line=2 -column=14 -- -I/path/to/include -std=c++14
+$ clang-expand main.cpp foo.cpp -line 2 -column 14 -- -I/path/to/include -std=c++14
 ```
 
 which will output:
@@ -323,7 +323,7 @@ flags are all set to `true`, i.e. all of these sections will be included. By
 setting them to `-<option>=false`, you can turn them off, however. For example:
 
 ```bash
-$ clang-expand main.cpp foo.cpp -line=2 -column=14 -declaration=false -definition=false -rewrite=false -- -I/path/to/include -std=c++14
+$ clang-expand main.cpp foo.cpp -line 2 -column 14 -declaration=false -definition=false -rewrite=false -- -I/path/to/include -std=c++14
 ```
 
 outputs only the call range:
@@ -377,20 +377,6 @@ The bottom line is that the produced code will not always be valid, but you'll
 most likely not care, since you probably just want to see what the code would
 look like "more or less". Nevertheless, this is something where clang-expand
 could be improved in the future.
-
-I have hidden/hacked another example of where the expanded code is not correct
-in one of the examples above. If we look at the example `concat` function again
-and to what it expanded:
-
-```cpp
-std::string concat(const std::string&amp; first, const std::string&amp; second) {
-  return first + "-"s + second;
-}
-
-auto string = "clang" + "-"s + "expand";
-```
-
-This will compiles because the string literal just so happens to have a sneaky  `s` appended, which just so happens to turn that literal into a string and prevents us from summing up three pointers. Your code probably does't have sneaky `s`s at the end of literals, so `"clang" + "-" + "expand"` would not be valid. This could be solved by casting the arguments to the type of their respective argument (yielding `std::string("clang")`)
 
 ## Building
 
