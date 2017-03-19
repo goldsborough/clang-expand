@@ -192,15 +192,16 @@ void DefinitionRewriter::_rewriteMemberExpression(
     _rewriter.ReplaceText({start, end}, _call.base);
   }
 
-  // I've encountered cases where the exact same member will match twice,
+  // I've encountered cases where the exact same member will match twice.
 
   _rewrittenMembers.insert(&member);
 }
 
 void DefinitionRewriter::_rewriteNonTypeTemplateParameterExpression(
     const clang::SubstNonTypeTemplateParmExpr& nonType) {
-  const auto* integer =
-      llvm::dyn_cast<clang::IntegerLiteral>(nonType.getReplacement());
+  const auto* expression =
+      nonType.getReplacement()->IgnoreImplicit()->IgnoreCasts();
+  const auto* integer = llvm::dyn_cast<clang::IntegerLiteral>(expression);
   if (!integer) return;
 
   const bool isUnsigned =

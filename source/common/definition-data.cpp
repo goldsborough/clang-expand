@@ -92,7 +92,6 @@ std::string withoutIndentation(std::string text) {
 
 /// Returns the fully processed rewritten text of a function body.
 std::string getRewrittenText(clang::Stmt* body,
-   clang::FunctionDecl* function,
                              const Query& query,
                              clang::ASTContext& context,
                              clang::Rewriter& rewriter) {
@@ -101,8 +100,7 @@ std::string getRewrittenText(clang::Stmt* body,
   assert(query.call && "Should have call data when rewriting the definition");
 
   DefinitionRewriter definitionRewriter(rewriter, map, *query.call, context);
-  // definitionRewriter.TraverseStmt(body);
-  definitionRewriter.TraverseDecl(function);
+  definitionRewriter.TraverseStmt(body);
 
   bool shouldDeclare = false;
   if (query.call->assignee) {
@@ -146,7 +144,7 @@ DefinitionData DefinitionData::Collect(const clang::FunctionDecl& function,
 
   std::string rewritten;
   if (query.options.wantsRewritten) {
-    rewritten = getRewrittenText(body, const_cast<clang::FunctionDecl*>(&function), query, context, rewriter);
+    rewritten = getRewrittenText(body, query, context, rewriter);
   }
 
   return {std::move(location), std::move(original), std::move(rewritten)};
