@@ -206,6 +206,29 @@ double pi_if_a_greater_b(double a, double b) {                        &nbsp;
 </tr>
 </table>
 
+6. clang-expand not only performs substitution for function parameters, it can also substitute type and non-type template parameters! Voilà:
+
+<table>
+<tr><th colspan="2">Given</th></tr>
+<tr valign="top"><td colspan="2"><sub><pre lang="cpp">
+template &lt;typename Explicit, unsigned number, typename Deduced&gt;
+auto my_template(Deduced deduced) {
+  using Alias = Explicit;
+  return deduced + static_cast&lt;Alias&gt;(number);
+}
+</pre></sub></td></tr>
+<tr><th>Unexpanded</th><th>Expanded</th></tr>
+<tr valign="top">
+<td><sub><pre lang="cpp">
+my_template&lt;float, 24&gt;(10);                                 &nbsp;
+</pre></sub></td>
+<td><sub><pre lang="cpp">
+using Alias = float;
+return 10 + static_cast&lt;Alias&gt;(24);                         &nbsp;
+</pre></sub></td>
+</tr>
+</table>
+
 ## Usage
 
 clang-expand is implemented as a command-line tool targeted at building editor integrations. The tool itself has the following help text (excerpt):
