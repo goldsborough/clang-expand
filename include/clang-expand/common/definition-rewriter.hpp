@@ -38,6 +38,7 @@ struct CallData;
 class DefinitionRewriter
     : public clang::RecursiveASTVisitor<DefinitionRewriter> {
  public:
+  using super = clang::RecursiveASTVisitor<DefinitionRewriter>;
   using ParameterMap = llvm::StringMap<std::string>;
 
   /// Constructor.
@@ -48,6 +49,10 @@ class DefinitionRewriter
 
   /// Traverses the body of a function to rewrite.
   bool VisitStmt(clang::Stmt* body);
+
+  /// Traversed `clang::TypeLoc`, which we use to replace type template
+  /// parameters.
+  bool VisitTypeLoc(clang::TypeLoc typeLocation);
 
   /// Rewrites all `return` statements to assignments, according to the stored
   /// `CallData`. `return` statement locations are stored during the traversal
@@ -70,8 +75,8 @@ class DefinitionRewriter
   /// Stores the location of a return statement for later use. Once all return
   /// locations have been collected like this, `rewriteReturnsToAssignments` can
   /// later be called to perform the actual replacements.
-  void
-  _recordReturn(const clang::ReturnStmt& returnStatement, const CallData& call);
+  void _recordReturn(const clang::ReturnStmt& returnStatement,
+                     const CallData& call);
 
   /// Replaces a single return location with the given text. The location should
   /// probably come out of `_returnLocations`.
@@ -83,6 +88,9 @@ class DefinitionRewriter
   /// reference to a field or method with the base of the function (e.g. the 'x'
   /// in `x.foo()`).
   void _rewriteMemberExpression(const clang::MemberExpr& member);
+
+  void _rewriteNonTypeTemplateParameterExpression(
+      const clang::SubstNonTypeTemplateParmExpr& nonType);
 
   /// A rewriter to mess with the source text.
   clang::Rewriter& _rewriter;

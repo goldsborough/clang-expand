@@ -69,6 +69,12 @@ DefinitionRewriter::DefinitionRewriter(clang::Rewriter& rewriter,
 }
 
 bool DefinitionRewriter::VisitStmt(clang::Stmt* statement) {
+  const auto* nonType =
+      llvm::dyn_cast<clang::SubstNonTypeTemplateParmExpr>(statement);
+  if (nonType) {
+    _rewriteNonTypeTemplateParameterExpression(*nonType);
+  }
+
   if (llvm::isa<clang::ReturnStmt>(statement)) {
     if (auto* rtn = llvm::dyn_cast<clang::ReturnStmt>(statement)) {
       _recordReturn(*rtn, _call);
@@ -97,6 +103,23 @@ bool DefinitionRewriter::VisitStmt(clang::Stmt* statement) {
     bool error = _rewriter.ReplaceText(reference->getSourceRange(), argument);
     assert(!error && "Error replacing text in definition");
   }
+
+  return true;
+}
+
+bool DefinitionRewriter::VisitTypeLoc(clang::TypeLoc typeLocation) {
+  const auto* templateType =
+      llvm::dyn_cast<clang::SubstTemplateTypeParmType>(typeLocation.getType());
+  if (!templateType) return true;
+
+  const auto original =
+      templateType->getReplacedParameter()->desugar().getAsString();
+  const auto start = typeLocation.getLocStart();
+  const auto end =
+      typeLocation.getLocStart().getLocWithOffset(original.length() - 1);
+
+  const auto replacement = templateType->getReplacementType().getAsString();
+  _rewriter.ReplaceText({start, end}, replacement);
 
   return true;
 }
@@ -145,7 +168,7 @@ void DefinitionRewriter::_rewriteReturn(const clang::SourceLocation& begin,
   static constexpr auto lengthOfTheWordReturn = 6;
 
   const auto end = begin.getLocWithOffset(lengthOfTheWordReturn);
-  bool error = _rewriter.ReplaceText({begin, end}, replacement);
+  const bool error = _rewriter.ReplaceText({begin, end}, replacement);
   assert(!error && "Error replacing return statement in definition");
 }
 
@@ -172,6 +195,22 @@ void DefinitionRewriter::_rewriteMemberExpression(
   // I've encountered cases where the exact same member will match twice,
 
   _rewrittenMembers.insert(&member);
+}
+
+void DefinitionRewriter::_rewriteNonTypeTemplateParameterExpression(
+    const clang::SubstNonTypeTemplateParmExpr& nonType) {
+  const auto* integer =
+      llvm::dyn_cast<clang::IntegerLiteral>(nonType.getReplacement());
+  if (!integer) return;
+
+  const bool isUnsigned =
+      nonType.getParameter()->getType().getTypePtr()->isUnsignedIntegerType();
+  const auto replacement =
+      integer->getValue().toString(10, /*Signed=*/!isUnsigned);
+
+  const auto range = nonType.getSourceRange();
+  const bool error = _rewriter.ReplaceText(range, replacement);
+  assert(!error && "Error replacing non-type template parameter expression");
 }
 
 }  // namespace ClangExpand

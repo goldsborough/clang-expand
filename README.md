@@ -13,7 +13,7 @@ I recently overheard the following conversation on my way to work, that may seem
 > __Gandalf__: It is important to refactor your code and keep functions concise and coherent.  
 > __Harry Potter__: Yeah, sure, but I hate having to jump around between files to get the full picture of what my code is doing. One function = one place to look.  
 > __Obi Wan Kenobi__: Use the force, Harry.  
-> __Gandalf__: He means *clang-expand* :sparkles:
+> __Batman__: He means *clang-expand* :sparkles:
 
 Inspired by Gandalf's words, I set out to find a solution to Harry's problem and
 built *clang-expand*. Point it at a function invocation in your source code and
@@ -25,15 +25,15 @@ and "expand" it into the current scope. *Expanding* means it will:
 function `f(int x)` that you call with `f(5)`, clang-expand will rewrite every
 occurrence of `x` inside `f` to `5`. Note that since clang-expand uses clang, it
 actually understands C++ and knows what occurrences of `x` are parameter
-references and what aren't.
+references and what aren't. Default arguments are replaced as well.
 
 <p align="center">
 <table align="center">
 <tr><th colspan="2">Given</th></tr>
 <tr valign="top"><td colspan="2"><sub><pre lang="cpp">
 template&lt;typename Range&gt;
-void magic(Range& range) {
-  auto iterator = std::find(range.begin(), range.end(), 42);
+void magic(Range& range, int meaning_of_life = 42) {
+  auto iterator = std::find(range.begin(), range.end(), meaning_of_life);
   if (iterator != range.end()) {
     range.erase(iterator);
     std::cout << "Successfully erased all meaning of life\n";
