@@ -120,12 +120,12 @@ if (flipCoin()) {
 <tr><th>Unexpanded</th><th>Expanded<sup><a href="#fn1">1</a></sup></th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-std::vector<int> my_vec;                                     &nbsp;
+std::vector<int> my_vec;                                      &nbsp;
 my_vec.emplace_back(42);
        ^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
-std::vector<int> my_vec;                                     &nbsp;
+std::vector<int> my_vec;                                      &nbsp;
 if (my_vec.__end_ < my_vec.__end_cap())
 {
     __RAII_IncreaseAnnotator __annotator(*this);
@@ -158,13 +158,13 @@ struct by_lightning {
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-by_lightning first{1};                                       &nbsp;
+by_lightning first{1};                                         &nbsp;
 by_lightning second{2};
 return first == second;
              ^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
-by_lightning first{1};                                       &nbsp;
+by_lightning first{1};                                        &nbsp;
 by_lightning second{2};
 return first.circuit == other.circuit;
 </pre></sub></td>
@@ -220,11 +220,12 @@ auto my_template(Deduced deduced) {
 <tr><th>Unexpanded</th><th>Expanded</th></tr>
 <tr valign="top">
 <td><sub><pre lang="cpp">
-my_template&lt;float, 24&gt;(10);                                 &nbsp;
+my_template&lt;float, 24&gt;(10);                                    &nbsp;
+^
 </pre></sub></td>
 <td><sub><pre lang="cpp">
 using Alias = float;
-return 10 + static_cast&lt;Alias&gt;(24);                         &nbsp;
+return 10 + static_cast&lt;Alias&gt;(24);                           &nbsp;
 </pre></sub></td>
 </tr>
 </table>
@@ -279,7 +280,7 @@ auto main() -> int {
 The following command would do the job:
 
 ```bash
-$ clang-expand main.cpp foo.cpp -line=2 -column=14 -- -I/path/to/include -std=c++14
+$ clang-expand main.cpp foo.cpp -line=3 -column=14 -- -I/path/to/include -std=c++14
 ```
 
 which will output:
@@ -346,7 +347,7 @@ flags are all set to `true`, i.e. all of these sections will be included. By
 setting them to `-<option>=false`, you can turn them off, however. For example:
 
 ```bash
-$ clang-expand main.cpp foo.cpp -line=2 -column=14 -declaration=false -definition=false -rewrite=false -- -I/path/to/include -std=c++14
+$ clang-expand main.cpp foo.cpp -line=3 -column=14 -declaration=false -definition=false -rewrite=false -- -I/path/to/include -std=c++14
 ```
 
 outputs only the call range:
@@ -391,10 +392,11 @@ syntactically correct code, this just simply is not always possible without
 impacting other features (such as readability of the expanded code). A simple
 example is when you have a function taking a parameter and you pass a variable
 called `x` as an argument. If `x` is already used for something else inside the
-function, there will be a collision. This can be detected in clang-expand, no
-problem, and solved by mangling the name somehow (e.g. appending `_expanded`).
-However, this reduces the readability of the produced expansion. This means
-clang-expand will generally not work well with recursive functions.
+function, there will be a collision. This can be detected in clang-expand -- no
+problem -- and solved by mangling the name somehow (e.g. appending `_expanded`).
+However, this reduces the readability of the produced expansion and is therefore 
+not done. Note that this means clang-expand will generally not work well with 
+recursive functions.
 
 The bottom line is that the produced code will not always be valid, but you'll
 most likely not care, since you probably just want to see what the code would
@@ -404,8 +406,9 @@ could be improved in the future.
 ## Building
 
 If you just want to use clang-expand, you can grab the executable from the
-[Release](mooh) page. If there is none that works on your system, you'll have to
-compile from source (please contribute that build back here, though).
+[Release](https://github.com/goldsborough/clang-expand/releases) page. 
+If there is none that works on your system, you'll have to compile from source 
+(please contribute that build back here, though).
 
 clang-expand uses CMake to build. It makes quite extensive use of C++17 features
 like `std::optional`, `if constexpr` and structured bindings, so you'll probably
@@ -420,7 +423,7 @@ Once you have all that, you can build with:
 
 ```bash
 $ mkdir build && cd build
-$ LLVM_PATH=/path/to/llvm/ cmake ..
+$ cmake -DLLVM_PATH=/path/to/llvm/ ..
 ```
 
 ## Documentation
