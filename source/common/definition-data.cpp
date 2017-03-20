@@ -19,10 +19,10 @@
 
 // LLVM includes
 #include <llvm/Support/Casting.h>
+#include <llvm/ADT/Optional.h>
 
 // Standard includes
 #include <cassert>
-#include <optional>
 #include <regex>
 #include <string>
 #include <type_traits>

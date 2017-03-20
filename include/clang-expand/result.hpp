@@ -7,12 +7,14 @@
 #include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/location.hpp"
 
+// LLVM includes
+#include <llvm/ADT/Optional.h>
+
 // Third party includes
 #include <third-party/json.hpp>
 
 // Standard includes
 #include <iosfwd>
-#include <optional>
 
 namespace llvm {
 class raw_ostream;
@@ -38,13 +40,13 @@ struct Result {
   /// The range of the entire function call.
   ///
   /// This is the range that has to be replaced when expanding the tall.
-  std::optional<Range> callRange;
+  llvm::Optional<Range> callRange;
 
   /// The declaration data of the call.
-  std::optional<DeclarationData> declaration;
+  llvm::Optional<DeclarationData> declaration;
 
   /// The definition data of the call.
-  std::optional<DefinitionData> definition;
+  llvm::Optional<DefinitionData> definition;
 };
 }  // namespace ClangExpand
 

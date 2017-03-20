@@ -5,8 +5,10 @@
 #include "clang-expand/common/assignee-data.hpp"
 #include "clang-expand/common/range.hpp"
 
+// LLVM includes
+#include <llvm/ADT/Optional.h>
+
 // Standard includes
-#include <optional>
 #include <string>
 
 namespace ClangExpand {
@@ -32,7 +34,7 @@ struct CallData {
   /// of the variable as well as the assignment operator (we also refer to compound operators like
   /// `+=`
   /// to assignments in this case).
-  std::optional<AssigneeData> assignee;
+  llvm::Optional<AssigneeData> assignee;
 
   /// The source range of the entire call expression, from the first character of any variable
   /// declaration to the final semicolon. The semicolon is included in the range.

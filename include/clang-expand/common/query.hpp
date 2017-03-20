@@ -4,12 +4,11 @@
 // Project includes
 #include "clang-expand/common/call-data.hpp"
 #include "clang-expand/options.hpp"
-
 #include "clang-expand/common/declaration-data.hpp"
 #include "clang-expand/common/definition-data.hpp"
 
-// Standard includes
-#include <optional>
+// LLVM includes
+#include <llvm/ADT/Optional.h>
 
 namespace ClangExpand {
 
@@ -46,13 +45,13 @@ struct Query {
   }
 
   /// Possibly collected `CallData`.
-  std::optional<CallData> call;
+  llvm::Optional<CallData> call;
 
   /// Possibly collected `DeclarationData`.
-  std::optional<DeclarationData> declaration;
+  llvm::Optional<DeclarationData> declaration;
 
   /// Possibly collected `DefinitionData`.
-  std::optional<DefinitionData> definition;
+  llvm::Optional<DefinitionData> definition;
 
   /// The `Options` of the query (i.e. what information the user wants).
   const Options options;

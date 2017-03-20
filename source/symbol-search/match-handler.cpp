@@ -131,7 +131,7 @@ bool isMemberOperatorOverloadCall(const clang::CallExpr& call) {
 /// function parameters. Returns a null optinal if the call is not an operator
 /// overload, else the correct parameter map for the unary of binary operator
 /// overload.
-std::optional<ParameterMap>
+llvm::Optional<ParameterMap>
 tryMapParametersForOperatorOverloads(const clang::CallExpr& call,
                                      const clang::FunctionDecl& function,
                                      clang::ASTContext& context) {
@@ -268,7 +268,7 @@ std::string getTypeAsString(const clang::QualType& qualType,
 /// being called has at least one return statement that is not on the top level
 /// of the function (in which case an assignment for an expansion would be
 /// invalid).
-std::optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
+llvm::Optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
                                              clang::ASTContext& context,
                                              const clang::Expr& expression) {
   // Could be an IfStmt, a WhileStmt, a CallExpr etc. etc.
@@ -342,7 +342,7 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
 /// something we can handle (like a return statement or a variable declaration).
 /// If the maximum recursion ("walking-up") depth is reached, the operation
 /// fails. The depth value passed must initially not be zero.
-std::optional<CallData>
+llvm::Optional<CallData>
 collectCallDataFromContext(const clang::Expr& expression,
                            clang::ASTContext& context,
                            unsigned depth = 8) {
@@ -448,7 +448,7 @@ void decorateCallDataWithMemberBase(CallData& callData,
 
   const auto* constructor =
       result.Nodes.getNodeAs<clang::CXXConstructorDecl>("fn");
-  if (constructor && callData.assignee.has_value()) {
+  if (constructor && callData.assignee.hasValue()) {
     callData.base = callData.assignee->name + ".";
   }
 }
@@ -519,7 +519,10 @@ void MatchHandler::run(const MatchResult& result) {
   const auto* function = result.Nodes.getNodeAs<clang::FunctionDecl>("fn");
   assert(function && "Did not match required function declaration");
 
-  auto[callExpression, parameterMap] = inspectCall(*function, result);
+  const clang::Expr* callExpression;
+  ParameterMap parameterMap;
+
+  std::tie(callExpression, parameterMap) = inspectCall(*function, result);
 
   assert(callExpression &&
          "Matched neither function call nor constructor invocation");

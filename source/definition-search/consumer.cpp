@@ -8,8 +8,8 @@
 #include <clang/ASTMatchers/ASTMatchers.h>
 #include <clang/ASTMatchers/ASTMatchersInternal.h>
 
-// Standard includes
-#include <optional>
+// LLVM includes
+#include <llvm/ADT/Optional.h>
 
 namespace ClangExpand::DefinitionSearch {
 namespace {

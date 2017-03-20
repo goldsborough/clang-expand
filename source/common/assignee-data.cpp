@@ -4,10 +4,10 @@
 // LLVM includes
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
+#include <llvm/ADT/Optional.h>
 
 // Standard includes
 #include <cassert>
-#include <optional>
 #include <string>
 #include <type_traits>
 
@@ -45,12 +45,12 @@ AssigneeData AssigneeData::Builder::build() {
 }
 
 bool AssigneeData::isDefaultConstructible() const noexcept {
-  return !type.has_value() || type->isDefaultConstructible;
+  return !type.hasValue() || type->isDefaultConstructible;
 }
 
 std::string AssigneeData::toAssignment(bool withType) const {
   if (withType) {
-    assert(type.has_value() &&
+    assert(type.hasValue() &&
            "Requested assignee string with type, but have no type");
     return (llvm::Twine(type->name) + " " + name + " " + op).str();
   }
@@ -58,7 +58,7 @@ std::string AssigneeData::toAssignment(bool withType) const {
 }
 
 std::string AssigneeData::toDeclaration() const {
-  assert(type.has_value() &&
+  assert(type.hasValue() &&
          "Requested assignee declaration, but have no type");
   return (llvm::Twine(type->name) + " " + name + ";").str();
 }

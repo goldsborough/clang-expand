@@ -411,7 +411,7 @@ If there is none that works on your system, you'll have to compile from source
 (please contribute that build back here, though).
 
 clang-expand uses CMake to build. It makes quite extensive use of C++17 features
-like `std::optional`, `if constexpr` and structured bindings, so you'll probably
+like `llvm::Optional`, `if constexpr` and structured bindings, so you'll probably
 want to upgrade your compiler (you're welcome!). You will also need the full
 [llvm](https://github.com/llvm-mirror/llvm) and
 [clang](https://github.com/llvm-mirror/clang) source. Altogether, you'll have

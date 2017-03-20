@@ -2,7 +2,7 @@
 ## CMAKE SETUP
 ###########################################################
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.5)
 project(clang-expand)
 
 set(CMAKE_MODULE_PATH
@@ -59,15 +59,25 @@ set(CLANG_LIBS
 )
 
 find_package(LLVM REQUIRED)
-set(CMAKE_EXE_LINKER_FLAGS ${LLVM_LD_FLAGS_STRING})
 
+include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 include_directories(SYSTEM ${CLANG_INCLUDE_DIRS})
 
-# Also contains clang libraries
-link_directories(${LLVM_LIBRARY_DIRS})
+option(SYSTEM_LIBCXX OFF)
+if (LIBCXX_INCLUDE_DIRS AND NOT SYSTEM_LIBCXX)
+  message(STATUS "Using libcxx headers from ${LLVM_ROOT}/projects/libcxx")
+  include_directories(SYSTEM ${LIBCXX_INCLUDE_DIRS})
+endif()
 
 # Third Party
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Also contains clang libraries
+link_directories(${LLVM_LIBRARY_DIRS})
+set(CMAKE_EXE_LINKER_FLAGS
+    -Wl,-search_paths_first
+    -Wl,-headerpad_max_install_names)
+message(STATUS ${CMAKE_EXE_LINKER_FLAGS})
 
 ###########################################################
 ## COMPILER FLAGS
@@ -80,10 +90,14 @@ set(WARNINGS
     -Wdeprecated
     -Wunreachable-code)
 
-list(REMOVE_ITEM LLVM_CXX_FLAGS "-std=c++11" "-std=c++14" "-std=c++1z")
+list(REMOVE_ITEM LLVM_CXX_FLAGS
+                "-std=c++11"
+                "-std=c++1y"
+                "-std=c++14"
+                "-std=c++1z")
 list(REMOVE_ITEM LLVM_CXX_FLAGS "-DNDEBUG")
 
-set(EXTRA_FLAGS -g -Os -O2 -std=c++1z -DJSON_NOEXCEPTION)
+set(EXTRA_FLAGS -Os -static -std=c++14 -stdlib=libc++ -DJSON_NOEXCEPTION)
 set(ALL_FLAGS ${WARNINGS} ${LLVM_CXX_FLAGS} ${EXTRA_FLAGS})
 
 add_compile_options(${ALL_FLAGS})

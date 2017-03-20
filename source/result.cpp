@@ -9,16 +9,16 @@
 
 // LLVM includes
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/ADT/Optional.h>
 
 // Standard includes
 #include <cassert>
-#include <optional>
 #include <string>
 
 namespace ClangExpand {
 Result::Result(Query&& query) {
   if (query.options.wantsCall) {
-    assert(query.call.has_value() &&
+    assert(query.call.hasValue() &&
            "User wants call information, but have no call data.");
     callRange = query.call->extent;
   }
@@ -33,15 +33,15 @@ Result::Result(Query&& query) {
 nlohmann::json Result::toJson() const {
   nlohmann::json json;
 
-  if (callRange.has_value()) {
+  if (callRange.hasValue()) {
     json["call"] = callRange->toJson();
   }
 
-  if (declaration.has_value()) {
+  if (declaration.hasValue()) {
     json["declaration"] = declaration->toJson();
   }
 
-  if (definition.has_value()) {
+  if (definition.hasValue()) {
     json["definition"] = definition->toJson();
   }
 

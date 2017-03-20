@@ -12,10 +12,10 @@
 // LLVM includes
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Optional.h>
 
 // Standard includes
 #include <cstdlib>
-#include <optional>
 #include <string>
 #include <type_traits>
 

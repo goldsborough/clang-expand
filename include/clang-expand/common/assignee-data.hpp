@@ -4,9 +4,9 @@
 // LLVM includes
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Optional.h>
 
 // Standard includes
-#include <optional>
 #include <string>
 
 namespace ClangExpand {
@@ -99,7 +99,7 @@ class AssigneeData {
   /// representation) of
   /// the type and a boolean flag indicating whethert the type is default
   /// constructible.
-  std::optional<Type> type;
+  llvm::Optional<Type> type;
 };
 
 /// Helper class to build an `AssigneeData` structure.

@@ -13,6 +13,7 @@
 #include <clang/Rewrite/Core/Rewriter.h>
 
 // LLVM includes
+#include <llvm/ADT/Optional.h>
 #include <llvm/ADT/SmallPtrSet.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringMap.h>
@@ -20,7 +21,6 @@
 
 // Standard includes
 #include <cassert>
-#include <optional>
 #include <string>
 
 namespace ClangExpand {
@@ -125,7 +125,7 @@ bool DefinitionRewriter::VisitTypeLoc(clang::TypeLoc typeLocation) {
 }
 
 bool DefinitionRewriter::rewriteReturnsToAssignments(const clang::Stmt& body) {
-  assert(_call.assignee.has_value() &&
+  assert(_call.assignee.hasValue() &&
          "Cannot rewrite returns to assignments without an assignee");
   assert(!_returnLocations.empty() &&
          "Assigning to a function call that doesn't return?");
@@ -146,7 +146,7 @@ bool DefinitionRewriter::rewriteReturnsToAssignments(const clang::Stmt& body) {
 
 void DefinitionRewriter::_recordReturn(const clang::ReturnStmt& returnStatement,
                                        const CallData& call) {
-  if (!call.assignee.has_value()) return;
+  if (!call.assignee.hasValue()) return;
   if (!call.assignee->isDefaultConstructible()) {
     // If we already found a return statement on the top level of the function,
     // then die. This is a super-duper edge case when the code has two return
