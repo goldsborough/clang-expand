@@ -6,9 +6,9 @@
 # LLVM_BUILD:
 #     The LLVM build directory.
 # LLVM_BIN:
-#     The LLVM binaries directory.
+#     The LLVM binaries directories.
 # LLVM_INCLUDE_DIRS:
-#     The LLVM includes directory.
+#     The LLVM includes directories.
 # LLVM_LIBRARY_DIRS:
 #     The LLVM libraries directory.
 # LLVM_CXX_FLAGS:
@@ -19,12 +19,9 @@
 #     Like LLVM_LD_FLAGS, but as a string instead of list.
 # LLVM_LIBS:
 #     The list of all LLVM libraries to link.
+# LIBCXX_INCLUDE_DIRS:
+#     The include directory for libc++, if it exists.
 ################################################################################
-
-set(CLANG_ROOT "${LLVM_ROOT}/tools/clang")
-set(CLANG_INCLUDE_DIRS
-    ${CLANG_ROOT}/include
-    ${LLVM_BUILD}/tools/clang/include)
 
 option(VERBOSE_CONFIG off)
 
@@ -72,11 +69,12 @@ set(CLANG_ROOT "${LLVM_ROOT}/tools/clang")
 set(CLANG_INCLUDE_DIRS
     ${CLANG_ROOT}/include
     ${LLVM_BUILD}/tools/clang/include)
+set(LLVM_INCLUDE_DIRS
+    ${LLVM_INCLUDE_DIRS}
+    ${LLVM_BUILD}/include)
 
-option(SYSTEM_LIBCXX OFF)
-if (EXISTS "${LLVM_ROOT}/projects/libcxx" AND NOT SYSTEM_LIBCXX)
-  message(STATUS "Using libcxx headers from ${LLVM_ROOT}/projects/libcxx")
-  include_directories(SYSTEM "${LLVM_ROOT}/projects/libcxx/include")
+if (EXISTS "${LLVM_ROOT}/projects/libcxx")
+  set(LIBCXX_INCLUDE_DIRS "${LLVM_ROOT}/projects/libcxx/include")
 endif()
 
 string(REPLACE ";" " " LLVM_LD_FLAGS_STRING "${LLVM_LD_FLAGS}")
