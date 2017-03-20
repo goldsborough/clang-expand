@@ -63,26 +63,18 @@ find_package(LLVM REQUIRED)
 include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 include_directories(SYSTEM ${CLANG_INCLUDE_DIRS})
 
-option(SYSTEM_LIBCXX OFF)
-if (LIBCXX_INCLUDE_DIRS AND NOT SYSTEM_LIBCXX)
-  message(STATUS "Using libcxx headers from ${LLVM_ROOT}/projects/libcxx")
-  include_directories(SYSTEM ${LIBCXX_INCLUDE_DIRS})
-endif()
-
 # Third Party
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Also contains clang libraries
 link_directories(${LLVM_LIBRARY_DIRS})
-set(CMAKE_EXE_LINKER_FLAGS
-    -Wl,-search_paths_first
-    -Wl,-headerpad_max_install_names)
-message(STATUS ${CMAKE_EXE_LINKER_FLAGS})
+set(CMAKE_EXE_LINKER_FLAGS ${LLVM_LD_FLAGS_STRING})
 
 ###########################################################
 ## COMPILER FLAGS
 ###########################################################
 
+set(CXX_STANDARD_REQUIRED ON)
 set(WARNINGS
     -Wall
     -Wextra
@@ -91,13 +83,21 @@ set(WARNINGS
     -Wunreachable-code)
 
 list(REMOVE_ITEM LLVM_CXX_FLAGS
-                "-std=c++11"
-                "-std=c++1y"
-                "-std=c++14"
-                "-std=c++1z")
-list(REMOVE_ITEM LLVM_CXX_FLAGS "-DNDEBUG")
+                 ${LLVM_INCLUDE_DIRS} # Already included
+                 "-DNDEBUG"
+                 "-std=c++11"         # Want our own standard
+                 "-std=c++1y"
+                 "-std=c++14"
+                 "-stdlib=libc++")
 
-set(EXTRA_FLAGS -Os -static -std=c++14 -stdlib=libc++ -DJSON_NOEXCEPTION)
+if (NOT ${CMAKE_CXX_COMPILER} MATCHES "clang.*")
+  # These seem to be clang-specific
+  list(REMOVE_ITEM LLVM_CXX_FLAGS
+                   "-Wcovered-switch-default"
+                   "-Wstring-conversion")
+endif()
+
+set(EXTRA_FLAGS -Os -static -std=c++1z -DJSON_NOEXCEPTION)
 set(ALL_FLAGS ${WARNINGS} ${LLVM_CXX_FLAGS} ${EXTRA_FLAGS})
 
 add_compile_options(${ALL_FLAGS})

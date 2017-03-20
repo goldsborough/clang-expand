@@ -1,5 +1,6 @@
 // Project includes
 #include "clang-expand/common/definition-data.hpp"
+#include "clang-expand/common/assignee-data.hpp"
 #include "clang-expand/common/declaration-data.hpp"
 #include "clang-expand/common/definition-rewriter.hpp"
 #include "clang-expand/common/location.hpp"
@@ -18,8 +19,10 @@
 #include "clang-expand/options.hpp"
 
 // LLVM includes
-#include <llvm/Support/Casting.h>
 #include <llvm/ADT/Optional.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Twine.h>
+#include <llvm/Support/Casting.h>
 
 // Standard includes
 #include <cassert>

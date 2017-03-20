@@ -74,7 +74,8 @@ set(LLVM_INCLUDE_DIRS
     ${LLVM_BUILD}/include)
 
 if (EXISTS "${LLVM_ROOT}/projects/libcxx")
-  set(LIBCXX_INCLUDE_DIRS "${LLVM_ROOT}/projects/libcxx/include")
+  set(LLVM_LIBCXX_INCLUDE_DIRS "${LLVM_ROOT}/projects/libcxx/include")
+  message(STATUS "Found LLVM_LIBCXX_INCLUDE_DIRS: ${LLVM_LIBCXX_INCLUDE_DIRS}")
 endif()
 
 string(REPLACE ";" " " LLVM_LD_FLAGS_STRING "${LLVM_LD_FLAGS}")

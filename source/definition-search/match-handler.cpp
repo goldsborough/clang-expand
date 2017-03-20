@@ -1,5 +1,7 @@
 // Project includes
 #include "clang-expand/definition-search/match-handler.hpp"
+#include "clang-expand/common/context-data.hpp"
+#include "clang-expand/common/declaration-data.hpp"
 #include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/query.hpp"
 
@@ -11,12 +13,15 @@
 #include <clang/ASTMatchers/ASTMatchers.h>
 
 // LLVM includes
+#include <llvm/ADT/Optional.h>
+#include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Casting.h>
 
 // Standard includes
 #include <cassert>
 #include <string>
+#include <utility>
 
 namespace ClangExpand::DefinitionSearch {
 namespace {

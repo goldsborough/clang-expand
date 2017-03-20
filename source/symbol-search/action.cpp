@@ -1,12 +1,15 @@
 // Project includes
 #include "clang-expand/symbol-search/action.hpp"
+#include "clang-expand/common/offset.hpp"
 #include "clang-expand/common/query.hpp"
 #include "clang-expand/common/routines.hpp"
 #include "clang-expand/symbol-search/consumer.hpp"
 #include "clang-expand/symbol-search/macro-search.hpp"
 
 // Clang includes
+#include <clang/Basic/FileManager.h>
 #include <clang/Basic/SourceManager.h>
+#include <clang/Basic/TokenKinds.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Lex/Lexer.h>
 #include <clang/Lex/PPCallbacks.h>
@@ -14,12 +17,16 @@
 #include <clang/Lex/Token.h>
 
 // LLVM includes
+#include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/StringSet.h>
 #include <llvm/ADT/Twine.h>
 
 // Standard includes
+#include <cassert>
 #include <memory>
 #include <string>
+#include <utility>
+
 
 namespace ClangExpand::SymbolSearch {
 namespace {
@@ -73,8 +80,8 @@ bool verifyToken(const clang::Token& token) {
 }
 
 /// Attempts to get the `clang::FileID` for the target location.
-clang::FileID
-getFileID(const Location& targetLocation, clang::SourceManager& sourceManager) {
+clang::FileID getFileID(const Location& targetLocation,
+                        clang::SourceManager& sourceManager) {
   auto& fileManager = sourceManager.getFileManager();
   const auto* fileEntry = fileManager.getFile(targetLocation.filename);
   if (fileEntry == nullptr || !fileEntry->isValid()) {
@@ -175,8 +182,8 @@ bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
   return true;
 }
 
-Action::ASTConsumerPointer
-Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef) {
+Action::ASTConsumerPointer Action::CreateASTConsumer(clang::CompilerInstance&,
+                                                     llvm::StringRef) {
   return std::make_unique<Consumer>(_callLocation, _spelling, _query);
 }
 

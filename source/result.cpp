@@ -1,19 +1,19 @@
 // Project includes
 #include "clang-expand/result.hpp"
+#include "clang-expand/common/call-data.hpp"
 #include "clang-expand/common/definition-data.hpp"
-#include "clang-expand/common/location.hpp"
 #include "clang-expand/common/query.hpp"
+#include "clang-expand/options.hpp"
 
 // Third party includes
 #include <third-party/json.hpp>
 
 // LLVM includes
-#include <llvm/Support/raw_ostream.h>
 #include <llvm/ADT/Optional.h>
 
 // Standard includes
 #include <cassert>
-#include <string>
+#include <utility>
 
 namespace ClangExpand {
 Result::Result(Query&& query) {

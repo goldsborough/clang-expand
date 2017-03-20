@@ -1,5 +1,6 @@
 // Project includes
 #include "clang-expand/symbol-search/macro-search.hpp"
+#include "clang-expand/common/call-data.hpp"
 #include "clang-expand/common/definition-data.hpp"
 #include "clang-expand/common/location.hpp"
 #include "clang-expand/common/query.hpp"
@@ -19,6 +20,7 @@
 #include <clang/Rewrite/Core/Rewriter.h>
 
 // LLVM includes
+#include <llvm/ADT/Optional.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringMap.h>
 #include <llvm/ADT/StringRef.h>
@@ -27,9 +29,9 @@
 // System includes
 #include <cassert>
 #include <iterator>
-#include <optional>
 #include <string>
 #include <type_traits>
+
 
 namespace clang {
 class LangOptions;
@@ -153,9 +155,8 @@ std::string MacroSearch::_rewriteMacro(const clang::MacroInfo& info,
   return rewriter.getRewrittenText({start, end});
 }
 
-MacroSearch::ParameterMap
-MacroSearch::_createParameterMap(const clang::MacroInfo& info,
-                                 const clang::MacroArgs& arguments) {
+MacroSearch::ParameterMap MacroSearch::_createParameterMap(
+    const clang::MacroInfo& info, const clang::MacroArgs& arguments) {
   ParameterMap mapping;
   if (info.getNumArgs() == 0) return mapping;
 
@@ -172,7 +173,8 @@ MacroSearch::_createParameterMap(const clang::MacroInfo& info,
     llvm::SmallString<32> wholeArgument;
     while (numberOfTokens-- > 0) {
       clang::Token token;
-      [[maybe_unused]] bool ok = lexer.Lex(token);
+      bool ok = lexer.Lex(token);
+      (void)ok;
       assert(ok && "Error lexing token in macro invocation");
       wholeArgument += _getSpelling(token);
     }

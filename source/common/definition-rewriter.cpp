@@ -6,13 +6,17 @@
 
 // Clang includes
 #include <clang/AST/Decl.h>
+#include <clang/AST/DeclTemplate.h>
 #include <clang/AST/Expr.h>
 #include <clang/AST/ExprCXX.h>
 #include <clang/AST/Stmt.h>
+#include <clang/AST/Type.h>
+#include <clang/AST/TypeLoc.h>
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Rewrite/Core/Rewriter.h>
 
 // LLVM includes
+#include <llvm/ADT/APInt.h>
 #include <llvm/ADT/Optional.h>
 #include <llvm/ADT/SmallPtrSet.h>
 #include <llvm/ADT/SmallVector.h>
@@ -22,6 +26,7 @@
 // Standard includes
 #include <cassert>
 #include <string>
+
 
 namespace ClangExpand {
 namespace {
@@ -101,6 +106,7 @@ bool DefinitionRewriter::VisitStmt(clang::Stmt* statement) {
   if (iterator != _parameterMap.end()) {
     const auto& argument = iterator->getValue();
     bool error = _rewriter.ReplaceText(reference->getSourceRange(), argument);
+    (void)error;
     assert(!error && "Error replacing text in definition");
   }
 

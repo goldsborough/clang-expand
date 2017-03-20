@@ -8,6 +8,7 @@
 
 // Clang includes
 #include <clang/Tooling/CommonOptionsParser.h>
+#include <clang/Tooling/CompilationDatabase.h>
 
 // LLVM includes
 #include <llvm/ADT/StringRef.h>

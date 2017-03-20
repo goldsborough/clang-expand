@@ -27,6 +27,9 @@
 #include <clang/Lex/Lexer.h>
 
 // LLVM includes
+#include <clang/AST/PrettyPrinter.h>
+#include <llvm/ADT/None.h>
+#include <llvm/ADT/Optional.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
@@ -36,8 +39,8 @@
 #include <cassert>
 #include <iosfwd>
 #include <iterator>
-#include <optional>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -126,19 +129,27 @@ bool isMemberOperatorOverloadCall(const clang::CallExpr& call) {
          llvm::isa<clang::CXXMethodDecl>(call.getDirectCallee());
 }
 
+/// Required overload for `mapCallParameters()` to compile. See the `if
+/// constexpr` in `mapCallParameters` for how this could be avoided in C++17.
+template <
+    typename T,
+    typename = std::enable_if_t<!std::is_base_of<clang::CallExpr, T>::value>>
+bool isMemberOperatorOverloadCall(const T&) {
+  return false;
+}
+
 /// Attempts to perform the parameter mapping for member operator overloads,
 /// which are particularly tricky as they have fewer call arguments than
 /// function parameters. Returns a null optinal if the call is not an operator
 /// overload, else the correct parameter map for the unary of binary operator
 /// overload.
-llvm::Optional<ParameterMap>
-tryMapParametersForOperatorOverloads(const clang::CallExpr& call,
-                                     const clang::FunctionDecl& function,
-                                     clang::ASTContext& context) {
+ParameterMap
+mapParametersForOperatorOverloads(const clang::CallExpr& call,
+                                  const clang::FunctionDecl& function,
+                                  clang::ASTContext& context) {
   // If this is a binary member operator overload, the second argument is
   // the 'other' parameter of the function declaration (i.e. #params = 1,
   // #args = 2!).
-  if (!isMemberOperatorOverloadCall(call)) return std::nullopt;
 
   ParameterMap parameters;
   if (llvm::cast<clang::CXXOperatorCallExpr>(call).isInfixBinaryOp()) {
@@ -151,6 +162,13 @@ tryMapParametersForOperatorOverloads(const clang::CallExpr& call,
   return parameters;
 }
 
+/// Necessary overload for `mapCallParameters()` to compile. Not acually used,
+/// but cannot SFINAE away because no `if constexpr`.
+template <typename... Ts>
+auto mapParametersForOperatorOverloads(Ts&&...) {
+  return ParameterMap();
+}
+
 /// Returns a `ParameterMap`, mapping function parameter names (the variables in
 /// the declaration) to function call arguments (the expressions passed). The
 /// call can have either CallExpr or CXXConstructExpr type.
@@ -158,12 +176,11 @@ template <typename CallOrConstruction>
 ParameterMap mapCallParameters(const CallOrConstruction& call,
                                const clang::FunctionDecl& function,
                                clang::ASTContext& context) {
-  // clang-format off
-  if constexpr(std::is_base_of_v<clang::CallExpr, CallOrConstruction>) {
-    auto map = tryMapParametersForOperatorOverloads(call, function, context);
-    if (map) return *map;
+  // if constexpr(std::is_base_of_v<clang::CallExpr, CallOrConstruction>) {
+  if (isMemberOperatorOverloadCall(call)) {
+    return mapParametersForOperatorOverloads(call, function, context);
   }
-  // clang-format on
+  // }
 
   ParameterMap parameters;
   auto parameter = function.param_begin();
@@ -182,6 +199,15 @@ ParameterMap mapCallParameters(const CallOrConstruction& call,
   }
 
   return parameters;
+}
+
+/// Necessary overload for `parentAs()` to compile. See `if constexpr` inside
+/// `parentAs()` for how this can be avoided in C++17.
+template <
+    typename Node,
+    typename = std::enable_if_t<!std::is_base_of<clang::Expr, Node>::value>>
+bool isImplicitExpression(const Node&, const clang::Stmt&) {
+  return false;
 }
 
 /// Tests if the parent of a node is an implicit expression that should be
@@ -213,25 +239,27 @@ const T* parentAs(const Node& node, clang::ASTContext& context) {
   // ImplicitCastExpr. If that is the case, we recurse below and look one level
   // up. If not, then the parent is some other kind and simply is not of type T.
   // Note that the parent can only be an implicit expression if the node it
-  // wraps (i.e. the child) is an Expr, so we can SFINAE this right here.
-  if
-    constexpr(std::is_base_of_v<clang::Expr, Node>) {
-      if (const auto* parentStatement = parent->template get<clang::Expr>()) {
-        if (isImplicitExpression(node, *parentStatement)) {
-          return parentAs<T>(*parentStatement, context);
-        }
-      }
+  // wraps (i.e. the child) is an Expr.
+  // if constexpr(std::is_base_of_v<clang::Expr, Node>) {
+  if (const auto* parentStatement = parent->template get<clang::Expr>()) {
+    if (isImplicitExpression(node, *parentStatement)) {
+      return parentAs<T>(*parentStatement, context);
     }
+  }
+  // }
 
   // Parent is not the right type.
   return nullptr;
 }
 
-/// Finds out if a variable declaration is nested inside some statement where we
-/// don't want to expand the initializing function call. This it the case for if
+/// Finds out if a variable declaration is nested inside some statement where
+/// we
+/// don't want to expand the initializing function call. This it the case for
+/// if
 /// clauses (`if (int x = f())`) or for loop initializers, for example. Note
 /// that this function actually attempts to determine the opposite, i.e. it
-/// returns false if the variable is global or in a compound statement and true
+/// returns false if the variable is global or in a compound statement and
+/// true
 /// in all other cases.
 bool isNestedInsideSomeOtherStatement(const clang::VarDecl& variable,
                                       clang::ASTContext& context) {
@@ -260,20 +288,24 @@ std::string getTypeAsString(const clang::QualType& qualType,
   return qualType.getAsString(policy);
 }
 
-/// For the case that the surrounding context of the function call is a variable
-/// declaration (e.g. in `int x = f(5);`), this function handles such a call. It
-/// makes sure this declaration is not in some bad location, e.g. inside an `if`
+/// For the case that the surrounding context of the function call is a
+/// variable
+/// declaration (e.g. in `int x = f(5);`), this function handles such a call.
+/// It
+/// makes sure this declaration is not in some bad location, e.g. inside an
+/// `if`
 /// clause. It also figures out if the assigned variable's type is
 /// default-constructible, which is important in the case that the function
-/// being called has at least one return statement that is not on the top level
+/// being called has at least one return statement that is not on the top
+/// level
 /// of the function (in which case an assignment for an expansion would be
 /// invalid).
 llvm::Optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
-                                             clang::ASTContext& context,
-                                             const clang::Expr& expression) {
+                                              clang::ASTContext& context,
+                                              const clang::Expr& expression) {
   // Could be an IfStmt, a WhileStmt, a CallExpr etc. etc.
   if (isNestedInsideSomeOtherStatement(variable, context)) {
-    return std::nullopt;
+    return llvm::None;
   }
 
   const auto qualType = variable.getType().getCanonicalType();
@@ -287,7 +319,7 @@ llvm::Optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
   const auto* type = qualType.getTypePtr();
   if (qualType.isConstQualified() || type->isReferenceType()) {
     assignee.type->isDefaultConstructible = false;
-  } else if (const auto* record = type->getAsCXXRecordDecl(); record) {
+  } else if (const auto* record = type->getAsCXXRecordDecl()) {
     if (!record->hasDefaultConstructor()) {
       assignee.type->isDefaultConstructible = false;
     }
@@ -299,7 +331,8 @@ llvm::Optional<CallData> handleCallForVarDecl(const clang::VarDecl& variable,
 
 /// If we determined that the surrounding context of the function call has a
 /// binary operator (like an assignment or compound operation, e.g. +=), then
-/// this function takes care of handling that call and collecting relevant data.
+/// this function takes care of handling that call and collecting relevant
+/// data.
 CallData
 handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
                             clang::ASTContext& context,
@@ -322,7 +355,8 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
     name = declRefExpr->getDecl()->getName();
   } else {
     // This may be a member expression, a function call or something else. But
-    // since it's not a declaration, we can be quite safe to plop this into each
+    // since it's not a declaration, we can be quite safe to plop this into
+    // each
     // return statement.
     name = Routines::getSourceText(lhs->getSourceRange(), context);
   }
@@ -339,7 +373,8 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
 
 /// Attempts to obtain `CallData` from the surroundings (context) of an
 /// expression by walking up the AST a certain number of levels until it finds
-/// something we can handle (like a return statement or a variable declaration).
+/// something we can handle (like a return statement or a variable
+/// declaration).
 /// If the maximum recursion ("walking-up") depth is reached, the operation
 /// fails. The depth value passed must initially not be zero.
 llvm::Optional<CallData>
@@ -375,7 +410,7 @@ collectCallDataFromContext(const clang::Expr& expression,
   }
 
   // Found no call :(
-  return {};
+  return llvm::None;
 }
 
 /// Obtains the most accurate location of the function/method/constructor
@@ -388,7 +423,8 @@ clang::SourceLocation getCallLocation(const MatchHandler::MatchResult& result) {
   if (const auto* memberCall =
           result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("call")) {
     if (memberCall->getMethodDecl()->isOverloadedOperator()) {
-      // Since we only lex one token in the action (we have very primitive tools
+      // Since we only lex one token in the action (we have very primitive
+      // tools
       // down there), non-infix operator calls have to be recognized by the
       // location of the operator token (e.g. '<<' or '~' or '=') and not the
       // actual function, which begins at the 'operator' token.
