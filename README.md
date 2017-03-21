@@ -426,6 +426,8 @@ $ mkdir build && cd build
 $ cmake -DLLVM_PATH=/path/to/llvm/ ..
 ```
 
+On Windows, you'll want to use cmake-gui and let it generate a solution for Visual Studio 2017 (make sure llvm-config is either in the PATH or set the variable manually). Depending on how you've built llvm you could have to add "mincore.lib" as an additional library dependency to the clang-generate project to fix some undefined external symbols.
+
 ## Documentation
 
 clang-expand has very extensive in-source documentation which can be generated
