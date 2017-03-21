@@ -176,6 +176,7 @@ void DefinitionRewriter::_rewriteReturn(const clang::SourceLocation& begin,
   const auto end = begin.getLocWithOffset(lengthOfTheWordReturn);
   const bool error = _rewriter.ReplaceText({begin, end}, replacement);
   assert(!error && "Error replacing return statement in definition");
+  (void)error;
 }
 
 void DefinitionRewriter::_rewriteMemberExpression(
@@ -218,6 +219,7 @@ void DefinitionRewriter::_rewriteNonTypeTemplateParameterExpression(
   const auto range = nonType.getSourceRange();
   const bool error = _rewriter.ReplaceText(range, replacement);
   assert(!error && "Error replacing non-type template parameter expression");
+  (void)error;
 }
 
 }  // namespace ClangExpand

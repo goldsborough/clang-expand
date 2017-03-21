@@ -47,8 +47,10 @@ std::string makeAbsolute(const std::string& filename) {
   llvm::SmallString<256> absolutePath(filename);
   const auto failure = llvm::sys::path::remove_dots(absolutePath, true);
   assert(!failure && "Error cleaning path before making it absolute");
+  (void)failure;
   const auto error = llvm::sys::fs::make_absolute(absolutePath);
   assert(!error && "Error generating absolute path");
+  (void)error;
   return absolutePath.str();
 }
 

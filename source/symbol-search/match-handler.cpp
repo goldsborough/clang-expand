@@ -269,6 +269,7 @@ bool isNestedInsideSomeOtherStatement(const clang::VarDecl& variable,
 
   if (auto parent = parentAs<clang::DeclStmt>(variable, context)) {
     if (auto grandparent = parentAs<clang::CompoundStmt>(*parent, context)) {
+      (void)grandparent;
       return false;
     }
   }
