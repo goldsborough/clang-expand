@@ -49,14 +49,14 @@ set(CLANG_LIBS
   clangEdit
   clangRewrite
   clangRewriteFrontend
-  clangStaticAnalyzerFrontend
-  clangStaticAnalyzerCheckers
-  clangStaticAnalyzerCore
   clangSerialization
-  clangToolingCore
   clangTooling
-  clangFormat
+  clangToolingCore
 )
+
+if (NOT CMAKE_HOST_APPLE)
+  set(CLANG_LIBS -Wl,--start-group ${CLANG_LIBS} -Wl,--end-group)
+endif()
 
 find_package(LLVM REQUIRED)
 
@@ -97,7 +97,7 @@ if (NOT ${CMAKE_CXX_COMPILER} MATCHES "clang.*")
                    "-Wstring-conversion")
 endif()
 
-set(EXTRA_FLAGS -Os -static -std=c++1z -DJSON_NOEXCEPTION)
+set(EXTRA_FLAGS -Os -std=c++1z -DJSON_NOEXCEPTION)
 set(ALL_FLAGS ${WARNINGS} ${LLVM_CXX_FLAGS} ${EXTRA_FLAGS})
 
 add_compile_options(${ALL_FLAGS})
