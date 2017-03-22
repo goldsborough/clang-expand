@@ -23,7 +23,7 @@
 #include <string>
 #include <utility>
 
-namespace ClangExpand::DefinitionSearch {
+namespace ClangExpand { namespace DefinitionSearch {
 namespace {
 /// Compares a kind of `Context` with an expected `ContextData`. Their kind
 /// (namespace, class etc.) and name must match.
@@ -87,4 +87,5 @@ bool MatchHandler::_matchContexts(const clang::FunctionDecl& function) const
   return true;
 }
 
-}  // namespace ClangExpand::DefinitionSearch
+}  // namespace DefinitionSearch
+}  // namespace ClangExpand

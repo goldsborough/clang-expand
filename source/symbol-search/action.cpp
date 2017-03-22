@@ -28,7 +28,7 @@
 #include <utility>
 
 
-namespace ClangExpand::SymbolSearch {
+namespace ClangExpand { namespace SymbolSearch {
 namespace {
 
 /// Makes sure the token under the cursor is something we can handle.
@@ -192,4 +192,5 @@ void Action::_installMacroFacilities(clang::CompilerInstance& compiler) const {
   compiler.getPreprocessor().addPPCallbacks(std::move(hooks));
 }
 
-}  // namespace ClangExpand::SymbolSearch
+}  // namespace SymbolSearch
+}  // namespace ClangExpand

@@ -12,7 +12,7 @@ namespace ClangExpand {
 struct Query;
 }
 
-namespace ClangExpand::DefinitionSearch {
+namespace ClangExpand { namespace DefinitionSearch {
 
 /// \ingroup DefinitionSearch
 ///
@@ -39,6 +39,7 @@ class ToolFactory : public clang::tooling::FrontendActionFactory {
   /// The ongoing `Query` object.
   Query& _query;
 };
-}  // namespace ClangExpand::DefinitionSearch
+}  // namespace DefinitionSearch
+}  // namespace ClangExpand
 
 #endif  // CLANG_EXPAND_DEFINITION_SEARCH_TOOL_FACTORY_HPP

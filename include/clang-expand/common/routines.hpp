@@ -2,7 +2,7 @@
 #define CLANG_EXPAND_COMMON_ROUTINES_HPP
 
 // Standard includes
-#include <iosfwd>
+#include <string>
 
 namespace clang {
 class SourceLocation;
@@ -16,7 +16,7 @@ namespace llvm {
 class Twine;
 }
 
-namespace ClangExpand::Routines {
+namespace ClangExpand { namespace Routines {
 
 /// Compares two source locations for equality in a way that actually works.
 ///
@@ -45,7 +45,8 @@ std::string makeAbsolute(const std::string& filename);
 /// taken as the result of calling `twine.str()`.
 [[noreturn]] void error(llvm::Twine&& twine);
 
-}  // namespace ClangExpand::Routines
+}  // namespace Routines
+}  // namespace ClangExpand
 
 
 #endif  // CLANG_EXPAND_COMMON_ROUTINES_HPP

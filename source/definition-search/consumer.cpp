@@ -11,7 +11,7 @@
 // LLVM includes
 #include <llvm/ADT/Optional.h>
 
-namespace ClangExpand::DefinitionSearch {
+namespace ClangExpand { namespace DefinitionSearch {
 namespace {
 
 /// Creates an ASTMatcher expression matching on functions that have a
@@ -32,4 +32,5 @@ void Consumer::HandleTranslationUnit(clang::ASTContext& context) {
   matchFinder.addMatcher(matcher, &_matchHandler);
   matchFinder.matchAST(context);
 }
-}  // namespace ClangExpand::DefinitionSearch
+}  // namespace DefinitionSearch
+}  // namespace ClangExpand

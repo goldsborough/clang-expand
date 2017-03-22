@@ -25,7 +25,7 @@ namespace ClangExpand {
 struct Query;
 }
 
-namespace ClangExpand::SymbolSearch {
+namespace ClangExpand { namespace SymbolSearch {
 
 /// \ingroup SymbolSearch
 ///
@@ -84,6 +84,7 @@ class Action : public clang::ASTFrontendAction {
   clang::SourceLocation _callLocation;
 };
 
-}  // namespace ClangExpand::SymbolSearch
+}  // namespace SymbolSearch
+}  // namespace ClangExpand
 
 #endif  // CLANG_EXPAND_SYMBOL_SEARCH_ACTION_HPP

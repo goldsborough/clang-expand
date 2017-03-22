@@ -34,7 +34,7 @@ namespace ClangExpand {
 struct Query;
 }  // namespace ClangExpand
 
-namespace ClangExpand::SymbolSearch {
+namespace ClangExpand { namespace SymbolSearch {
 
 /// Class responsible for inspecting macros during symbol search.
 ///
@@ -97,6 +97,7 @@ struct MacroSearch : public clang::PPCallbacks {
   Query& _query;
 };
 
-}  // namespace ClangExpand::SymbolSearch
+}  // namespace SymbolSearch
+}  // namespace ClangExpand
 
 #endif  // CLANG_EXPAND_SYMBOL_SEARCH_PREPROCESSOR_HOOKS_HPP

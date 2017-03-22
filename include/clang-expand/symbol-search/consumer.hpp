@@ -19,7 +19,7 @@ namespace ClangExpand {
 struct Query;
 }
 
-namespace ClangExpand::SymbolSearch {
+namespace ClangExpand { namespace SymbolSearch {
 
 /// \ingroup SymbolSearch
 ///
@@ -71,6 +71,7 @@ class Consumer : public clang::ASTConsumer {
   MatchHandler _matchHandler;
 };
 
-}  // namespace ClangExpand::SymbolSearch
+}  // namespace SymbolSearch
+}  // namespace ClangExpand
 
 #endif  // CLANG_EXPAND_SYMBOL_SEARCH_CONSUMER_HPP

@@ -81,7 +81,6 @@ list(REMOVE_ITEM LLVM_CXX_FLAGS
                  "-DNDEBUG"
                  "-std=c++11"         # Want our own standard
                  "-std=c++1y"
-                 "-std=c++14"
                  "-stdlib=libc++")
 
 if (NOT ${CMAKE_CXX_COMPILER} MATCHES "clang.*")
@@ -91,7 +90,7 @@ if (NOT ${CMAKE_CXX_COMPILER} MATCHES "clang.*")
                    "-Wstring-conversion")
 endif()
 
-set(EXTRA_FLAGS -Os -std=c++1z -DJSON_NOEXCEPTION)
+set(EXTRA_FLAGS -Os -std=c++14 -DJSON_NOEXCEPTION)
 set(ALL_FLAGS ${WARNINGS} ${LLVM_CXX_FLAGS} ${EXTRA_FLAGS})
 
 add_compile_options(${ALL_FLAGS})

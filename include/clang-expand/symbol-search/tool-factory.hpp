@@ -10,7 +10,7 @@ struct Query;
 struct Location;
 }
 
-namespace ClangExpand::SymbolSearch {
+namespace ClangExpand { namespace SymbolSearch {
 
 /// \ingroup SymbolSearch
 ///
@@ -35,6 +35,7 @@ class ToolFactory : public clang::tooling::FrontendActionFactory {
   /// The newly created `Query` object.
   Query& _query;
 };
-}  // namespace ClangExpand::SymbolSearch
+}  // namespace SymbolSearch
+}  // namespace ClangExpand
 
 #endif  // CLANG_EXPAND_SYMBOL_SEARCH_TOOL_FACTORY_HPP

@@ -44,7 +44,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace ClangExpand::SymbolSearch {
+namespace ClangExpand { namespace SymbolSearch {
 namespace {
 using ParameterMap = DeclarationData::ParameterMap;
 
@@ -585,4 +585,5 @@ void MatchHandler::run(const MatchResult& result) {
   }
 }
 
-}  // namespace ClangExpand::SymbolSearch
+}  // namespace SymbolSearch
+}  // namespace ClangExpand

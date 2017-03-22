@@ -12,7 +12,7 @@ namespace ClangExpand {
 struct Query;
 }
 
-namespace ClangExpand::SymbolSearch {
+namespace ClangExpand { namespace SymbolSearch {
 
 /// \ingroup SymbolSearch
 ///
@@ -51,6 +51,7 @@ class MatchHandler : public clang::ast_matchers::MatchFinder::MatchCallback {
   Query& _query;
 };
 
-}  // namespace ClangExpand::SymbolSearch
+}  // namespace SymbolSearch
+}  // namespace ClangExpand
 
 #endif  // CLANG_EXPAND_SYMBOL_SEARCH_MATCH_HANDLER_HPP

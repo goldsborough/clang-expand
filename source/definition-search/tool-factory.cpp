@@ -9,7 +9,7 @@
 // Standard includes
 #include <string>
 
-namespace ClangExpand::DefinitionSearch {
+namespace ClangExpand { namespace DefinitionSearch {
 ToolFactory::ToolFactory(const std::string& declarationFile, Query& query)
 : _declarationFile(declarationFile), _query(query) {
 }
@@ -18,4 +18,5 @@ clang::FrontendAction* ToolFactory::create() {
   return new DefinitionSearch::Action(_declarationFile, _query);
 }
 
-}  // namespace ClangExpand::DefinitionSearch
+}  // namespace DefinitionSearch
+}  // namespace ClangExpand

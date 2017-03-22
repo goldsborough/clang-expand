@@ -9,7 +9,7 @@
 // Standard includes
 #include <string>
 
-namespace ClangExpand::DefinitionSearch {
+namespace ClangExpand { namespace DefinitionSearch {
 Action::Action(const std::string& declarationFile, Query& query)
 : _declarationFile(Routines::makeAbsolute(declarationFile)), _query(query) {
 }
@@ -21,4 +21,5 @@ Action::CreateASTConsumer(clang::CompilerInstance&, llvm::StringRef filename) {
   return std::make_unique<Consumer>(_query);
 }
 
-}  // namespace ClangExpand::DefinitionSearch
+}  // namespace DefinitionSearch
+}  // namespace ClangExpand

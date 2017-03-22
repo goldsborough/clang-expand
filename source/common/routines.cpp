@@ -21,7 +21,7 @@
 #include <string>
 #include <system_error>
 
-namespace ClangExpand::Routines {
+namespace ClangExpand { namespace Routines {
 bool locationsAreEqual(const clang::SourceLocation& first,
                        const clang::SourceLocation& second,
                        const clang::SourceManager& sourceManager) {
@@ -64,4 +64,5 @@ void error(llvm::Twine&& twine) {
   std::exit(EXIT_FAILURE);
 }
 
-}  // namespace ClangExpand::Routines
+}  // namespace Routines
+}  // namespace ClangExpand

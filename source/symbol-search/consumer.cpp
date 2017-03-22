@@ -9,7 +9,7 @@
 // Standard includes
 #include <string>
 
-namespace ClangExpand::SymbolSearch {
+namespace ClangExpand { namespace SymbolSearch {
 namespace {
 /// Creates an ASTMatcher matching function or method call expressions as well
 /// as constructor invocations.
@@ -50,4 +50,5 @@ void Consumer::HandleTranslationUnit(clang::ASTContext& context) {
   matchFinder.matchAST(context);
 }
 
-}  // namespace ClangExpand::SymbolSearch
+}  // namespace SymbolSearch
+}  // namespace ClangExpand

@@ -6,7 +6,7 @@
 // Clang includes
 #include <clang/Frontend/FrontendAction.h>
 
-namespace ClangExpand::SymbolSearch {
+namespace ClangExpand { namespace SymbolSearch {
 ToolFactory::ToolFactory(const Location& targetLocation, Query& query)
 : _targetLocation(targetLocation), _query(query) {
 }
@@ -15,4 +15,5 @@ clang::FrontendAction* ToolFactory::create() {
   return new SymbolSearch::Action(_targetLocation, _query);
 }
 
-}  // namespace ClangExpand::SymbolSearch
+}  // namespace SymbolSearch
+}  // namespace ClangExpand

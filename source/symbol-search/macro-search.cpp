@@ -37,7 +37,7 @@ namespace clang {
 class LangOptions;
 }
 
-namespace ClangExpand::SymbolSearch {
+namespace ClangExpand { namespace SymbolSearch {
 namespace {
 
 /// Gets the raw source text of a macro definition.
@@ -190,4 +190,5 @@ std::string MacroSearch::_getSpelling(const clang::Token& token) const {
   return clang::Lexer::getSpelling(token, _sourceManager, _languageOptions);
 }
 
-}  // namespace ClangExpand::SymbolSearch
+}  // namespace SymbolSearch
+}  // namespace ClangExpand
