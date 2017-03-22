@@ -428,21 +428,27 @@ $ cmake -DLLVM_PATH=/path/to/llvm/ -DVERBOSE_CONFIG=on ..
 We provide Dockerfiles for Debian, Ubuntu, Fedora and OpenSUSE based images that, once built, have LLVM and clang libraries installed and compiled and contain build scripts to compile the project inside the Docker containers. While this is mainly to make it easier to create reproducible, fast and isolated releases of clang-expand on each of these distributions, these containers may actually be the easiest way for you to compile the project and make changes to it. To build a single container, run something like:
 
 ```sh
-$ docker build --compress --memory 2G --tag clang-expand:os --file docker/os.Dockerfile .
+$ docker build --compress --memory 2G --tag clang-expand:<os> --file docker/<os>.Dockerfile .
 ```
 
-where `os` is in `{ubuntu, debian, fedora, opensuse}`. To then build the project inside the container, you can run:
+where `os` is in `{ubuntu, debian, fedora, opensuse}`. You can also pull the image from the [Docker Cloud](http://cloud.docker.com/app/goldsborough/repository/docker/goldsborough/clang-expand/):
 
 ```sh
-$ docker run -v build:/home/build -v llvm-build:/llvm/build -v $PWD:/home/project -v $PWD/bin:/home/build/bin -it clang-expand:os ./build.sh os
+$ docker pull goldsborough/clang-expand:latest-<os>
+```
+
+To then build the project inside the container, you can run:
+
+```sh
+$ docker run -v build:/home/build -v llvm-build:/llvm/build -v $PWD:/home/project -v $PWD/bin:/home/build/bin -it clang-expand:os ./build.sh <os>
 ```
 
 where `os` is again one of the above. To explain the volumes we are mounting here:
 
 1. The named volume `build` is where the project will be built with cmake,
 2. The named volume `llvm-build` is where LLVM and clang will be built with cmake,
-3. $PWD:/home/clang-expand mounts your local clang-expand directory under /home,
-4. $PWD/bin:/home/build/bin is where all the binaries go. Mount it to the host if you want to keep the binaries.
+3. `$PWD:/home/clang-expand` mounts your local clang-expand directory under /home,
+4. `$PWD/bin:/home/build/bin` is where all the binaries go. Mount it to the host if you want to keep the binaries.
 
 You can also just run `docker-compose up` (provided you have `docker-compose` installed) from the project root to build clang-expand on all distributions. Our CMake also has a docker target, so `make docker` does the same as `docker-compose up`. 
 
