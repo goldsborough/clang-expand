@@ -2,8 +2,8 @@ FROM opensuse
 MAINTAINER <peter@goldsborough.me>
 
 # Install packages.
-RUN dnf update  -y \
- && dnf install -y git cmake vim make clang-3.8
+RUN zypper refresh \
+ && zypper install -n git cmake vim make llvm-clang
 
 # Grab LLVM and clang.
 RUN git clone --progress --verbose \
