@@ -407,26 +407,48 @@ could be improved in the future.
 
 If you just want to use clang-expand, you can grab the executable from the
 [Release](https://github.com/goldsborough/clang-expand/releases) page. 
-If there is none that works on your system, you'll have to compile from source 
-(please contribute that build back here, though).
 
-clang-expand uses CMake to build. It makes quite extensive use of C++17 features
-like `llvm::Optional`, `if constexpr` and structured bindings, so you'll probably
-want to upgrade your compiler (you're welcome!). You will also need the full
-[llvm](https://github.com/llvm-mirror/llvm) and
-[clang](https://github.com/llvm-mirror/clang) source. Altogether, you'll have
-the least rough ride if you compile clang, llvm and
-[libc++]((https://github.com/llvm-mirror/libcxx) from source and then compile
-clang-expand with the resulting clang++ compiler.
+To build from source, clang-expand uses CMake and requires a C++14-capable compiler. 
+It also depends on the full [LLVM](https://github.com/llvm-mirror/llvm) and
+[clang](https://github.com/llvm-mirror/clang) source, so you will need to download
+those, as explained [here](http://llvm.org/docs/GettingStarted.html#for-developers-to-work-with-a-git-monorepo).
+If you're a good person, you'll compile a tool that starts with the word "clang" with the aptly
+named compiler. However, we do have support for evil folks. Just make sure you compile
+the llvm and clang libraries with the same compiler and standard library as you do clang-expand.
 
 Once you have all that, you can build with:
 
 ```bash
 $ mkdir build && cd build
-$ cmake -DLLVM_PATH=/path/to/llvm/ ..
+$ cmake -DLLVM_PATH=/path/to/llvm/ -DVERBOSE_CONFIG=on ..
 ```
 
-On Windows, you'll want to use cmake-gui and let it generate a solution for Visual Studio 2017 (make sure llvm-config is either in the PATH or set the variable manually). Depending on how you've built llvm you could have to add "mincore.lib" as an additional library dependency to the clang-generate project to fix some undefined external symbols.
+### Docker
+
+We provide Dockerfiles for Debian, Ubuntu, Fedora and OpenSUSE based images that, once built, have LLVM and clang libraries installed and compiled and contain build scripts to compile the project inside the Docker containers. While this is mainly to make it easier to create reproducible, fast and isolated releases of clang-expand on each of these distributions, these containers may actually be the easiest way for you to compile the project and make changes to it. To build a single container, run something like:
+
+```sh
+$ docker build --compress --memory 2G --tag clang-expand:os --file docker/os.Dockerfile .
+```
+
+where `os` is in `{ubuntu, debian, fedora, opensuse}`. To then build the project inside the container, you can run:
+
+```sh
+$ docker run -v build:/home/build -v llvm-build:/llvm/build -v $PWD:/home/project -v $PWD/bin:/home/build/bin -it clang-expand:os ./build.sh os
+```
+
+where `os` is again one of the above. To explain the volumes we are mounting here:
+
+1. The named volume `build` is where the project will be built with cmake,
+2. The named volume `llvm-build` is where LLVM and clang will be built with cmake,
+3. $PWD:/home/clang-expand mounts your local clang-expand directory under /home,
+4. $PWD/bin:/home/build/bin is where all the binaries go. Mount it to the host if you want to keep the binaries.
+
+You can also just run `docker-compose up` (provided you have `docker-compose` installed) from the project root to build clang-expand on all distributions. Our CMake also has a docker target, so `make docker` does the same as `docker-compose up`. 
+
+### Windows
+
+On Windows, you'll want to use cmake-gui and let it generate a solution for Visual Studio 2017 (make sure `llvm-config` is either in the `PATH` or set the variable manually). Depending on how you've built LLVM you could have to add `mincore.lib` as an additional library dependency to the clang-generate project to fix some undefined external symbols.
 
 ## Documentation
 
