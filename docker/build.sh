@@ -2,7 +2,7 @@
 
 # If the LLVM build folder doesn't exist yet, create it.
 if [[ ! -d /llvm/build ]]; then
-  echo 'Creating /llvm/build folder'
+  echo '===---------- Creating /llvm/build folder ----------==='
   mkdir /llvm/build
 fi
 
@@ -15,7 +15,7 @@ else
 fi
 
 # If the folder is empty, build it.
-echo 'Building LLVM and clang ...'
+echo '===---------- Building LLVM and clang ... ----------==='
 cd /llvm/build
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_ENABLE_ASSERTIONS=OFF \
@@ -26,12 +26,12 @@ cd -
 
 # If the project build folder doesn't exist yet, create it.
 if [[ ! -d /home/build ]]; then
-  echo 'Creating /build folder'
+  echo '===---------- Creating /build folder ----------==='
   mkdir /home/build
 fi
 
 # If the folder is empty, build it.
-echo 'Building project on $1 ...'
+echo '===---------- Building project on $1 ... ----------==='
 cd /home/build
 cmake -DLLVM_PATH=/llvm \
       -DCMAKE_BUILD_TYPE=Release \
