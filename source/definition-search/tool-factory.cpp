@@ -9,7 +9,8 @@
 // Standard includes
 #include <string>
 
-namespace ClangExpand { namespace DefinitionSearch {
+namespace ClangExpand {
+namespace DefinitionSearch {
 ToolFactory::ToolFactory(const std::string& declarationFile, Query& query)
 : _declarationFile(declarationFile), _query(query) {
 }

@@ -9,7 +9,8 @@
 // Standard includes
 #include <string>
 
-namespace ClangExpand { namespace SymbolSearch {
+namespace ClangExpand {
+namespace SymbolSearch {
 namespace {
 /// Creates an ASTMatcher matching function or method call expressions as well
 /// as constructor invocations.

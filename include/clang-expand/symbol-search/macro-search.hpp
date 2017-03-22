@@ -34,7 +34,8 @@ namespace ClangExpand {
 struct Query;
 }  // namespace ClangExpand
 
-namespace ClangExpand { namespace SymbolSearch {
+namespace ClangExpand {
+namespace SymbolSearch {
 
 /// Class responsible for inspecting macros during symbol search.
 ///
@@ -70,8 +71,8 @@ struct MacroSearch : public clang::PPCallbacks {
   /// Rewrites a function-macro contents using the arguments it was invoked
   /// with. This function identifies `#` and `##` stringification and
   /// concatenation operators and deals with them correctly.
-  std::string
-  _rewriteMacro(const clang::MacroInfo& info, const ParameterMap& mapping);
+  std::string _rewriteMacro(const clang::MacroInfo& info,
+                            const ParameterMap& mapping);
 
   /// Creates a mapping from parameter names to argument expressions.
   ParameterMap _createParameterMap(const clang::MacroInfo& info,

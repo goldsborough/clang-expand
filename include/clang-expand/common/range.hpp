@@ -15,9 +15,11 @@ class SourceRange;
 namespace ClangExpand {
 /// A range of source code, represented by a start and end offset.
 struct Range {
-  /// Constructs a range from a `clang::SourceRange` and `clang::SourceManager`, used to obtain the
+  /// Constructs a range from a `clang::SourceRange` and `clang::SourceManager`,
+  /// used to obtain the
   /// strat and end `Offset`s.
-  Range(const clang::SourceRange& range, const clang::SourceManager& sourceManager);
+  Range(const clang::SourceRange& range,
+        const clang::SourceManager& sourceManager);
 
   /// Constructor.
   Range(Offset begin_, Offset end_);

@@ -1,12 +1,13 @@
 // Project includes
 #include "clang-expand/symbol-search/tool-factory.hpp"
-#include "clang-expand/symbol-search/action.hpp"
 #include "clang-expand/common/query.hpp"
+#include "clang-expand/symbol-search/action.hpp"
 
 // Clang includes
 #include <clang/Frontend/FrontendAction.h>
 
-namespace ClangExpand { namespace SymbolSearch {
+namespace ClangExpand {
+namespace SymbolSearch {
 ToolFactory::ToolFactory(const Location& targetLocation, Query& query)
 : _targetLocation(targetLocation), _query(query) {
 }

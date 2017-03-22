@@ -2,9 +2,9 @@
 #define CLANG_EXPAND_COMMON_ASSIGNEE_DATA_HPP
 
 // LLVM includes
+#include <llvm/ADT/Optional.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
-#include <llvm/ADT/Optional.h>
 
 // Standard includes
 #include <string>
@@ -94,11 +94,9 @@ class AssigneeData {
   std::string name;
 
   /// If the assignment is a variable declaration and not just an assignment,
-  /// the type of the
-  /// variable being declared. The type is further split into the name (string
-  /// representation) of
-  /// the type and a boolean flag indicating whethert the type is default
-  /// constructible.
+  /// the type of the variable being declared. The type is further split into
+  /// the name (string representation) of the type and a boolean flag indicating
+  /// whethert the type is default constructible.
   llvm::Optional<Type> type;
 };
 
@@ -114,8 +112,8 @@ class AssigneeData::Builder {
   Builder& name(const llvm::StringRef& name);
 
   /// Sets the type information of the assignee.
-  Builder&
-  type(const llvm::StringRef& name, bool isDefaultConstructible = true);
+  Builder& type(const llvm::StringRef& name,
+                bool isDefaultConstructible = true);
 
   /// Sets the operator information of the assignee.
   Builder& op(const llvm::StringRef& op);

@@ -10,7 +10,8 @@ struct Query;
 struct Location;
 }
 
-namespace ClangExpand { namespace SymbolSearch {
+namespace ClangExpand {
+namespace SymbolSearch {
 
 /// \ingroup SymbolSearch
 ///

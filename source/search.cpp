@@ -11,8 +11,8 @@
 
 // LLVM includes
 #include <llvm/ADT/ArrayRef.h>
-#include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Optional.h>
+#include <llvm/ADT/StringRef.h>
 
 // Standard includes
 #include <cstdlib>

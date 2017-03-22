@@ -16,7 +16,8 @@ namespace llvm {
 class Twine;
 }
 
-namespace ClangExpand { namespace Routines {
+namespace ClangExpand {
+namespace Routines {
 
 /// Compares two source locations for equality in a way that actually works.
 ///
@@ -32,8 +33,8 @@ std::string getSourceText(const clang::SourceRange& range,
 
 /// Retrieves the raw source text within a range, as a string. Passes the source
 /// manager and language options from the `ASTContext` to the other overload.
-std::string
-getSourceText(const clang::SourceRange& range, clang::ASTContext& context);
+std::string getSourceText(const clang::SourceRange& range,
+                          clang::ASTContext& context);
 
 /// Turns a file path into an absolute file path.
 std::string makeAbsolute(const std::string& filename);

@@ -37,7 +37,8 @@ namespace clang {
 class LangOptions;
 }
 
-namespace ClangExpand { namespace SymbolSearch {
+namespace ClangExpand {
+namespace SymbolSearch {
 namespace {
 
 /// Gets the raw source text of a macro definition.

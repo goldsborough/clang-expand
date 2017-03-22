@@ -11,7 +11,8 @@
 // LLVM includes
 #include <llvm/ADT/Optional.h>
 
-namespace ClangExpand { namespace DefinitionSearch {
+namespace ClangExpand {
+namespace DefinitionSearch {
 namespace {
 
 /// Creates an ASTMatcher expression matching on functions that have a

@@ -25,7 +25,8 @@ namespace ClangExpand {
 struct Query;
 }
 
-namespace ClangExpand { namespace SymbolSearch {
+namespace ClangExpand {
+namespace SymbolSearch {
 
 /// \ingroup SymbolSearch
 ///

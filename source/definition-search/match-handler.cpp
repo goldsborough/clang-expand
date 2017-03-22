@@ -23,7 +23,8 @@
 #include <string>
 #include <utility>
 
-namespace ClangExpand { namespace DefinitionSearch {
+namespace ClangExpand {
+namespace DefinitionSearch {
 namespace {
 /// Compares a kind of `Context` with an expected `ContextData`. Their kind
 /// (namespace, class etc.) and name must match.

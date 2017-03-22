@@ -28,7 +28,8 @@
 #include <utility>
 
 
-namespace ClangExpand { namespace SymbolSearch {
+namespace ClangExpand {
+namespace SymbolSearch {
 namespace {
 
 /// Makes sure the token under the cursor is something we can handle.

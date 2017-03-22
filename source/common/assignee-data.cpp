@@ -2,9 +2,9 @@
 #include "clang-expand/common/assignee-data.hpp"
 
 // LLVM includes
+#include <llvm/ADT/Optional.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
-#include <llvm/ADT/Optional.h>
 
 // Standard includes
 #include <cassert>
@@ -28,9 +28,8 @@ AssigneeData::Builder::name(const llvm::StringRef& name) {
   return *this;
 }
 
-AssigneeData::Builder&
-AssigneeData::Builder::type(const llvm::StringRef& name,
-                            bool isDefaultConstructible) {
+AssigneeData::Builder& AssigneeData::Builder::type(
+    const llvm::StringRef& name, bool isDefaultConstructible) {
   _assignee.type.emplace(name, isDefaultConstructible);
   return *this;
 }
@@ -58,8 +57,7 @@ std::string AssigneeData::toAssignment(bool withType) const {
 }
 
 std::string AssigneeData::toDeclaration() const {
-  assert(type.hasValue() &&
-         "Requested assignee declaration, but have no type");
+  assert(type.hasValue() && "Requested assignee declaration, but have no type");
   return (llvm::Twine(type->name) + " " + name + ";").str();
 }
 

@@ -21,7 +21,8 @@
 #include <string>
 #include <system_error>
 
-namespace ClangExpand { namespace Routines {
+namespace ClangExpand {
+namespace Routines {
 bool locationsAreEqual(const clang::SourceLocation& first,
                        const clang::SourceLocation& second,
                        const clang::SourceManager& sourceManager) {
@@ -36,8 +37,8 @@ std::string getSourceText(const clang::SourceRange& range,
   return rewriter.getRewrittenText(range);
 }
 
-std::string
-getSourceText(const clang::SourceRange& range, clang::ASTContext& context) {
+std::string getSourceText(const clang::SourceRange& range,
+                          clang::ASTContext& context) {
   return getSourceText(range,
                        context.getSourceManager(),
                        context.getLangOpts());

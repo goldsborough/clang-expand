@@ -44,7 +44,8 @@
 #include <type_traits>
 #include <utility>
 
-namespace ClangExpand { namespace SymbolSearch {
+namespace ClangExpand {
+namespace SymbolSearch {
 namespace {
 using ParameterMap = DeclarationData::ParameterMap;
 
