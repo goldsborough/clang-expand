@@ -1,4 +1,4 @@
-FROM debian:sid
+FROM ubuntu
 MAINTAINER <peter@goldsborough.me>
 
 # Install packages.
@@ -7,9 +7,9 @@ RUN apt-get update  -y \
 
 # Get LLVM apt repositories.
 RUN wget -O - 'http://apt.llvm.org/llvm-snapshot.gpg.key' | apt-key add - \
- && echo 'deb http://apt.llvm.org/unstable/ llvm-toolchain-3.9 main' \
+ && echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main' \
     >> /etc/apt/sources.list \
- && echo 'deb-src http://apt.llvm.org/unstable/ llvm-toolchain-3.9 main' \
+ && echo 'deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main' \
     >> /etc/apt/sources.list
 
 # Install clang-3.9

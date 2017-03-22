@@ -2,8 +2,11 @@ FROM opensuse
 MAINTAINER <peter@goldsborough.me>
 
 # Install packages.
-RUN zypper refresh \
- && zypper install -n git cmake vim make llvm-clang
+RUN zypper --non-interactive refresh \
+ && zypper --non-interactive install git cmake vim make llvm-clang gcc gcc-c++
+
+ ENV C clang-3.8
+ ENV CXX clang++-3.8
 
 # Grab LLVM and clang.
 RUN git clone --progress --verbose \
@@ -19,4 +22,3 @@ VOLUME /home/project /home/build/bin
 
 WORKDIR /home
 COPY build.sh .
-RUN sed -i 's/CLANG_EXPAND_OS_NAME=/CLANG_EXPAND_OS_NAME=opensuse/' build.sh

@@ -5,6 +5,9 @@ MAINTAINER <peter@goldsborough.me>
 RUN dnf update  -y \
  && dnf install -y git cmake vim make clang
 
+ENV C clang
+ENV CXX clang++
+
 # Grab LLVM and clang.
 RUN git clone --progress --verbose \
     https://github.com/llvm-mirror/llvm.git llvm
@@ -19,4 +22,3 @@ VOLUME /home/project /home/build/bin
 
 WORKDIR /home
 COPY build.sh .
-RUN sed -i 's/CLANG_EXPAND_OS_NAME=/CLANG_EXPAND_OS_NAME=fedora/' build.sh

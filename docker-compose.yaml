@@ -1,0 +1,39 @@
+version: '3'
+services:
+  debian:
+    build:
+      context: .
+      dockerfile: docker/debian.Dockerfile
+    image: clang-expand:debian
+    command: ./build.sh debian
+    volumes:
+     - build:/home/build
+     - llvm-build:/llvm/build
+     - $PWD/../:/home/project
+     - $PWD/bin:/home/build/bin
+  fedora:
+    build:
+      context: .
+      dockerfile: docker/fedora.Dockerfile
+    image: clang-expand:fedora
+    command: ./build.sh fedora
+    volumes:
+     - build:/home/build
+     - llvm-build:/llvm/build
+     - $PWD/../:/home/project
+     - $PWD/bin:/home/build/bin
+  opensuse:
+    build:
+      context: .
+      dockerfile: docker/opensuse.Dockerfile
+    image: clang-expand:opensuse
+    command: ./build.sh opensuse
+    volumes:
+     - build:/home/build
+     - llvm-build:/llvm/build
+     - $PWD/../:/home/project
+     - $PWD/bin:/home/build/bin
+
+volumes:
+  llvm-build:
+  build:

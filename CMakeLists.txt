@@ -131,7 +131,7 @@ if (DOCKER_COMPOSE)
   add_custom_target(
     docker
     COMMAND docker-compose up
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docker
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
     COMMENT "Building clang-expand with docker" VERBATIM
   )
   message(STATUS "Enabled 'docker' target for building binaries")

@@ -7,7 +7,7 @@ if [[ ! -d /llvm/build ]]; then
 fi
 
 # Find out what clang is called on here.
-which clang++-3.9
+which clang++-3.9 2>/dev/null
 if [[ $? -eq 0 ]]; then
   export CXX=clang++-3.9
 else
@@ -31,13 +31,13 @@ if [[ ! -d /home/build ]]; then
 fi
 
 # If the folder is empty, build it.
-echo 'Building project ...'
+echo 'Building project on $1 ...'
 cd /home/build
 cmake -DLLVM_PATH=/llvm \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CXX_COMPILER=clang++-3.8 \
       -DVERBOSE_CONFIG=on \
-      -DCLANG_EXPAND_OS_NAME= \
+      -DCLANG_EXPAND_OS_NAME=$1 \
       /home/project
 make -j4
 cd -
