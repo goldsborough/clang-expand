@@ -4,9 +4,9 @@
   <img src="extra/clang-expand.gif">
   <br><br>
   A clang tool for happy refactoring without source-code gymnastics.
+  <br><br>
+  <img alt="license" src="https://img.shields.io/github/license/mashape/apistatus.svg"/> <img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/goldsborough/clang-expand.svg"/> <img alt="Docker Automated build" src="https://img.shields.io/docker/automated/goldsborough/clang-expand.svg"/> <img alt="Github All Releases" src="https://img.shields.io/github/downloads/goldsborough/clang-expand/total.svg"/> <img alt="GitHub release" src="https://img.shields.io/github/release/goldsborough/clang-expand.svg"/>
 </p>
-
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)] [![Docker Pulls](https://img.shields.io/docker/pulls/mashape/kong.svg)] [![Docker Automated buil](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg)] [![Github All Releases](https://img.shields.io/github/downloads/atom/atom/total.svg)] [![GitHub release](https://img.shields.io/github/release/qubyte/rubidium.svg)]
 
 ## Overview
 
