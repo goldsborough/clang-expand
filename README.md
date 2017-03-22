@@ -6,6 +6,8 @@
   A clang tool for happy refactoring without source-code gymnastics.
 </p>
 
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)] [![Docker Pulls](https://img.shields.io/docker/pulls/mashape/kong.svg)] [![Docker Automated buil](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg)] [![Github All Releases](https://img.shields.io/github/downloads/atom/atom/total.svg)] [![GitHub release](https://img.shields.io/github/release/qubyte/rubidium.svg)]
+
 ## Overview
 
 I recently overheard the following conversation on my way to work, that may seem familiar to you:
@@ -394,8 +396,8 @@ example is when you have a function taking a parameter and you pass a variable
 called `x` as an argument. If `x` is already used for something else inside the
 function, there will be a collision. This can be detected in clang-expand -- no
 problem -- and solved by mangling the name somehow (e.g. appending `_expanded`).
-However, this reduces the readability of the produced expansion and is therefore 
-not done. Note that this means clang-expand will generally not work well with 
+However, this reduces the readability of the produced expansion and is therefore
+not done. Note that this means clang-expand will generally not work well with
 recursive functions.
 
 The bottom line is that the produced code will not always be valid, but you'll
@@ -406,9 +408,9 @@ could be improved in the future.
 ## Building
 
 If you just want to use clang-expand, you can grab the executable from the
-[Release](https://github.com/goldsborough/clang-expand/releases) page. 
+[Release](https://github.com/goldsborough/clang-expand/releases) page.
 
-To build from source, clang-expand uses CMake and requires a C++14-capable compiler. 
+To build from source, clang-expand uses CMake and requires a C++14-capable compiler.
 It also depends on the full [LLVM](https://github.com/llvm-mirror/llvm) and
 [clang](https://github.com/llvm-mirror/clang) source, so you will need to download
 those, as explained [here](http://llvm.org/docs/GettingStarted.html#for-developers-to-work-with-a-git-monorepo).
@@ -450,7 +452,7 @@ where `os` is again one of the above. To explain the volumes we are mounting her
 3. `$PWD:/home/clang-expand` mounts your local clang-expand directory under /home,
 4. `$PWD/bin:/home/build/bin` is where all the binaries go. Mount it to the host if you want to keep the binaries.
 
-You can also just run `docker-compose up` (provided you have `docker-compose` installed) from the project root to build clang-expand on all distributions. Our CMake also has a docker target, so `make docker` does the same as `docker-compose up`. 
+You can also just run `docker-compose up` (provided you have `docker-compose` installed) from the project root to build clang-expand on all distributions. Our CMake also has a docker target, so `make docker` does the same as `docker-compose up`.
 
 ### Windows
 
