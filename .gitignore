@@ -3,6 +3,7 @@
 build/
 .clang_complete
 docs/html/
+bin/
 
 # Created by https://www.gitignore.io/api/c++,emacs
 

@@ -5,10 +5,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(clang-expand)
 
-set(CMAKE_MODULE_PATH
-   ${CMAKE_MODULE_PATH}
-   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
-
 ###########################################################
 ## DOCUMENTATION
 ###########################################################
@@ -33,6 +29,10 @@ endif()
 ###########################################################
 ## DEPENDENCIES
 ###########################################################
+
+set(CMAKE_MODULE_PATH
+   ${CMAKE_MODULE_PATH}
+   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
 
 set(CLANG_LIBS
   clangAST
@@ -75,12 +75,6 @@ set(CMAKE_EXE_LINKER_FLAGS ${LLVM_LD_FLAGS_STRING})
 ###########################################################
 
 set(CXX_STANDARD_REQUIRED ON)
-set(WARNINGS
-    -Wall
-    -Wextra
-    -Wunused
-    -Wdeprecated
-    -Wunreachable-code)
 
 list(REMOVE_ITEM LLVM_CXX_FLAGS
                  ${LLVM_INCLUDE_DIRS} # Already included
@@ -118,11 +112,31 @@ add_subdirectory(source)
 ## TARGETS
 ###########################################################
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
+    ${CMAKE_BINARY_DIR}/bin/${CLANG_EXPAND_OS_NAME})
+message(STATUS "Binaries will land in ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+
 add_executable(clang-expand clang-expand.cpp)
 target_link_libraries(clang-expand
                       clang-expand-library
                       ${CLANG_LIBS}
                       ${LLVM_LIBS})
+
+###########################################################
+## DOCKER
+###########################################################
+
+find_program(DOCKER_COMPOSE NAMES docker-compose)
+if (DOCKER_COMPOSE)
+  message(STATUS "Found docker-compose at ${DOCKER_COMPOSE}")
+  add_custom_target(
+    docker
+    COMMAND docker-compose up
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docker
+    COMMENT "Building clang-expand with docker" VERBATIM
+  )
+  message(STATUS "Enabled 'docker' target for building binaries")
+endif()
 
 ###########################################################
 ## TOOLS <3
