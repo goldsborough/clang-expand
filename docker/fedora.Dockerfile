@@ -22,3 +22,4 @@ VOLUME /home/project /home/build/bin
 
 WORKDIR /home
 COPY build.sh .
+CMD ["./build.sh", "fedora"]

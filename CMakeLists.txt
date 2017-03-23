@@ -83,7 +83,8 @@ list(REMOVE_ITEM LLVM_CXX_FLAGS
                  "-std=c++1y"
                  "-stdlib=libc++"
                  "-fno-rtti-DLLVM_BUILD_GLOBAL_ISEL" # Weird bugs on Debian
-                 "-fdata-sections-O3")
+                 "-fdata-sections-O3"
+                 "-fdata-sections-O2")
 
 if (NOT ${CMAKE_CXX_COMPILER} MATCHES "clang.*")
   # These seem to be clang-specific
@@ -121,7 +122,7 @@ add_subdirectory(source)
 ###########################################################
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
-    ${CMAKE_BINARY_DIR}/bin/${CLANG_EXPAND_OS_NAME})
+   ${CMAKE_BINARY_DIR}/bin/${CLANG_EXPAND_OS_NAME})
 message(STATUS "Binaries will land in ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
 add_executable(clang-expand clang-expand.cpp)
