@@ -371,7 +371,7 @@ outputs only the call range:
 
 ### Example editor integration
 
-As my preferred editor as of 17th March 2017, 17:42 GMT is
+As my preferred editor as of 23rd March 2017, 19:42 GMT is
 [Atom](http://atom.io), I have implemented an example editor integration of
 clang-expand for Atom:
 [atom-clang-expand](https://github.com/goldsborough/atom-clang-expand). My
@@ -385,7 +385,7 @@ you just need to invoke clang-expand, parse its output and replace some text. I
 have also implemented go-to-declaration/definition and
 show-declaration/definition for my Atom package, but those are optional (though
 arguably even easier to implement, as you just have to jump to another
-location).
+location or show some text).
 
 ## Limitations
 
