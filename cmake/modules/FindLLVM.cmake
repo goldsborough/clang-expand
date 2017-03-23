@@ -23,7 +23,7 @@
 #     The include directory for libc++, if it exists.
 ################################################################################
 
-option(VERBOSE_CONFIG off)
+option(FIND_LLVM_VERBOSE_CONFIG off)
 
 function(set_llvm_variable variable flags)
   execute_process(
@@ -37,7 +37,7 @@ function(set_llvm_variable variable flags)
   else()
       string(REPLACE "\n" ";" output ${output})
       separate_arguments(output)
-      if (VERBOSE_CONFIG)
+      if (FIND_LLVM_VERBOSE_CONFIG)
         message(STATUS "Found LLVM_${variable}: ${output}")
       endif()
       set(LLVM_${variable} "${output}" PARENT_SCOPE)

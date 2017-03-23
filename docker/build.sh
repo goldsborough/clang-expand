@@ -7,7 +7,7 @@ if [[ ! -d /llvm/build ]]; then
 fi
 
 # Find out what clang is called on here.
-which clang++-3.9 2>/dev/null
+which clang++-3.9
 if [[ $? -eq 0 ]]; then
   export CXX=clang++-3.9
 else
@@ -38,7 +38,7 @@ cmake -DLLVM_PATH=/llvm \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_C_COMPILER=$C \
       -DCMAKE_CXX_COMPILER=$CXX \
-      -DVERBOSE_CONFIG=on \
+      -DFIND_LLVM_VERBOSE_CONFIG=on \
       -DCLANG_EXPAND_OS_NAME=$1 \
       /home/project
 make -j4
