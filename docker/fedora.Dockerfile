@@ -3,7 +3,7 @@ MAINTAINER <peter@goldsborough.me>
 
 # Install packages.
 RUN dnf update  -y \
- && dnf install -y git cmake vim make clang
+ && dnf install -y git cmake vim make clang python ncurses-devel
 
 ENV C clang
 ENV CXX clang++

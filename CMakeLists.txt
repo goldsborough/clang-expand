@@ -81,7 +81,9 @@ list(REMOVE_ITEM LLVM_CXX_FLAGS
                  "-DNDEBUG"
                  "-std=c++11"         # Want our own standard
                  "-std=c++1y"
-                 "-stdlib=libc++")
+                 "-stdlib=libc++"
+                 "-fno-rtti-DLLVM_BUILD_GLOBAL_ISEL" # Weird bugs on Debian
+                 "-fdata-sections-O3")
 
 if (NOT ${CMAKE_CXX_COMPILER} MATCHES "clang.*")
   # These seem to be clang-specific
@@ -90,7 +92,14 @@ if (NOT ${CMAKE_CXX_COMPILER} MATCHES "clang.*")
                    "-Wstring-conversion")
 endif()
 
-set(EXTRA_FLAGS -Os -std=c++14 -DJSON_NOEXCEPTION)
+set(EXTRA_FLAGS
+    -Os
+    -O3
+    -fdata-sections
+    -std=c++14
+    -fno-rtti
+    -DLLVM_BUILD_GLOBAL_ISEL
+    -DJSON_NOEXCEPTION)
 set(ALL_FLAGS ${WARNINGS} ${LLVM_CXX_FLAGS} ${EXTRA_FLAGS})
 
 add_compile_options(${ALL_FLAGS})

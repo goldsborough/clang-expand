@@ -15,10 +15,11 @@ else
 fi
 
 # If the folder is empty, build it.
-echo '===---------- Building LLVM and clang ... ----------==='
+echo '===---------- Building LLVM and clang ----------==='
 cd /llvm/build
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_ENABLE_ASSERTIONS=OFF \
+      -DCMAKE_C_COMPILER=$C \
       -DCMAKE_CXX_COMPILER=$CXX \
       ..
 make -j4
@@ -31,11 +32,12 @@ if [[ ! -d /home/build ]]; then
 fi
 
 # If the folder is empty, build it.
-echo '===---------- Building project on $1 ... ----------==='
+echo "===---------- Building project on $1 ----------==="
 cd /home/build
 cmake -DLLVM_PATH=/llvm \
       -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_CXX_COMPILER=clang++-3.8 \
+      -DCMAKE_C_COMPILER=$C \
+      -DCMAKE_CXX_COMPILER=$CXX \
       -DVERBOSE_CONFIG=on \
       -DCLANG_EXPAND_OS_NAME=$1 \
       /home/project
