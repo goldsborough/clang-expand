@@ -250,7 +250,7 @@ clang-expand options:
   -definition                - Whether to return the original definition
   -file=<string>             - The source file of the function to expand
   -line=<uint>               - The line number of the function to expand
-  -rewrite                   - Whether to generate the rewritten (expand) definition
+  -rewrite                   - Whether to generate the rewritten (expanded) definition
 ```
 
 Basically, you have to pass it any sources you want the tool to look for
