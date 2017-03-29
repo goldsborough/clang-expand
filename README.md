@@ -436,7 +436,7 @@ $ docker build --compress --memory 2G --tag clang-expand:<os> --file docker/<os>
 where `os` is in `{ubuntu, debian, fedora, opensuse}`. You can also pull the image from the [Docker Cloud](http://cloud.docker.com/app/goldsborough/repository/docker/goldsborough/clang-expand/):
 
 ```sh
-$ docker pull goldsborough/clang-expand:latest-<os>
+$ docker pull goldsborough/clang-expand:<os>-latest
 ```
 
 To then build the project inside the container, you can run:
