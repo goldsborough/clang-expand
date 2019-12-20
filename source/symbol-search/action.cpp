@@ -180,9 +180,8 @@ Action::Action(Location targetLocation, Query& query)
 : _query(query), _targetLocation(std::move(targetLocation)) {
 }
 
-bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler,
-                                   llvm::StringRef filename) {
-  if (!super::BeginSourceFileAction(compiler, filename)) return false;
+bool Action::BeginSourceFileAction(clang::CompilerInstance& compiler) {
+  if (!super::BeginSourceFileAction(compiler)) return false;
 
   auto& sourceManager = compiler.getSourceManager();
   const clang::SourceLocation location =

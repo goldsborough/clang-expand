@@ -72,7 +72,7 @@ bool AssigneeData::isDefaultConstructible() const noexcept {
 }
 
 std::string AssigneeData::toAssignment(bool withType) const {
-  if (withType) {
+  if (withType && type.hasValue()) {
     assert(type.hasValue() &&
            "Requested assignee string with type, but have no type");
     return (llvm::Twine(type->name) + " " + name + " " + op).str();

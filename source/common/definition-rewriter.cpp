@@ -144,9 +144,9 @@ bool DefinitionRewriter::VisitTypeLoc(clang::TypeLoc typeLocation) {
 
   const auto original =
       templateType->getReplacedParameter()->desugar().getAsString();
-  const auto start = typeLocation.getLocStart();
+  const auto start = typeLocation.getBeginLoc();
   const auto end =
-      typeLocation.getLocStart().getLocWithOffset(original.length() - 1);
+      typeLocation.getBeginLoc().getLocWithOffset(original.length() - 1);
 
   const auto replacement = templateType->getReplacementType().getAsString();
   _rewriter.ReplaceText({start, end}, replacement);
@@ -218,7 +218,7 @@ void DefinitionRewriter::_rewriteMemberExpression(
     // Gobble up any kind of 'this->' statement or qualifier (e.g. super::x,
     // where 'super' is typedef for the base class, i.e. still an implicit
     // access).
-    const auto start = member.getLocStart();
+    const auto start = member.getBeginLoc();
     const auto end = member.getMemberLoc().getLocWithOffset(-1);
     _rewriter.ReplaceText({start, end}, _call.base);
   }
