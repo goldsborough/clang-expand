@@ -108,8 +108,8 @@ bool verifyToken(const clang::Token& token) {
 clang::FileID getFileID(const Location& targetLocation,
                         clang::SourceManager& sourceManager) {
   auto& fileManager = sourceManager.getFileManager();
-  const auto* fileEntry = fileManager.getFile(targetLocation.filename);
-  if (fileEntry == nullptr || !fileEntry->isValid()) {
+  const auto fileEntry = fileManager.getFile(targetLocation.filename);
+  if (!fileEntry) {
     Routines::error("Could not find file " +
                     llvm::Twine(targetLocation.filename) +
                     " in file manager\n");
@@ -119,7 +119,7 @@ clang::FileID getFileID(const Location& targetLocation,
          "Symbol search should only run on the target TU");
 
   const auto fileID =
-      sourceManager.getOrCreateFileID(fileEntry, clang::SrcMgr::C_User);
+      sourceManager.getOrCreateFileID(*fileEntry, clang::SrcMgr::C_User);
   if (!fileID.isValid()) {
     Routines::error("Error getting file ID from file entry");
   }

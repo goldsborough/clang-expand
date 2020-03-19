@@ -378,7 +378,7 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
 
   std::string name;
   if (const auto* declRefExpr = llvm::dyn_cast<clang::DeclRefExpr>(lhs)) {
-    name = declRefExpr->getDecl()->getName();
+    name = declRefExpr->getDecl()->getName().str();
   } else {
     // This may be a member expression, a function call or something else. But
     // since it's not a declaration, we can be quite safe to plop this into

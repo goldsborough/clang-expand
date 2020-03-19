@@ -36,8 +36,8 @@ ToolFactory::ToolFactory(const Location& targetLocation, Query& query)
 : _targetLocation(targetLocation), _query(query) {
 }
 
-clang::FrontendAction* ToolFactory::create() {
-  return new SymbolSearch::Action(_targetLocation, _query);
+std::unique_ptr<clang::FrontendAction> ToolFactory::create() {
+  return std::make_unique<SymbolSearch::Action>(_targetLocation, _query);
 }
 
 }  // namespace SymbolSearch

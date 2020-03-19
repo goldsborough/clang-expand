@@ -76,7 +76,7 @@ std::string makeAbsolute(const std::string& filename) {
   const auto error = llvm::sys::fs::make_absolute(absolutePath);
   assert(!error && "Error generating absolute path");
   (void)error;
-  return absolutePath.str();
+  return absolutePath.str().str();
 }
 
 void error(const char* message) {

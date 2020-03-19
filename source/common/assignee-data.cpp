@@ -48,13 +48,14 @@ AssigneeData::Builder::Builder(AssigneeData&& assignee)
 
 AssigneeData::Builder&
 AssigneeData::Builder::name(const llvm::StringRef& name) {
-  _assignee.name = name.rtrim();
+  auto trimmed = name.rtrim();
+  _assignee.name.assign(trimmed.begin(), trimmed.end());
   return *this;
 }
 
 AssigneeData::Builder& AssigneeData::Builder::type(
     const llvm::StringRef& name, bool isDefaultConstructible) {
-  _assignee.type.emplace(name, isDefaultConstructible);
+  _assignee.type.emplace(name.str(), isDefaultConstructible);
   return *this;
 }
 
