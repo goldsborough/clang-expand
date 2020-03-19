@@ -51,6 +51,10 @@
 #include <string>
 #include <vector>
 
+#if defined(_MSC_VER)
+#pragma comment(lib, "version.lib")
+#endif
+
 namespace {
 llvm::cl::OptionCategory clangExpandCategory("clang-expand options");
 
