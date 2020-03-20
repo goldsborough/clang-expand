@@ -80,8 +80,7 @@ class Action : public clang::ASTFrontendAction {
 
   /// Attempts to translate the `targetLocation` to a `clang::SourceLocation`
   /// and install preprocessor hooks for macros.
-  bool BeginSourceFileAction(clang::CompilerInstance& compiler,
-                             llvm::StringRef filename) override;
+  bool BeginSourceFileAction(clang::CompilerInstance& compiler) override;
 
   /// \returns a `SymbolSearch::Consumer`.
   ASTConsumerPointer CreateASTConsumer(clang::CompilerInstance& compiler,

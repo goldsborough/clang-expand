@@ -33,6 +33,7 @@
 #include <clang/AST/DeclTemplate.h>
 #include <clang/AST/Expr.h>
 #include <clang/AST/ExprCXX.h>
+#include <clang/AST/ParentMapContext.h>
 #include <clang/AST/Stmt.h>
 #include <clang/AST/Type.h>
 #include <clang/AST/TypeLoc.h>
@@ -144,9 +145,9 @@ bool DefinitionRewriter::VisitTypeLoc(clang::TypeLoc typeLocation) {
 
   const auto original =
       templateType->getReplacedParameter()->desugar().getAsString();
-  const auto start = typeLocation.getLocStart();
+  const auto start = typeLocation.getBeginLoc();
   const auto end =
-      typeLocation.getLocStart().getLocWithOffset(original.length() - 1);
+      typeLocation.getBeginLoc().getLocWithOffset(original.length() - 1);
 
   const auto replacement = templateType->getReplacementType().getAsString();
   _rewriter.ReplaceText({start, end}, replacement);
@@ -218,7 +219,7 @@ void DefinitionRewriter::_rewriteMemberExpression(
     // Gobble up any kind of 'this->' statement or qualifier (e.g. super::x,
     // where 'super' is typedef for the base class, i.e. still an implicit
     // access).
-    const auto start = member.getLocStart();
+    const auto start = member.getBeginLoc();
     const auto end = member.getMemberLoc().getLocWithOffset(-1);
     _rewriter.ReplaceText({start, end}, _call.base);
   }

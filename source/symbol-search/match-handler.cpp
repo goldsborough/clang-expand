@@ -87,7 +87,7 @@ Range cleanCallRange(const clang::Expr& expression,
     // character of the right operand (for binary operators) or only operand
     // (for unary operators), for some reason. So we have to skip the whole
     // token and are then already at the semicolon (so no +1).
-    extraOffset = clang::Lexer::MeasureTokenLength(op->getLocEnd(),
+    extraOffset = clang::Lexer::MeasureTokenLength(op->getEndLoc(),
                                                    context.getSourceManager(),
                                                    context.getLangOpts());
   }
@@ -237,7 +237,7 @@ bool isImplicitExpression(const Node&, const clang::Stmt&) {
 
 /// Tests if the parent of a node is an implicit expression that should be
 /// ignored.
-bool isImplicitExpression(const clang::Stmt& child, const clang::Stmt& parent) {
+bool isImplicitExpression(const clang::Expr& child, const clang::Expr& parent) {
   // If we ignore all implicit types on the way from the parent to the child
   // node and we are back at the child node, then the parent must have been an
   // implicit type.
@@ -378,7 +378,7 @@ handleCallForBinaryOperator(const clang::BinaryOperator& binaryOperator,
 
   std::string name;
   if (const auto* declRefExpr = llvm::dyn_cast<clang::DeclRefExpr>(lhs)) {
-    name = declRefExpr->getDecl()->getName();
+    name = declRefExpr->getDecl()->getName().str();
   } else {
     // This may be a member expression, a function call or something else. But
     // since it's not a declaration, we can be quite safe to plop this into
@@ -499,9 +499,10 @@ void decorateCallDataWithMemberBase(CallData& callData,
   }
 
   if (auto* member = result.Nodes.getNodeAs<clang::MemberExpr>("member")) {
-    const auto* child = member->child_begin()->IgnoreImplicit();
+    const auto it = member->child_begin();
+    const auto child = llvm::cast<clang::Expr>(*it)->IgnoreImplicit();
     if (!llvm::isa<clang::CXXThisExpr>(child)) {
-      const char* start = bufferPointerAt(member->getLocStart(), result);
+      const char* start = bufferPointerAt(member->getBeginLoc(), result);
       const char* end = bufferPointerAt(member->getMemberLoc(), result);
       callData.base.assign(start, end);
       return;

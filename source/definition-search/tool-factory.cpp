@@ -39,8 +39,8 @@ ToolFactory::ToolFactory(const std::string& declarationFile, Query& query)
 : _declarationFile(declarationFile), _query(query) {
 }
 
-clang::FrontendAction* ToolFactory::create() {
-  return new DefinitionSearch::Action(_declarationFile, _query);
+std::unique_ptr<clang::FrontendAction> ToolFactory::create() {
+  return std::make_unique<DefinitionSearch::Action>(_declarationFile, _query);
 }
 
 }  // namespace DefinitionSearch

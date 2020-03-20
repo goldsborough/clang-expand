@@ -134,8 +134,8 @@ std::string getRewrittenText(clang::Stmt* body,
     shouldDeclare = definitionRewriter.rewriteReturnsToAssignments(*body);
   }
 
-  const auto afterBrace = body->getLocStart().getLocWithOffset(+1);
-  const auto beforeBrace = body->getLocEnd().getLocWithOffset(-1);
+  const auto afterBrace = body->getBeginLoc().getLocWithOffset(+1);
+  const auto beforeBrace = body->getEndLoc().getLocWithOffset(-1);
   const clang::SourceRange range(afterBrace, beforeBrace);
 
   auto text = withoutIndentation(rewriter.getRewrittenText(range));

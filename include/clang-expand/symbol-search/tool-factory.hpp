@@ -51,7 +51,7 @@ class ToolFactory : public clang::tooling::FrontendActionFactory {
 
   /// Creates the action of the symbol search phase.
   /// \returns A `SymbolSearch::Action`.
-  clang::FrontendAction* create() override;
+  std::unique_ptr<clang::FrontendAction> create() override;
 
  private:
   /// The location at which the user invoked clang-expand.

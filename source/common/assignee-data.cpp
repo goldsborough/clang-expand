@@ -48,13 +48,14 @@ AssigneeData::Builder::Builder(AssigneeData&& assignee)
 
 AssigneeData::Builder&
 AssigneeData::Builder::name(const llvm::StringRef& name) {
-  _assignee.name = name.rtrim();
+  auto trimmed = name.rtrim();
+  _assignee.name.assign(trimmed.begin(), trimmed.end());
   return *this;
 }
 
 AssigneeData::Builder& AssigneeData::Builder::type(
     const llvm::StringRef& name, bool isDefaultConstructible) {
-  _assignee.type.emplace(name, isDefaultConstructible);
+  _assignee.type.emplace(name.str(), isDefaultConstructible);
   return *this;
 }
 
@@ -72,12 +73,11 @@ bool AssigneeData::isDefaultConstructible() const noexcept {
 }
 
 std::string AssigneeData::toAssignment(bool withType) const {
-  if (withType) {
-    assert(type.hasValue() &&
-           "Requested assignee string with type, but have no type");
+  if (withType && type.hasValue()) {
     return (llvm::Twine(type->name) + " " + name + " " + op).str();
+  } else {
+    return (llvm::Twine(name) + " " + op).str();
   }
-  return (llvm::Twine(name) + " " + op).str();
 }
 
 std::string AssigneeData::toDeclaration() const {

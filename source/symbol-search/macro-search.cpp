@@ -82,8 +82,8 @@ std::string getDefinitionText(const clang::MacroInfo& info,
 void rewriteStringifiedMacroArgument(clang::Rewriter& rewriter,
                                      const clang::Token& token,
                                      const llvm::StringRef& mappedParameter) {
-  const clang::SourceRange range(token.getLocation().getLocWithOffset(-1),
-                                 token.getEndLoc());
+  const clang::SourceRange range(token.getLocation(),
+                                 token.getEndLoc().getLocWithOffset(-1));
   auto replacement = (llvm::Twine("\"") + mappedParameter + "\"").str();
   rewriter.ReplaceText(range, std::move(replacement));
 }
@@ -94,8 +94,8 @@ void rewriteSimpleMacroArgument(clang::Rewriter& rewriter,
                                 const clang::Token& token,
                                 const llvm::StringRef& mappedParameter,
                                 unsigned hashCount) {
-  const auto offset = -static_cast<int>(hashCount);
-  const clang::SourceRange range(token.getLocation().getLocWithOffset(-1),
+  const auto offset = -static_cast<int>(hashCount) - 1;
+  const clang::SourceRange range(token.getLocation(),
                                  token.getEndLoc().getLocWithOffset(offset));
   rewriter.ReplaceText(range, mappedParameter);
 }
@@ -183,16 +183,17 @@ std::string MacroSearch::_rewriteMacro(const clang::MacroInfo& info,
 MacroSearch::ParameterMap MacroSearch::_createParameterMap(
     const clang::MacroInfo& info, const clang::MacroArgs& arguments) {
   ParameterMap mapping;
-  if (info.getNumArgs() == 0) return mapping;
+  if (info.getNumParams() == 0) return mapping;
 
   unsigned number = 0;
-  for (const auto* parameter : info.args()) {
+  for (const auto* parameter : info.params()) {
     const auto* firstToken = arguments.getUnexpArgument(number);
     auto numberOfTokens = arguments.getArgLength(firstToken);
     clang::TokenLexer lexer(firstToken,
                             numberOfTokens,
-                            /*DisableExpansion=*/true,
-                            false,
+                            /* DisableMacroExpansion= */ true,
+                            /* OwnsTokens= */ false,
+                            /* IsReinject= */ false,
                             _preprocessor);
 
     llvm::SmallString<32> wholeArgument;
