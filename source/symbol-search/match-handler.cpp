@@ -500,8 +500,7 @@ void decorateCallDataWithMemberBase(CallData& callData,
 
   if (auto* member = result.Nodes.getNodeAs<clang::MemberExpr>("member")) {
     const auto it = member->child_begin();
-    const clang::Expr* child = (const clang::Expr*)*it;
-    child = child->IgnoreImplicit();
+    const auto child = llvm::cast<clang::Expr>(*it)->IgnoreImplicit();
     if (!llvm::isa<clang::CXXThisExpr>(child)) {
       const char* start = bufferPointerAt(member->getBeginLoc(), result);
       const char* end = bufferPointerAt(member->getMemberLoc(), result);

@@ -191,8 +191,9 @@ MacroSearch::ParameterMap MacroSearch::_createParameterMap(
     auto numberOfTokens = arguments.getArgLength(firstToken);
     clang::TokenLexer lexer(firstToken,
                             numberOfTokens,
-                            /*DisableExpansion=*/true,
-                            false, false,
+                            /* DisableMacroExpansion= */ true,
+                            /* OwnsTokens= */ false,
+                            /* IsReinject= */ false,
                             _preprocessor);
 
     llvm::SmallString<32> wholeArgument;
