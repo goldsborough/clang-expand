@@ -198,7 +198,7 @@ double pi_if_a_greater_b(double a, double b) {                &nbsp;
 </pre></sub></td>
 <td><sub><pre lang="cpp">
 double pi_if_a_greater_b(double a, double b) {                        &nbsp;
-  auto greater = a > b ? a : b;
+  auto greater = (a) > (b) ? (a) : (b);
   if (greater == a) {
     return 3.14;
   }
